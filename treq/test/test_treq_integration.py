@@ -1,5 +1,3 @@
-import json
-
 from twisted.trial.unittest import TestCase
 from twisted.internet.defer import inlineCallbacks
 

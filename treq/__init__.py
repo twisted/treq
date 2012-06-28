@@ -1,14 +1,13 @@
 from zope.interface import implements
 
 from twisted.internet import reactor
-from twisted.internet.protocol import Protocol
-from twisted.internet.defer import succeed, Deferred
-
+from twisted.internet.defer import succeed
 
 from twisted.web.client import Agent
 from twisted.web.iweb import IBodyProducer
 from twisted.web.http_headers import Headers
 
+from treq.response import Response
 
 #
 # Public API
@@ -39,38 +38,6 @@ def delete(url, headers=None):
 # Private API
 #
 
-
-class _BodyCollector(Protocol):
-    def __init__(self, finished):
-        self.finished = finished
-        self.data = []
-
-    def dataReceived(self, data):
-        self.data.append(data)
-
-    def connectionLost(self, reason):
-        self.finished.callback(''.join(self.data))
-
-
-def _prepResponse(response):
-    response.body = ''
-    return response
-
-
-def _addBody(body, response):
-    response.body = body
-    return response
-
-
-def _collectBody(response):
-    f = Deferred()
-    f.addCallback(_addBody, response)
-
-    response.deliverBody(_BodyCollector(f))
-
-    return f
-
-
 class _StringProducer(object):
     implements(IBodyProducer)
 
@@ -94,10 +61,7 @@ def _request(method, url, headers=None, body=None):
         body = _StringProducer(body)
 
     d = _getAgent().request(method, url, Headers(headers), body)
-    d.addCallback(_prepResponse)
-
-    if method != 'HEAD':
-        d.addCallback(_collectBody)
+    d.addCallback(Response, method)
 
     return d
 

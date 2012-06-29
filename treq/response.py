@@ -1,7 +1,12 @@
 import json
 
+import cgi
+
 from twisted.internet.defer import succeed, Deferred
 from twisted.internet.protocol import Protocol
+
+from requests.structures import CaseInsensitiveDict
+from requests.utils import get_encoding_from_headers
 
 
 class _BodyCollector(Protocol):
@@ -26,7 +31,10 @@ class Response(object):
         self._response = response
         self._method = method
         self.status_code = response.code
-        self.headers = response.headers
+        self.headers = CaseInsensitiveDict((
+            (header, ', '.join(values)) for header, values in
+            response.headers.getAllRawHeaders()))
+        self.encoding = get_encoding_from_headers(self.headers)
 
     @property
     def content(self):
@@ -60,7 +68,9 @@ class Response(object):
         if self._json is not None:
             return succeed(self._json)
 
-        if self.headers.getRawHeaders('content-type') != ['application/json']:
+        content_type, params = cgi.parse_header(self.headers['content-type'])
+
+        if content_type != 'application/json':
             return None
 
         return self.content.addCallback(_json_decode)
@@ -68,7 +78,7 @@ class Response(object):
     @property
     def text(self):
         def _text_decode(data):
-            self._text = data.decode('utf-8')
+            self._text = data.decode(self.encoding)
             return self._text
 
         if self._text is not None:

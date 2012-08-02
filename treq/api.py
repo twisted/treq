@@ -3,19 +3,26 @@ from zope.interface import implements
 from twisted.internet import reactor
 from twisted.internet.defer import succeed
 
-from twisted.web.client import Agent
+from twisted.web.client import Agent, RedirectAgent
 from twisted.web.iweb import IBodyProducer
 from twisted.web.http_headers import Headers
 
 from treq.response import Response
 
 
-def head(url, headers=None, params=None):
-    return request('HEAD', url, headers, params)
+_agent = Agent(reactor)
 
 
-def get(url, headers=None, params=None):
-    return request('GET', url, headers, params)
+def head(url, headers=None, params=None, allow_redirects=True):
+    return request(
+        'HEAD', url, headers, params, allow_redirects=allow_redirects,
+    )
+
+
+def get(url, headers=None, params=None, allow_redirects=True):
+    return request(
+        'GET', url, headers, params, allow_redirects=allow_redirects,
+    )
 
 
 def post(url, headers=None, body=None):
@@ -30,11 +37,15 @@ def delete(url, headers=None):
     return request('DELETE', url, headers)
 
 
-def request(method, url, headers=None, body=None):
+def request(
+    method, url, headers=None, body=None, allow_redirects=True, agent=_agent
+):
     if body:
         body = _StringProducer(body)
+    if allow_redirects:
+        agent = RedirectAgent(agent)
 
-    d = _getAgent().request(method, url, Headers(headers), body)
+    d = agent.request(method, url, Headers(headers), body)
     d.addCallback(Response, method)
 
     return d
@@ -62,14 +73,3 @@ class _StringProducer(object):
         pass
 
 
-_agent = None
-
-
-def _getAgent():
-    global _agent
-
-    if _agent is not None:
-        return _agent
-
-    _agent = Agent(reactor)
-    return _agent

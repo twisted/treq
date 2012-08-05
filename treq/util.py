@@ -1,4 +1,5 @@
 from collections import MutableMapping
+import cgi
 
 
 class CaseInsensitiveDict(MutableMapping):
@@ -23,3 +24,26 @@ class CaseInsensitiveDict(MutableMapping):
 
     def __repr__(self):
         return "%s(%s)" % (self.__class__.__name__, repr(self._content))
+
+
+def get_encoding_from_headers(headers):
+    """
+    Retrieve the character encoding from a (case-insensitive) dict of headers.
+
+    Returns None if the Content-Type didn't include a charset, or wasn't
+    present at all.
+
+    """
+
+    content_type = headers.get('content-type')
+
+    if not content_type:
+        return None
+
+    content_type, params = cgi.parse_header(content_type)
+
+    if 'charset' in params:
+        return params['charset'].strip("'\"")
+
+    if 'text' in content_type:
+        return 'ISO-8859-1'

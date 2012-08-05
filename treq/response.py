@@ -34,12 +34,20 @@ class Response(object):
         self.headers = CaseInsensitiveDict((
             (header, ', '.join(values)) for header, values in
             response.headers.getAllRawHeaders()))
-        self.encoding = get_encoding_from_headers(self.headers)
+        self.encoding = get_encoding_from_headers(self.headers) or 'ISO-8859-1'
+        self._waiting_for_content = []
 
     @property
     def content(self):
         def _add_content(data):
             self._content = data
+
+            waiting_for_content = self._waiting_for_content
+            self._waiting_for_content = []
+
+            for d in waiting_for_content:
+                d.callback(self._content)
+
             return self._content
 
         if self._method == 'HEAD':
@@ -50,7 +58,8 @@ class Response(object):
 
         if self._content_d is not None:
             d = Deferred()
-            d.chainDeferred(self._content_d)
+            d.addCallback(lambda _: self._content)
+            self._waiting_for_content.append(d)
             return d
 
         d = Deferred()

@@ -6,7 +6,7 @@ import treq
 HTTPBIN_URL = "http://httpbin.org"
 HTTPSBIN_URL = "https://httpbin.org"
 
-debug = False
+debug = True
 
 
 @inlineCallbacks
@@ -15,6 +15,7 @@ def print_response(response):
         print
         print '---'
         print response.status_code
+        print response.headers
         text = yield response.text
         print text
         print '---'

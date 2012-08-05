@@ -5,8 +5,7 @@ import cgi
 from twisted.internet.defer import succeed, Deferred
 from twisted.internet.protocol import Protocol
 
-from requests.structures import CaseInsensitiveDict
-from requests.utils import get_encoding_from_headers
+from treq.util import CaseInsensitiveDict, get_encoding_from_headers
 
 
 class _BodyCollector(Protocol):

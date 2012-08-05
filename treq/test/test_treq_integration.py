@@ -62,10 +62,34 @@ class TreqIntegrationTests(TestCase):
         yield print_response(response)
 
     @inlineCallbacks
+    def test_get_302_redirect_allowed(self):
+        response = yield self.get('/redirect/1')
+        self.assertEqual(response.status_code, 200)
+        yield print_response(response)
+
+    @inlineCallbacks
+    def test_get_302_redirect_disallowed(self):
+        response = yield self.get('/redirect/1', allow_redirects=False)
+        self.assertEqual(response.status_code, 302)
+        yield print_response(response)
+
+    @inlineCallbacks
     def test_head(self):
         response = yield self.head('/get')
         body = yield response.content
         self.assertEqual('', body)
+        yield print_response(response)
+
+    @inlineCallbacks
+    def test_head_302_redirect_allowed(self):
+        response = yield self.head('/redirect/1')
+        self.assertEqual(response.status_code, 200)
+        yield print_response(response)
+
+    @inlineCallbacks
+    def test_head_302_redirect_disallowed(self):
+        response = yield self.head('/redirect/1', allow_redirects=False)
+        self.assertEqual(response.status_code, 302)
         yield print_response(response)
 
     @inlineCallbacks

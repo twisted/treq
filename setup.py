@@ -1,6 +1,9 @@
 from setuptools import setup
+import os.path
 
-from treq import __version__
+
+with open(os.path.join(os.path.dirname(__file__), "treq", "_version")) as ver:
+    __version__ = ver.readline().strip()
 
 
 classifiers = [

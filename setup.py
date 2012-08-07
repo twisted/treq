@@ -1,10 +1,8 @@
-from setuptools import setup
-import os.path
+from pkg_resources import resource_string
+from setuptools import find_packages, setup
 
 
-with open(os.path.join(os.path.dirname(__file__), "treq", "_version")) as ver:
-    __version__ = ver.readline().strip()
-
+__version__ = resource_string("treq", "_version").strip()
 
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -23,7 +21,8 @@ classifiers = [
 setup(
     name="treq",
     version=__version__,
-    packages=["treq"],
+    packages=find_packages(),
+    package_data={"treq" : ["_version"]},
     author="David Reid",
     classifiers=classifiers,
     description="A requests-like API built on top of twisted.web's Agent",

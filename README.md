@@ -1,6 +1,8 @@
 treq
 ====
 
+[![Build Status](https://secure.travis-ci.org/dreid/treq.png?branch=master)](http://travis-ci.org/dreid/treq)
+
 `treq` is an HTTP library inspired by [requests](http://www.python-requests.org)
 but written on top of [Twisted](http://www.twistedmatrix.com)'s
 [Agents](http://twistedmatrix.com/documents/current/api/twisted.web.client.Agent.html).

@@ -1,7 +1,9 @@
-from setuptools import setup
+from setuptools import find_packages, setup
+import os.path
 
-from treq import __version__
 
+with open(os.path.join(os.path.dirname(__file__), "treq", "_version")) as ver:
+    __version__ = ver.readline().strip()
 
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -20,7 +22,9 @@ classifiers = [
 setup(
     name="treq",
     version=__version__,
-    packages=["treq"],
+    packages=find_packages(),
+    install_requires=["Twisted >= 12.1.0", "PyOpenSSL", "requests"],
+    package_data={"treq" : ["_version"]},
     author="David Reid",
     classifiers=classifiers,
     description="A requests-like API built on top of twisted.web's Agent",

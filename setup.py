@@ -1,8 +1,9 @@
-from pkg_resources import resource_string
 from setuptools import find_packages, setup
+import os.path
 
 
-__version__ = resource_string("treq", "_version").strip()
+with open(os.path.join(os.path.dirname(__file__), "treq", "_version")) as ver:
+    __version__ = ver.readline().strip()
 
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -22,6 +23,7 @@ setup(
     name="treq",
     version=__version__,
     packages=find_packages(),
+    install_requires=["Twisted >= 12.1.0", "PyOpenSSL", "requests"],
     package_data={"treq" : ["_version"]},
     author="David Reid",
     classifiers=classifiers,

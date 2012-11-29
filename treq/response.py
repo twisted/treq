@@ -39,6 +39,7 @@ class Response(object):
         self.encoding = get_encoding_from_headers(self.headers) or 'ISO-8859-1'
         self._waiting_for_content = []
 
+
     def content(self):
         def _add_content(data):
             self._content = data
@@ -69,6 +70,7 @@ class Response(object):
         self._response.deliverBody(_BodyCollector(d))
         return d
 
+
     def json(self):
         def _json_decode(data):
             self._json = json.loads(data)
@@ -84,6 +86,7 @@ class Response(object):
 
         return self.content().addCallback(_json_decode)
 
+
     def text(self):
         def _text_decode(data):
             self._text = data.decode(self.encoding)
@@ -93,6 +96,7 @@ class Response(object):
             return succeed(self._text)
 
         return self.content().addCallback(_text_decode)
+
 
     def __conform__(self, interface):
         if interface is IResponse:

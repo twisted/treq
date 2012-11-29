@@ -1,5 +1,6 @@
 from treq.client import HTTPClient
 
+
 def head(url, **kwargs):
     return _client(**kwargs).head(url, **kwargs)
 

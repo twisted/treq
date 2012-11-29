@@ -1,7 +1,7 @@
 from twisted.trial.unittest import TestCase
 from twisted.internet.defer import inlineCallbacks
 
-from treq.test.util import DEBUG
+from treq.test.util import DEBUG, is_pypy
 import treq
 
 HTTPBIN_URL = "http://httpbin.org"
@@ -126,3 +126,6 @@ class TreqIntegrationTests(TestCase):
 
 class HTTPSTreqIntegrationTests(TreqIntegrationTests):
     baseurl = HTTPSBIN_URL
+
+    if is_pypy:
+        skip = "These tests segfault (or hang) on PyPy."

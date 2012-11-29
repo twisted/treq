@@ -11,4 +11,8 @@ env:
 install:
   - pip install Twisted==$TWISTED_VERSION
   - pip install -r requirements-dev.txt --use-mirrors
-script: trial treq
+
+script:
+  - pep8 treq
+  - pyflakes treq
+  - trial treq

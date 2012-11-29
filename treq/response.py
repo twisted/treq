@@ -5,6 +5,8 @@ import cgi
 from twisted.internet.defer import succeed, Deferred
 from twisted.internet.protocol import Protocol
 
+from twisted.web.iweb import IResponse
+
 from requests.structures import CaseInsensitiveDict
 from requests.utils import get_encoding_from_headers
 
@@ -37,7 +39,6 @@ class Response(object):
         self.encoding = get_encoding_from_headers(self.headers) or 'ISO-8859-1'
         self._waiting_for_content = []
 
-    @property
     def content(self):
         def _add_content(data):
             self._content = data
@@ -68,7 +69,6 @@ class Response(object):
         self._response.deliverBody(_BodyCollector(d))
         return d
 
-    @property
     def json(self):
         def _json_decode(data):
             self._json = json.loads(data)
@@ -82,9 +82,8 @@ class Response(object):
         if content_type != 'application/json':
             return None
 
-        return self.content.addCallback(_json_decode)
+        return self.content().addCallback(_json_decode)
 
-    @property
     def text(self):
         def _text_decode(data):
             self._text = data.decode(self.encoding)
@@ -93,4 +92,8 @@ class Response(object):
         if self._text is not None:
             return succeed(self._text)
 
-        return self.content.addCallback(_text_decode)
+        return self.content().addCallback(_text_decode)
+
+    def __conform__(self, interface):
+        if interface is IResponse:
+            return self._response

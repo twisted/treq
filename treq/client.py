@@ -1,7 +1,5 @@
 from StringIO import StringIO
 
-from twisted.internet.protocol import Protocol
-
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer
 from twisted.web.client import FileBodyProducer
@@ -25,7 +23,7 @@ registerAdapter(_from_file, file, IBodyProducer)
 registerAdapter(_from_file, StringIO, IBodyProducer)
 
 
-class HTTPClient(Protocol):
+class HTTPClient(object):
     def __init__(self, agent):
         self._agent = agent
 

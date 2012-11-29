@@ -13,7 +13,7 @@ Twisted.
     >>> from treq import get
 
     >>> def done(response):
-    ...     print response.status_code
+    ...     print response.code
     ...     reactor.stop()
 
     >>> get("http://www.github.com").addCallback(done)

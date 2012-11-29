@@ -32,7 +32,7 @@ class Response(object):
     def __init__(self, response, method):
         self._response = response
         self._method = method
-        self.status_code = response.code
+        self.code = response.code
         self.headers = CaseInsensitiveDict((
             (header, ', '.join(values)) for header, values in
             response.headers.getAllRawHeaders()))

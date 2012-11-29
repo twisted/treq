@@ -13,7 +13,7 @@ def print_response(response):
     if DEBUG:
         print
         print '---'
-        print response.status_code
+        print response.code
         print response.headers
         text = yield response.text()
         print text
@@ -53,14 +53,14 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_get(self):
         response = yield self.get('/get')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.code, 200)
         yield print_response(response)
 
 
     @inlineCallbacks
     def test_get_headers(self):
         response = yield self.get('/get', {'X-Blah': ['Foo']})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.code, 200)
         yield self.assert_sent_header(response, 'X-Blah', 'Foo')
         yield print_response(response)
 
@@ -68,14 +68,14 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_get_302_redirect_allowed(self):
         response = yield self.get('/redirect/1')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.code, 200)
         yield print_response(response)
 
 
     @inlineCallbacks
     def test_get_302_redirect_disallowed(self):
         response = yield self.get('/redirect/1', allow_redirects=False)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.code, 302)
         yield print_response(response)
 
 
@@ -90,21 +90,21 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_head_302_redirect_allowed(self):
         response = yield self.head('/redirect/1')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.code, 200)
         yield print_response(response)
 
 
     @inlineCallbacks
     def test_head_302_redirect_disallowed(self):
         response = yield self.head('/redirect/1', allow_redirects=False)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.code, 302)
         yield print_response(response)
 
 
     @inlineCallbacks
     def test_post(self):
         response = yield self.post('/post', 'Hello!')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.code, 200)
         self.assert_data(response, 'Hello!')
         yield print_response(response)
 
@@ -117,7 +117,7 @@ class TreqIntegrationTests(TestCase):
             headers={'Content-Type': ['application/json']}
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.code, 200)
         self.assert_sent_header(response, 'Content-Type', 'application/json')
         self.assert_data(response, '{msg: "Hello!"}')
 
@@ -133,7 +133,7 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_delete(self):
         response = yield self.delete('/delete')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.code, 200)
         yield print_response(response)
 
 

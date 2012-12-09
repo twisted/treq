@@ -7,8 +7,6 @@ from twisted.web.client import Agent, HTTPConnectionPool, RedirectAgent
 
 from twisted.python.components import registerAdapter
 
-from treq.response import Response
-
 
 def _from_bytes(orig_bytes):
     return FileBodyProducer(StringIO(orig_bytes))

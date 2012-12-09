@@ -52,6 +52,7 @@ def collect(response, collector):
 
 _content_cache = WeakKeyDictionary()
 
+
 def content(response):
     if response in _content_cache:
         return succeed(_content_cache[response])

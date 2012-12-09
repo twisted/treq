@@ -108,7 +108,8 @@ class TreqIntegrationTests(TestCase):
         )
 
         self.assertEqual(response.code, 200)
-        yield self.assert_sent_header(response, 'Content-Type', 'application/json')
+        yield self.assert_sent_header(
+            response, 'Content-Type', 'application/json')
         yield self.assert_data(response, '{msg: "Hello!"}')
         yield print_response(response)
 

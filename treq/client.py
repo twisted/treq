@@ -82,5 +82,4 @@ class HTTPClient(object):
         d = self._agent.request(
             method, url, headers=headers, bodyProducer=bodyProducer)
 
-        d.addCallback(lambda r: Response(r, method))
         return d

@@ -103,5 +103,5 @@ class TreqIntegrationTests(TestCase):
 class HTTPSTreqIntegrationTests(TreqIntegrationTests):
     baseurl = HTTPSBIN_URL
 
-    # if is_pypy:
-    #     skip = "These tests segfault (or hang) on PyPy."
+    if is_pypy:
+        skip = "These tests segfault (or hang) on PyPy."

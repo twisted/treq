@@ -5,8 +5,13 @@ python:
     #- pypy  # At the moment this segfaults are sort of terrible.
 
 env:
-  - TWISTED_VERSION=12.2.0
-  - TWISTED_VERSION=12.1.0
+  global:
+    - HTTPBIN_URL=http://localhost:8080
+    - HTTPSBIN_URL=http://localhost:8443
+    - CERT=treq/test/server.pem
+  matrix:
+    - TWISTED_VERSION=12.2.0
+    - TWISTED_VERSION=12.1.0
 
 install:
   - pip install Twisted==$TWISTED_VERSION
@@ -15,4 +20,5 @@ install:
 script:
   - pep8 treq
   - pyflakes treq
+  - twistd web --wsgi=httpbin.app --https=8443 --certificate=$CERT --privkey=$CERT
   - trial treq

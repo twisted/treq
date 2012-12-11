@@ -42,6 +42,18 @@ class _BodyCollector(Protocol):
 
 
 def collect(response, collector):
+    """
+    Incrementally collect the body of the response.
+
+    This function may only be called **once** for a given response.
+
+    :param IResponse response: The HTTP response to collect the body from.
+    :param collector: A callable to be called each time data is available
+        from the response body.
+    :type collector: single argument callable
+
+    :rtype: Deferred that fires with None when the entire body has been read.
+    """
     if response.length == 0:
         return succeed(None)
 
@@ -54,6 +66,16 @@ _content_cache = WeakKeyDictionary()
 
 
 def content(response):
+    """
+    Read the contents of an HTTP response.
+
+    This function may be called multiple times for a response, it uses a
+    ``WeakKeyDictionary`` to cache the contents of the response.
+
+    :param IResponse response: The HTTP Response to get the contents of.
+
+    :rtype: Deferred that fires with the content as a str.
+    """
     if response in _content_cache:
         return succeed(_content_cache[response])
 
@@ -69,12 +91,31 @@ def content(response):
 
 
 def json_content(response):
+    """
+    Read the contents of an HTTP response and attempt to decode it as JSON.
+
+    This function relies on :py:func:`content` and so may be called more than
+    once for a given response.
+
+    :param IResponse response: The HTTP Response to get the contents of.
+
+    :rtype: Deferred that fires with the decoded JSON.
+    """
     d = content(response)
     d.addCallback(json.loads)
     return d
 
 
 def text_content(response, encoding='ISO-8859-1'):
+    """
+    Read the contents of an HTTP response and decode it with an appropriate
+    charset, which may be guessed from the ``Content-Type`` header.
+
+    :param IResponse response: The HTTP Response to get the contents of.
+    :param str encoding: An valid charset, such as ``UTF-8`` or ``ISO-8859-1``.
+
+    :rtype: Deferred that fires with a unicode.
+    """
     def _decode_content(c):
         encoding = _encoding_from_headers(response.headers)
 

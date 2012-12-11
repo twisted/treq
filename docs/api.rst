@@ -1,0 +1,19 @@
+Making Reqeusts
+===============
+
+.. module:: treq
+
+.. autofunction:: request
+.. autofunction:: get
+.. autofunction:: head
+.. autofunction:: post
+.. autofunction:: put
+.. autofunction:: delete
+
+Accessing Content
+=================
+
+.. autofunction:: collect
+.. autofunction:: content
+.. autofunction:: text_content
+.. autofunction:: json_content

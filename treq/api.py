@@ -2,26 +2,71 @@ from treq.client import HTTPClient
 
 
 def head(url, **kwargs):
+    """
+    Make a ``HEAD`` request.
+
+    See :py:func:`treq.request`
+    """
     return _client(**kwargs).head(url, **kwargs)
 
 
 def get(url, headers=None, **kwargs):
+    """
+    Make a ``GET`` request.
+
+    See :py:func:`treq.request`
+    """
     return _client(**kwargs).get(url, headers=headers, **kwargs)
 
 
 def post(url, data=None, **kwargs):
+    """
+    Make a ``POST`` request.
+
+    See :py:func:`treq.request`
+    """
     return _client(**kwargs).post(url, data=data, **kwargs)
 
 
 def put(url, data=None, **kwargs):
+    """
+    Make a ``PUT`` request.
+
+    See :py:func:`treq.request`
+    """
     return _client(**kwargs).put(url, data=data, **kwargs)
 
 
 def delete(url, **kwargs):
+    """
+    Make a ``DELETE`` request.
+
+    See :py:func:`treq.request`
+    """
     return _client(**kwargs).delete(url, **kwargs)
 
 
 def request(method, url, **kwargs):
+    """
+    Make an HTTP request.
+
+    :param str method: HTTP method. Example: ``'GET'``, ``'HEAD'``. ``'PUT'``, ``'POST'``.
+    :param str url: http or https URL, which may include query arguments.
+
+    :param headers: Optional HTTP Headers to send with this request.
+    :type headers: Headers or None
+
+    :param data: Optional request body.
+    :type data: str, file-like, IBodyProducer, or None
+
+    :param reactor: Optional twisted reactor.
+
+    :param bool persistent: Use peristent HTTP connections.  Default: ``True``
+    :param bool allow_redirects: Follow HTTP redirects.  Default: ``True``
+
+    :rtype: Deferred that fires with an IResponse provider.
+
+    """
     return _client(**kwargs).request(method, url, **kwargs)
 
 

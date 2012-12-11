@@ -12,7 +12,7 @@ env:
 
 install:
   - pip install $TWISTED --use-mirrors
-  - 'test -n "$PYOPENSSL" && pip install $PYOPENSSL'
+  - 'test -n "$PYOPENSSL" && pip install $PYOPENSSL || true'
   - pip install -r requirements-dev.txt --use-mirrors
 
 script:

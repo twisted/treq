@@ -14,9 +14,13 @@ env:
 matrix:
   allowed_failures:
     - python: pypy
-      env:
-        - TWISTED=Twisted==12.2.0 PYOPENSSL=PyOpenSSL
-        - TWISTED=Twisted==12.1.0 PYOPENSSL=PyOpenSSL
+      env: TWISTED=Twisted==12.2.0 PYOPENSSL=PyOpenSSL
+    - python: pypy
+      env: TWISTED=Twisted==12.1.0 PYOPENSSL=PyOpenSSL
+    - python: pypy
+      env: TWISTED=Twisted==12.2.0 PYOPENSSL=
+    - python: pypy
+      env: TWISTED=Twisted==12.1.0 PYOPENSSL=
 
 install:
   - pip install $TWISTED --use-mirrors

@@ -1,6 +1,4 @@
 Twisted>=12.1.0
 PyOpenSSL
-requests
-
 pyflakes
 pep8

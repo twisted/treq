@@ -2,6 +2,7 @@ from twisted.trial.unittest import TestCase
 from twisted.internet.defer import inlineCallbacks
 
 from treq.test.util import DEBUG, is_pypy
+
 import treq
 
 HTTPBIN_URL = "http://httpbin.org"
@@ -15,7 +16,7 @@ def print_response(response):
         print '---'
         print response.code
         print response.headers
-        text = yield response.text()
+        text = yield treq.text_content(response)
         print text
         print '---'
 
@@ -37,13 +38,13 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def assert_data(self, response, expected_data):
-        body = yield response.json()
+        body = yield treq.json_content(response)
         self.assertIn('data', body)
         self.assertEqual(body['data'], expected_data)
 
     @inlineCallbacks
     def assert_sent_header(self, response, header, expected_value):
-        body = yield response.json()
+        body = yield treq.json_content(response)
         self.assertIn(header, body['headers'])
         self.assertEqual(body['headers'][header], expected_value)
 
@@ -55,9 +56,9 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def test_get_headers(self):
-        response = yield self.get('/get', {'X-Blah': ['Foo']})
+        response = yield self.get('/get', {'X-Blah': ['Foo', 'Bar']})
         self.assertEqual(response.code, 200)
-        yield self.assert_sent_header(response, 'X-Blah', 'Foo')
+        yield self.assert_sent_header(response, 'X-Blah', 'Foo, Bar')
         yield print_response(response)
 
     @inlineCallbacks
@@ -75,7 +76,7 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_head(self):
         response = yield self.head('/get')
-        body = yield response.content()
+        body = yield treq.content(response)
         self.assertEqual('', body)
         yield print_response(response)
 
@@ -107,9 +108,9 @@ class TreqIntegrationTests(TestCase):
         )
 
         self.assertEqual(response.code, 200)
-        self.assert_sent_header(response, 'Content-Type', 'application/json')
-        self.assert_data(response, '{msg: "Hello!"}')
-
+        yield self.assert_sent_header(
+            response, 'Content-Type', 'application/json')
+        yield self.assert_data(response, '{msg: "Hello!"}')
         yield print_response(response)
 
     @inlineCallbacks

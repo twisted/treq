@@ -9,7 +9,7 @@ env:
   - TWISTED_VERSION=12.1.0
 
 install:
-  - pip install Twisted==$TWISTED_VERSION
+  - pip install Twisted==$TWISTED_VERSION --use-mirrors
   - pip install -r requirements-dev.txt --use-mirrors
 
 script:

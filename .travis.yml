@@ -5,10 +5,10 @@ python:
     #- pypy  # At the moment this segfaults are sort of terrible.
 
 env:
-  - TWISTED=Twisted==12.2.0
-  - TWISTED=Twisted==12.1.0
-  - PYOPENSSL=PyOpenSSL
-  - PYOPENSSL=
+  - TWISTED=Twisted==12.2.0 PYOPENSSL=PyOpenSSL
+  - TWISTED=Twisted==12.1.0 PYOPENSSL=PyOpenSSL
+  - TWISTED=Twisted==12.2.0 PYOPENSSL=
+  - TWISTED=Twisted==12.1.0 PYOPENSSL=
 
 install:
   - pip install $TWISTED --use-mirrors

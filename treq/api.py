@@ -50,7 +50,8 @@ def request(method, url, **kwargs):
     """
     Make an HTTP request.
 
-    :param str method: HTTP method. Example: ``'GET'``, ``'HEAD'``. ``'PUT'``, ``'POST'``.
+    :param str method: HTTP method. Example: ``'GET'``, ``'HEAD'``. ``'PUT'``,
+         ``'POST'``.
     :param str url: http or https URL, which may include query arguments.
 
     :param headers: Optional HTTP Headers to send with this request.

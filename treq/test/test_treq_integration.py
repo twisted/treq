@@ -1,9 +1,12 @@
 from twisted.trial.unittest import TestCase
 from twisted.internet.defer import inlineCallbacks
 
-from treq.test.util import DEBUG, HTTPBIN_URL, HTTPSBIN_URL, is_pypy
+from treq.test.util import DEBUG, is_pypy
 
 import treq
+
+HTTPBIN_URL = "http://httpbin.org"
+HTTPSBIN_URL = "https://httpbin.org"
 
 
 @inlineCallbacks

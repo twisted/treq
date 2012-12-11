@@ -12,7 +12,7 @@ env:
   - TWISTED=Twisted==12.1.0 PYOPENSSL=
 
 matrix:
-  allowed_failures:
+  allow_failures:
     - python: pypy
       env: TWISTED=Twisted==12.2.0 PYOPENSSL=PyOpenSSL
     - python: pypy

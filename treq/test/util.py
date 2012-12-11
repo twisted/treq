@@ -8,6 +8,6 @@ is_pypy = platform.python_implementation() == 'PyPy'
 
 try:
     import OpenSSL
-    has_ssl = OpenSSL != None
+    has_ssl = OpenSSL is not None
 except ImportError:
     has_ssl = False

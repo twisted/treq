@@ -131,5 +131,5 @@ class HTTPSTreqIntegrationTests(TreqIntegrationTests):
     if is_pypy:
         skip = "These tests segfault (or hang) on PyPy."
 
-    if has_ssl is None:
+    if not has_ssl:
         skip = "These tests require pyOpenSSL."

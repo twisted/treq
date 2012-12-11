@@ -1,14 +1,22 @@
 language: python
+
 python:
     - 2.6
     - 2.7
-    #- pypy  # At the moment this segfaults are sort of terrible.
+    - pypy
 
 env:
   - TWISTED=Twisted==12.2.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==12.1.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==12.2.0 PYOPENSSL=
   - TWISTED=Twisted==12.1.0 PYOPENSSL=
+
+matrix:
+  allowed_failures:
+    - python: pypy
+      env:
+        - TWISTED=Twisted==12.2.0 PYOPENSSL=PyOpenSSL
+        - TWISTED=Twisted==12.1.0 PYOPENSSL=PyOpenSSL
 
 install:
   - pip install $TWISTED --use-mirrors

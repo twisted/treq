@@ -7,8 +7,6 @@ from twisted.web.client import Agent, HTTPConnectionPool, RedirectAgent
 
 from twisted.python.components import registerAdapter
 
-from treq.response import Response
-
 
 def _from_bytes(orig_bytes):
     return FileBodyProducer(StringIO(orig_bytes))
@@ -82,5 +80,4 @@ class HTTPClient(object):
         d = self._agent.request(
             method, url, headers=headers, bodyProducer=bodyProducer)
 
-        d.addCallback(lambda r: Response(r, method))
         return d

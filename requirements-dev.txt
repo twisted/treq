@@ -1,4 +1,3 @@
 Twisted>=12.1.0
-PyOpenSSL
 pyflakes
 pep8

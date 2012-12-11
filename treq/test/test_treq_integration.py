@@ -1,7 +1,7 @@
 from twisted.trial.unittest import TestCase
 from twisted.internet.defer import inlineCallbacks
 
-from treq.test.util import DEBUG, is_pypy
+from treq.test.util import DEBUG, is_pypy, has_ssl
 
 import treq
 
@@ -130,3 +130,6 @@ class HTTPSTreqIntegrationTests(TreqIntegrationTests):
 
     if is_pypy:
         skip = "These tests segfault (or hang) on PyPy."
+
+    if not has_ssl:
+        skip = "These tests require pyOpenSSL."

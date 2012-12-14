@@ -10,6 +10,8 @@ env:
   - TWISTED=Twisted==12.1.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==12.2.0 PYOPENSSL=
   - TWISTED=Twisted==12.1.0 PYOPENSSL=
+  - TWISTED=http://twistedmatrix.com/~therve/12.3.0pre1/Twisted-12.3.0pre1.tar.bz2 PYOPENSSL=PyOpenSSL
+  - TWISTED=http://twistedmatrix.com/~therve/12.3.0pre1/Twisted-12.3.0pre1.tar.bz2 PYOPENSSL=
 
 matrix:
   allow_failures:

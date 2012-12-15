@@ -1,4 +1,4 @@
-Making Reqeusts
+Making Requests
 ===============
 
 .. module:: treq

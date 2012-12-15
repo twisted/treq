@@ -9,7 +9,7 @@ from twisted.web.client import ResponseDone
 
 
 def _encoding_from_headers(headers, default):
-    content_types = headers.getAllRawHeaders('content-type')
+    content_types = headers.getRawHeaders('content-type')
 
     if not content_types:
         return None
@@ -117,10 +117,10 @@ def text_content(response, encoding='ISO-8859-1'):
     :rtype: Deferred that fires with a unicode.
     """
     def _decode_content(c):
-        encoding = _encoding_from_headers(response.headers)
+        e = _encoding_from_headers(response.headers, encoding)
 
-        if encoding is not None:
-            return c.decode(encoding)
+        if e is not None:
+            return c.decode(e)
 
         return c
 

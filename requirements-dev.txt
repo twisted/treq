@@ -2,3 +2,4 @@ Twisted>=12.1.0
 pyflakes
 pep8
 sphinx
+mock

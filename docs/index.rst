@@ -16,9 +16,16 @@ Installation::
 
     pip install treq
 
-Basic get request:
+GET
++++
 
 .. literalinclude:: _examples/basic_get.py
+    :linenos:
+
+POST
+++++
+
+.. literalinclude:: _examples/basic_post.py
     :linenos:
 
 API Documentation

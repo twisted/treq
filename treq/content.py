@@ -8,10 +8,10 @@ from twisted.internet.protocol import Protocol
 from twisted.web.client import ResponseDone
 
 
-def _encoding_from_headers(headers, default):
+def _encoding_from_headers(headers):
     content_types = headers.getRawHeaders('content-type')
 
-    if not content_types:
+    if content_types is None:
         return None
 
     # This seems to be the choice browsers make when encountering multiple
@@ -20,9 +20,6 @@ def _encoding_from_headers(headers, default):
 
     if 'charset' in params:
         return params.get('charset').strip("'\"")
-
-    if content_type.startswith('text/'):
-        return default
 
 
 class _BodyCollector(Protocol):
@@ -117,12 +114,12 @@ def text_content(response, encoding='ISO-8859-1'):
     :rtype: Deferred that fires with a unicode.
     """
     def _decode_content(c):
-        e = _encoding_from_headers(response.headers, encoding)
+        e = _encoding_from_headers(response.headers)
 
         if e is not None:
             return c.decode(e)
 
-        return c
+        return c.decode(encoding)
 
     d = content(response)
     d.addCallback(_decode_content)

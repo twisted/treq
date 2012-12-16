@@ -121,3 +121,24 @@ class ContentTests(TestCase):
         self.protocol.connectionLost(Failure(ResponseDone()))
 
         self.successResultOf(d, u'\u2603')
+
+    def test_text_content_default_encoding_no_param(self):
+        self.response.headers = Headers(
+            {'Content-Type': ['text/plain']})
+
+        d = text_content(self.response)
+
+        self.protocol.dataReceived('\xa1')
+        self.protocol.connectionLost(Failure(ResponseDone()))
+
+        self.successResultOf(d, u'\xa1')
+
+    def test_text_content_default_encoding_no_header(self):
+        self.response.headers = Headers()
+
+        d = text_content(self.response)
+
+        self.protocol.dataReceived('\xa1')
+        self.protocol.connectionLost(Failure(ResponseDone()))
+
+        self.successResultOf(d, u'\xa1')

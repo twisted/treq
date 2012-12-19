@@ -4,6 +4,7 @@ from twisted.internet import reactor
 
 import treq
 
+
 def print_response(r):
     print(r.code, r.phrase)
     print(r.headers)

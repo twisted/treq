@@ -1,7 +1,8 @@
 Handling Streaming Responses
 ----------------------------
 
-In addition to `receiving responses <http://twistedmatrix.com/documents/current/web/howto/client.html#auto4>`_ with ``IResponse.deliverBody``.
+In addition to `receiving responses <http://twistedmatrix.com/documents/current/web/howto/client.html#auto4>`_
+with ``IResponse.deliverBody``.
 
 treq provides a helper function :py:func:`treq.collect` which takes a
 ``response``, and a single argument function which will be called with all new
@@ -13,4 +14,21 @@ Here is an example which simply a ``file`` object's write method to
 :py:func:`treq.collect` to save the response body to a file.
 
 .. literalinclude:: _examples/download_file.py
+    :linenos:
+
+
+Query Parameters
+----------------
+
+:py:func:`treq.request` supports a ``params`` keyword argument which will
+be urlencoded and added to the ``url`` argument in addition to any query
+parameters that may already exist.
+
+The ``params`` argument may be either a ``dict`` or a ``list`` of
+``(key, value)`` tuples.
+
+If it is a ``dict`` then the values in the dict may either be a ``str`` value
+or a ``list`` of ``str`` values.
+
+.. literalinclude:: _examples/query_params.py
     :linenos:

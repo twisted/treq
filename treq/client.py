@@ -1,6 +1,6 @@
 from StringIO import StringIO
 
-from urlparse import urlparse, parse_qsl, urlunparse
+from urlparse import urlparse, urlunparse
 from urllib import urlencode
 
 from twisted.web.http_headers import Headers
@@ -95,7 +95,6 @@ class HTTPClient(object):
         if params:
             url = _combine_query_params(url, params)
 
-
         headers = kwargs.get('headers')
 
         if headers:
@@ -118,11 +117,11 @@ class HTTPClient(object):
                 data = list(_flatten_param_dict(data))
 
             if isinstance(data, list):
-                headers.setRawHeaders('content-type', ['application/x-www-form-urlencoded'])
+                headers.setRawHeaders(
+                    'content-type', ['application/x-www-form-urlencoded'])
                 data = urlencode(data)
 
             bodyProducer = IBodyProducer(data)
-
 
         d = self._agent.request(
             method, url, headers=headers, bodyProducer=bodyProducer)

@@ -57,6 +57,12 @@ def request(method, url, **kwargs):
     :param headers: Optional HTTP Headers to send with this request.
     :type headers: Headers or None
 
+    :param params: Optional paramters to be append as the query string to
+        the URL, any query string parameters in the URL already will be
+        preserved.
+
+    :type params: dict w/ str or list of str values, list of 2-tuples, or None.
+
     :param data: Optional request body.
     :type data: str, file-like, IBodyProducer, or None
 

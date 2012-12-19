@@ -1,11 +1,42 @@
 from StringIO import StringIO
 
+from urlparse import urlparse, parse_qsl, urlunparse
+from urllib import urlencode
+
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer
 from twisted.web.client import FileBodyProducer
 from twisted.web.client import Agent, HTTPConnectionPool, RedirectAgent
 
 from twisted.python.components import registerAdapter
+
+
+def _flatten_param_dict(params):
+    for key, values_or_value in params.iteritems():
+        if isinstance(values_or_value, list):
+            for value in values_or_value:
+                yield (key, value)
+
+        else:
+            yield (key, values_or_value)
+
+
+def _combine_query_params(url, params):
+    parsed_url = urlparse(url)
+
+    qs = []
+
+    if parsed_url.query:
+        qs.extend([parsed_url.query, '&'])
+
+    if isinstance(params, dict):
+        params = list(_flatten_param_dict(params))
+
+    qs.append(urlencode(params))
+
+    return urlunparse((parsed_url[0], parsed_url[1],
+                       parsed_url[2], parsed_url[3],
+                       ''.join(qs), parsed_url[5]))
 
 
 def _from_bytes(orig_bytes):
@@ -60,22 +91,38 @@ class HTTPClient(object):
     def request(self, method, url, **kwargs):
         method = method.upper()
 
-        data = kwargs.get('data')
-        bodyProducer = None
-        if data:
-            bodyProducer = IBodyProducer(data)
+        params = kwargs.get('params')
+        if params:
+            url = _combine_query_params(url, params)
+
 
         headers = kwargs.get('headers')
+
         if headers:
             if isinstance(headers, dict):
                 h = Headers({})
                 for k, v in headers.iteritems():
                     if isinstance(v, str):
-                        h.addRawHeaders(k, v)
+                        h.addRawHeader(k, v)
                     else:
                         h.setRawHeaders(k, v)
 
                 headers = h
+        else:
+            headers = Headers({})
+
+        data = kwargs.get('data')
+        bodyProducer = None
+        if data:
+            if isinstance(data, dict):
+                data = list(_flatten_param_dict(data))
+
+            if isinstance(data, list):
+                headers.setRawHeaders('content-type', ['application/x-www-form-urlencoded'])
+                data = urlencode(data)
+
+            bodyProducer = IBodyProducer(data)
+
 
         d = self._agent.request(
             method, url, headers=headers, bodyProducer=bodyProducer)

@@ -1,10 +1,11 @@
 import mock
 
-from twisted.trial.unittest import TestCase
 from twisted.python.failure import Failure
 
 from twisted.web.http_headers import Headers
 from twisted.web.client import ResponseDone, ResponseFailed
+
+from treq.test.util import TestCase
 
 from treq import collect, content, json_content, text_content
 
@@ -18,24 +19,6 @@ class ContentTests(TestCase):
             self.protocol = protocol
 
         self.response.deliverBody.side_effect = deliverBody
-
-    def successResultOf(self, d, expected):
-        results = []
-        d.addBoth(results.append)
-
-        if isinstance(results[0], Failure):
-            results[0].raiseException()
-
-        self.assertEqual(results[0], expected)
-
-    def failureResultOf(self, d, errorType):
-        results = []
-        d.addBoth(results.append)
-
-        if not isinstance(results[0], Failure):
-            self.fail("Expected {0} got {1}.".format(errorType, results[0]))
-
-        self.assertTrue(results[0].check(errorType))
 
     def test_collect(self):
         data = []

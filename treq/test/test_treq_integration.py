@@ -1,5 +1,6 @@
 from twisted.trial.unittest import TestCase
 from twisted.internet.defer import inlineCallbacks
+from twisted.web.http_headers import Headers
 
 from treq.test.util import DEBUG, is_pypy, has_ssl
 
@@ -96,7 +97,7 @@ class TreqIntegrationTests(TestCase):
     def test_post(self):
         response = yield self.post('/post', 'Hello!')
         self.assertEqual(response.code, 200)
-        self.assert_data(response, 'Hello!')
+        yield self.assert_data(response, 'Hello!')
         yield print_response(response)
 
     @inlineCallbacks
@@ -123,6 +124,14 @@ class TreqIntegrationTests(TestCase):
         response = yield self.delete('/delete')
         self.assertEqual(response.code, 200)
         yield print_response(response)
+
+    @inlineCallbacks
+    def test_gzip(self):
+        response = yield self.get('/gzip')
+        self.assertEqual(response.code, 200)
+        yield print_response(response)
+        json = yield treq.json_content(response)
+        self.assertTrue(json['gzipped'])
 
 
 class HTTPSTreqIntegrationTests(TreqIntegrationTests):

@@ -5,10 +5,19 @@ from urllib import urlencode
 
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer
-from twisted.web.client import FileBodyProducer
-from twisted.web.client import Agent, HTTPConnectionPool, RedirectAgent
+
+from twisted.web.client import (
+    Agent,
+    FileBodyProducer,
+    HTTPConnectionPool,
+    RedirectAgent,
+    ContentDecoderAgent,
+    GzipDecoder
+)
 
 from twisted.python.components import registerAdapter
+
+from treq.gzip import GzipEncoder
 
 
 def _flatten_param_dict(params):
@@ -70,6 +79,8 @@ class HTTPClient(object):
 
         if kwargs.get('allow_redirects', True):
             agent = RedirectAgent(agent)
+
+        agent = ContentDecoderAgent(agent, [('gzip', GzipDecoder)])
 
         return cls(agent)
 

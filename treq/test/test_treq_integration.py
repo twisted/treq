@@ -1,6 +1,5 @@
 from twisted.trial.unittest import TestCase
 from twisted.internet.defer import inlineCallbacks
-from twisted.web.http_headers import Headers
 
 from treq.test.util import DEBUG, is_pypy, has_ssl
 

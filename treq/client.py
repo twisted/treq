@@ -17,8 +17,6 @@ from twisted.web.client import (
 
 from twisted.python.components import registerAdapter
 
-from treq.gzip import GzipEncoder
-
 
 def _flatten_param_dict(params):
     for key, values_or_value in params.iteritems():

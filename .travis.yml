@@ -18,6 +18,8 @@ env:
 matrix:
   allow_failures:
     - python: pypy
+      env: TWISTED=svn+svn://svn.twistedmatrix.com/svn/Twisted/trunk PYOPENSSL=PyOpenSSL
+    - python: pypy
       env: TWISTED=Twisted==12.3.0 PYOPENSSL=PyOpenSSL
     - python: pypy
       env: TWISTED=Twisted==12.2.0 PYOPENSSL=PyOpenSSL

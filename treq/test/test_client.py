@@ -97,7 +97,9 @@ class HTTPClientTests(TestCase):
 
     def test_request_data_file(self):
         temp_fn = self.mktemp()
-        file(temp_fn, 'w').write('hello')
+
+        with open(temp_fn, "w") as temp_file:
+            temp_file.write('hello')
 
         self.client.request('POST', 'http://example.com/', data=file(temp_fn))
 

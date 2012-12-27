@@ -6,6 +6,7 @@ from twisted.web.http_headers import Headers
 from treq.test.util import TestCase
 from treq.auth import RequestHeaderSettingAgent, add_auth
 
+
 class RequestHeaderSettingAgentTests(TestCase):
     def setUp(self):
         self.agent = mock.Mock(Agent)

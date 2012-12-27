@@ -13,9 +13,11 @@ simply call your collector function with any data that is currently available.
 Here is an example which simply a ``file`` object's write method to
 :py:func:`treq.collect` to save the response body to a file.
 
-.. literalinclude:: _examples/download_file.py
+.. literalinclude:: examples/download_file.py
     :linenos:
+    :lines: 6-11
 
+Full example: :download:`download_file.py <examples/download_file.py>`
 
 Query Parameters
 ----------------
@@ -30,8 +32,11 @@ The ``params`` argument may be either a ``dict`` or a ``list`` of
 If it is a ``dict`` then the values in the dict may either be a ``str`` value
 or a ``list`` of ``str`` values.
 
-.. literalinclude:: _examples/query_params.py
+.. literalinclude:: examples/query_params.py
     :linenos:
+    :lines: 7-37
+
+Full example: :download:`download_file.py <examples/download_file.py>`
 
 
 Auth
@@ -42,7 +47,10 @@ passing an ``auth`` keyword argument to any of the request functions.
 
 The ``auth`` argument should be a tuple of the form ``('username', 'password')``.
 
-.. literalinclude:: _examples/basic_auth.py
+.. literalinclude:: examples/basic_auth.py
     :linenos:
+    :lines: 7-13
+
+Full example: :download:`download_file.py <examples/download_file.py>`
 
 .. _RFC 2617: http://www.ietf.org/rfc/rfc2617.txt

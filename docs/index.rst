@@ -10,14 +10,16 @@ Release v\ |release|.
 
 treq depends on ``Twisted>=12.1.0`` and optionally pyOpenSSL.
 
+All example code depends on ``Twisted>=12.3.0``.
+
 Why?
 ----
 
 `requests`_ by `Kenneth Reitz`_ is a wonderful library.  I want the same
-ease of use when writing Twisted applications.  `treq` is not of course a
+ease of use when writing Twisted applications.  treq is not of course a
 perfect clone of `requests`.  I have tried to stay true to the do-what-i-mean
 spirit of the `requests` API and also kept the API familiar to users of
-`Twisted`_ and ``twisted.web.client.Agent`` on which `treq` is based.
+`Twisted`_ and ``twisted.web.client.Agent`` on which treq is based.
 
 .. _requests: http://python-requests.org/
 .. _Kenneth Reitz: https://www.gittip.com/kennethreitz/
@@ -32,14 +34,20 @@ Installation::
 GET
 +++
 
-.. literalinclude:: _examples/basic_get.py
+.. literalinclude:: examples/basic_get.py
     :linenos:
+    :lines: 7-11
+
+Full example: :download:`basic_get.py <examples/basic_get.py>`
 
 POST
 ++++
 
-.. literalinclude:: _examples/basic_post.py
+.. literalinclude:: examples/basic_post.py
     :linenos:
+    :lines: 9-14
+
+Full example: :download:`basic_post.py <examples/basic_post.py>`
 
 Howto
 -----

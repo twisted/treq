@@ -1,11 +1,11 @@
-from twisted.internet import reactor
+from twisted.internet.task import react
 from twisted.internet.defer import inlineCallbacks
 
 import treq
 
 
 @inlineCallbacks
-def _do():
+def main(reactor):
     print 'List of tuples'
     resp = yield treq.get('http://httpbin.org/get',
                           params=[('foo', 'bar'), ('baz', 'bax')])
@@ -36,7 +36,4 @@ def _do():
     content = yield treq.content(resp)
     print content
 
-    reactor.stop()
-
-reactor.callWhenRunning(_do)
-reactor.run()
+react(main, [])

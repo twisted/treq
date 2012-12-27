@@ -32,3 +32,17 @@ or a ``list`` of ``str`` values.
 
 .. literalinclude:: _examples/query_params.py
     :linenos:
+
+
+Auth
+----
+
+HTTP Basic authentication as specified in `RFC 2617`_ is easily supported by
+passing an ``auth`` keyword argument to any of the request functions.
+
+The ``auth`` argument should be a tuple of the form ``('username', 'password')``.
+
+.. literalinclude:: _examples/basic_auth.py
+    :linenos:
+
+.. _RFC 2617: http://www.ietf.org/rfc/rfc2617.txt

@@ -22,9 +22,40 @@ Twisted.
     >>> reactor.run()
     200
 
+For more info [read the docs](http://treq.readthedocs.org).
+
 Contribute
 ==========
 
 `treq` is hosted on [GitHub](http://www.github.com/dreid/treq).
 
 Feel free to fork and send contributions over.
+
+Developing
+==========
+
+Install dependencies:
+
+    pip install -r requirements-dev.txt
+
+
+Optionally install PyOpenSSL:
+
+    pip install PyOpenSSL
+
+
+Run Tests (unit & integration):
+
+    trial treq
+
+
+Lint:
+
+    pep8 treq
+    pyflakes treq
+
+
+Build docs:
+
+    cd docs; make html
+

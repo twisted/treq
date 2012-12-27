@@ -71,6 +71,9 @@ def request(method, url, **kwargs):
     :param bool persistent: Use peristent HTTP connections.  Default: ``True``
     :param bool allow_redirects: Follow HTTP redirects.  Default: ``True``
 
+    :param auth: HTTP Basic Authentication information.
+    :type auth: tuple of ('username', 'password').
+
     :rtype: Deferred that fires with an IResponse provider.
 
     """

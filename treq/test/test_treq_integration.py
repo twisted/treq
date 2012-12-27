@@ -132,6 +132,23 @@ class TreqIntegrationTests(TestCase):
         json = yield treq.json_content(response)
         self.assertTrue(json['gzipped'])
 
+    @inlineCallbacks
+    def test_basic_auth(self):
+        response = yield self.get('/basic-auth/treq/treq',
+                                  auth=('treq', 'treq'))
+        self.assertEqual(response.code, 200)
+        yield print_response(response)
+        json = yield treq.json_content(response)
+        self.assertTrue(json['authenticated'])
+        self.assertEqual(json['user'], 'treq')
+
+    @inlineCallbacks
+    def test_failed_basic_auth(self):
+        response = yield self.get('/basic-auth/treq/treq',
+                                  auth=('not-treq', 'not-treq'))
+        self.assertEqual(response.code, 401)
+        yield print_response(response)
+
 
 class HTTPSTreqIntegrationTests(TreqIntegrationTests):
     baseurl = HTTPSBIN_URL

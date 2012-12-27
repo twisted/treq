@@ -17,6 +17,8 @@ from twisted.web.client import (
 
 from twisted.python.components import registerAdapter
 
+from treq.auth import add_auth
+
 
 def _flatten_param_dict(params):
     for key, values_or_value in params.iteritems():
@@ -79,6 +81,10 @@ class HTTPClient(object):
             agent = RedirectAgent(agent)
 
         agent = ContentDecoderAgent(agent, [('gzip', GzipDecoder)])
+
+        auth = kwargs.get('auth')
+        if auth:
+            agent = add_auth(agent, auth)
 
         return cls(agent)
 

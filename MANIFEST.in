@@ -1,1 +1,3 @@
 include treq/_version
+include README.rst
+include LICENSE

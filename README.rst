@@ -1,11 +1,7 @@
 treq
 ====
 
-.. raw:: html
-
-    <a href="http://travis-ci.org/dreid/treq">
-        <img src="https://secure.travis-ci.org/dreid/treq.png?branch=master">
-    </a>
+|build|_
 
 ``treq`` is an HTTP library inspired by
 `requests <http://www.python-requests.org>`_ but written on top of
@@ -71,3 +67,6 @@ Build docs:
 ::
 
     cd docs; make html
+
+.. |build| image:: https://secure.travis-ci.org/dreid/treq.png?branch=master
+.. _build: http://travis-ci.org/dreid/treq

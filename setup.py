@@ -26,6 +26,7 @@ setup(
     install_requires=["Twisted >= 12.1.0"],
     package_data={"treq" : ["_version"]},
     author="David Reid",
+    author_email="dreid@dreid.org",
     classifiers=classifiers,
     description="A requests-like API built on top of twisted.web's Agent",
     license="MIT/X",

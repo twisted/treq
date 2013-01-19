@@ -68,23 +68,26 @@ class ContentTests(TestCase):
 
     def test_content_cached(self):
         d1 = content(self.response)
+        d2 = content(self.response)
 
         self.protocol.dataReceived('foo')
         self.protocol.dataReceived('bar')
         self.protocol.connectionLost(Failure(ResponseDone()))
 
         self.successResultOf(d1, 'foobar')
+        self.successResultOf(d2, 'foobar')
 
         def _fail_deliverBody(protocol):
             self.fail("deliverBody unexpectedly called.")
 
         self.response.deliverBody.side_effect = _fail_deliverBody
 
-        d2 = content(self.response)
+        d3 = content(self.response)
 
-        self.successResultOf(d2, 'foobar')
+        self.successResultOf(d3, 'foobar')
 
         self.assertNotIdentical(d1, d2)
+        self.assertNotIdentical(d1, d3)
 
     def test_json_content(self):
         d = json_content(self.response)

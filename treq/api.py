@@ -37,6 +37,15 @@ def put(url, data=None, **kwargs):
     return _client(**kwargs).put(url, data=data, **kwargs)
 
 
+def patch(url, data=None, **kwargs):
+    """
+    Make a ``PATCH`` request.
+
+    See :py:func:`treq.request`
+    """
+    return _client(**kwargs).patch(url, data=data, **kwargs)
+
+
 def delete(url, **kwargs):
     """
     Make a ``DELETE`` request.

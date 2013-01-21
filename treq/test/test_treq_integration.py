@@ -34,6 +34,7 @@ class TreqIntegrationTests(TestCase):
     head = with_baseurl(treq.head)
     post = with_baseurl(treq.post)
     put = with_baseurl(treq.put)
+    patch = with_baseurl(treq.patch)
     delete = with_baseurl(treq.delete)
 
     @inlineCallbacks
@@ -116,6 +117,11 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_put(self):
         response = yield self.put('/put', data='Hello!')
+        yield print_response(response)
+
+    @inlineCallbacks
+    def test_patch(self):
+        response = yield self.patch('/patch', data='Hello!')
         yield print_response(response)
 
     @inlineCallbacks

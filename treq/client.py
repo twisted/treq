@@ -94,6 +94,9 @@ class HTTPClient(object):
     def put(self, url, data=None, **kwargs):
         return self.request('PUT', url, data=data, **kwargs)
 
+    def patch(self, url, data=None, **kwargs):
+        return self.request('PATCH', url, data=data, **kwargs)
+
     def post(self, url, data=None, **kwargs):
         return self.request('POST', url, data=data, **kwargs)
 

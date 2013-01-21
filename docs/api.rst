@@ -8,6 +8,7 @@ Making Requests
 .. autofunction:: head
 .. autofunction:: post
 .. autofunction:: put
+.. autofunction:: patch
 .. autofunction:: delete
 
 Accessing Content

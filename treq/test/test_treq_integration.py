@@ -122,6 +122,8 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_patch(self):
         response = yield self.patch('/patch', data='Hello!')
+        self.assertEqual(response.code, 200)
+        yield self.assert_data(response, 'Hello!')
         yield print_response(response)
 
     @inlineCallbacks

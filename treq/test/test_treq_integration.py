@@ -207,6 +207,21 @@ class TreqIntegrationTests(TestCase):
         self.assertEqual(response.code, 401)
         yield print_response(response)
 
+    @inlineCallbacks
+    def test_cookie(self):
+        response = yield self.get('/cookies', cookies={'hello': 'there'})
+        self.assertEqual(response.code, 200)
+        yield print_response(response)
+        json = yield treq.json_content(response)
+        self.assertEqual(json['cookies']['hello'], 'there')
+
+    @inlineCallbacks
+    def test_set_cookie(self):
+        response = yield self.get('/cookies/set', allow_redirects=False, params={'hello': 'there'})
+        #self.assertEqual(response.code, 200)
+        yield print_response(response)
+        self.assertEqual(treq.cookies(response)['hello'], 'there')
+
 
 class HTTPSTreqIntegrationTests(TreqIntegrationTests):
     baseurl = HTTPSBIN_URL

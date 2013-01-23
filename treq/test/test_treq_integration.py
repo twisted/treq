@@ -1,5 +1,10 @@
 from twisted.trial.unittest import TestCase
 from twisted.internet.defer import inlineCallbacks
+from twisted.internet.task import deferLater
+from twisted.internet import reactor
+from twisted.internet.tcp import Client
+
+from twisted.web.client import HTTPConnectionPool
 
 from treq.test.util import DEBUG, is_pypy, has_ssl
 
@@ -23,7 +28,7 @@ def print_response(response):
 
 def with_baseurl(method):
     def _request(self, url, *args, **kwargs):
-        return method(self.baseurl + url, *args, persistent=False, **kwargs)
+        return method(self.baseurl + url, *args, pool=self.pool, **kwargs)
 
     return _request
 
@@ -35,6 +40,22 @@ class TreqIntegrationTests(TestCase):
     post = with_baseurl(treq.post)
     put = with_baseurl(treq.put)
     delete = with_baseurl(treq.delete)
+
+    def setUp(self):
+        self.pool = HTTPConnectionPool(reactor, False)
+
+    def tearDown(self):
+        def _check_fds(_):
+            # This appears to only be necessary for HTTPS tests.
+            # For the normal HTTP tests then closeCachedConnections is
+            # sufficient.
+            fds = set(reactor.getReaders() + reactor.getReaders())
+            if not [fd for fd in fds if isinstance(fd, Client)]:
+                return
+
+            return deferLater(reactor, 0, _check_fds, None)
+
+        return self.pool.closeCachedConnections().addBoth(_check_fds)
 
     @inlineCallbacks
     def assert_data(self, response, expected_data):

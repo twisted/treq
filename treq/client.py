@@ -71,11 +71,12 @@ class HTTPClient(object):
         if not reactor:
             from twisted.internet import reactor
 
-        agent = Agent(
-            reactor,
-            pool=HTTPConnectionPool(
-                reactor,
-                persistent=kwargs.get('persistent', True)))
+        pool = kwargs.get('pool')
+        if not pool:
+            persistent = kwargs.get('persistent', True)
+            pool = HTTPConnectionPool(reactor, persitent=persistent)
+
+        agent = Agent(reactor, pool=pool)
 
         if kwargs.get('allow_redirects', True):
             agent = RedirectAgent(agent)

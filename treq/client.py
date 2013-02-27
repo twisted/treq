@@ -116,7 +116,7 @@ class HTTPClient(object):
         data = kwargs.get('data')
         bodyProducer = None
         if data:
-            if isinstance(data, (dict, list)):
+            if isinstance(data, (dict, list, tuple)):
                 headers.setRawHeaders(
                     'content-type', ['application/x-www-form-urlencoded'])
                 data = urlencode(data, doseq=True)

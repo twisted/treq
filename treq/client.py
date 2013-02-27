@@ -20,16 +20,6 @@ from twisted.python.components import registerAdapter
 from treq.auth import add_auth
 
 
-def _flatten_param_dict(params):
-    for key, values_or_value in params.iteritems():
-        if isinstance(values_or_value, list):
-            for value in values_or_value:
-                yield (key, value)
-
-        else:
-            yield (key, values_or_value)
-
-
 def _combine_query_params(url, params):
     parsed_url = urlparse(url)
 
@@ -38,10 +28,7 @@ def _combine_query_params(url, params):
     if parsed_url.query:
         qs.extend([parsed_url.query, '&'])
 
-    if isinstance(params, dict):
-        params = list(_flatten_param_dict(params))
-
-    qs.append(urlencode(params))
+    qs.append(urlencode(params, doseq=True))
 
     return urlunparse((parsed_url[0], parsed_url[1],
                        parsed_url[2], parsed_url[3],
@@ -129,13 +116,10 @@ class HTTPClient(object):
         data = kwargs.get('data')
         bodyProducer = None
         if data:
-            if isinstance(data, dict):
-                data = list(_flatten_param_dict(data))
-
-            if isinstance(data, list):
+            if isinstance(data, (dict, list)):
                 headers.setRawHeaders(
                     'content-type', ['application/x-www-form-urlencoded'])
-                data = urlencode(data)
+                data = urlencode(data, doseq=True)
 
             bodyProducer = IBodyProducer(data)
 

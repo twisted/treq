@@ -57,18 +57,19 @@ def request(method, url, **kwargs):
     :param headers: Optional HTTP Headers to send with this request.
     :type headers: Headers or None
 
-    :param params: Optional paramters to be append as the query string to
+    :param params: Optional parameters to be append as the query string to
         the URL, any query string parameters in the URL already will be
         preserved.
 
-    :type params: dict w/ str or list of str values, list of 2-tuples, or None.
+    :type params: dict w/ str or list/tuple of str values, list of 2-tuples, or
+        None.
 
     :param data: Optional request body.
     :type data: str, file-like, IBodyProducer, or None
 
     :param reactor: Optional twisted reactor.
 
-    :param bool persistent: Use peristent HTTP connections.  Default: ``True``
+    :param bool persistent: Use persistent HTTP connections.  Default: ``True``
     :param bool allow_redirects: Follow HTTP redirects.  Default: ``True``
 
     :param auth: HTTP Basic Authentication information.

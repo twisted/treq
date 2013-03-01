@@ -18,3 +18,8 @@ Accessing Content
 .. autofunction:: content
 .. autofunction:: text_content
 .. autofunction:: json_content
+
+Cookies
+=======
+
+.. autofunction:: cookies

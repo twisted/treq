@@ -30,6 +30,14 @@ _cookie_jars = WeakKeyDictionary()
 
 
 def cookies(response):
+    """
+    Returns a dictionary-like CookieJar based on the cookies from the
+    response.
+
+    :param IResponse response:
+
+    :rtype: CookieJar
+    """
     jar = cookiejar_from_dict({})
 
     resp_jar = _cookie_jars.get(response, None)

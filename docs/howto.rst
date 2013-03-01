@@ -36,7 +36,7 @@ or a ``list`` of ``str`` values.
     :linenos:
     :lines: 7-37
 
-Full example: :download:`download_file.py <examples/download_file.py>`
+Full example: :download:`query_params.py <examples/query_params.py>`
 
 
 Auth
@@ -51,6 +51,23 @@ The ``auth`` argument should be a tuple of the form ``('username', 'password')``
     :linenos:
     :lines: 7-13
 
-Full example: :download:`download_file.py <examples/download_file.py>`
+Full example: :download:`basic_auth.py <examples/basic_auth.py>`
 
 .. _RFC 2617: http://www.ietf.org/rfc/rfc2617.txt
+
+
+Cookies
+-------
+
+Cookies can be set by passing a ``dict`` or ``cookielib.CookieJar`` instance
+via the ``cookies`` keyword argument.  Later cookies set by the server can be
+retrieved using the :py:func:`treq.cookies` function.
+
+The the object returned by :py:func:`treq.cookies` supports the same key/value
+access as `requests cookies <http://requests.readthedocs.org/en/latest/user/quickstart/#cookies>`_
+
+.. literalinclude:: examples/using_cookies.py
+    :linenos:
+    :lines: 7-20
+
+Full example: :download:`using_cookies.py <examples/using_cookies.py>`

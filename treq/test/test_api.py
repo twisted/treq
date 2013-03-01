@@ -5,6 +5,7 @@ from treq.test.util import TestCase
 import treq
 from treq._utils import set_global_pool
 
+
 class TreqAPITests(TestCase):
     def setUp(self):
         set_global_pool(None)

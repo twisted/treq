@@ -14,7 +14,7 @@ def default_reactor(reactor):
     return reactor
 
 
-_global_pool = [None,]
+_global_pool = [None]
 
 
 def get_global_pool():

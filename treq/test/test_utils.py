@@ -4,6 +4,7 @@ from treq.test.util import TestCase
 
 from treq._utils import default_reactor, default_pool, set_global_pool
 
+
 class DefaultReactorTests(TestCase):
     def test_passes_reactor(self):
         mock_reactor = mock.Mock()
@@ -74,4 +75,3 @@ class DefaultPoolTests(TestCase):
         )
 
         self.HTTPConnectionPool.assert_not_called()
-

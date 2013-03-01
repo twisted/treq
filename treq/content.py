@@ -60,6 +60,7 @@ def collect(response, collector):
 
 
 _content_cache = WeakKeyDictionary()
+_content_waiters = WeakKeyDictionary()
 
 
 def content(response):
@@ -75,12 +76,20 @@ def content(response):
     """
     if response in _content_cache:
         return succeed(_content_cache[response])
+    if response in _content_waiters:
+        d = Deferred()
+        _content_waiters[response].append(d)
+        return d
 
     def _cache_content(c):
         _content_cache[response] = c
+        for d in _content_waiters[response]:
+            d.callback(c)
+        del _content_waiters[response]
         return c
 
     _content = []
+    _content_waiters[response] = []
     d = collect(response, _content.append)
     d.addCallback(lambda _: ''.join(_content))
     d.addCallback(_cache_content)

@@ -80,9 +80,21 @@ class ContentTests(TestCase):
 
         self.response.deliverBody.side_effect = _fail_deliverBody
 
+        d3 = content(self.response)
+
+        self.successResultOf(d3, 'foobar')
+
+        self.assertNotIdentical(d1, d3)
+
+    def test_content_multiple_waiters(self):
+        d1 = content(self.response)
         d2 = content(self.response)
 
-        self.successResultOf(d2, 'foobar')
+        self.protocol.dataReceived('foo')
+        self.protocol.connectionLost(Failure(ResponseDone()))
+
+        self.successResultOf(d1, 'foo')
+        self.successResultOf(d2, 'foo')
 
         self.assertNotIdentical(d1, d2)
 

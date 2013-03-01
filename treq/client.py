@@ -34,9 +34,9 @@ def cookies(response):
     Returns a dictionary-like CookieJar based on the cookies from the
     response.
 
-    :param IResponse response:
+    :param IResponse response: The HTTP response that has some cookies.
 
-    :rtype: CookieJar
+    :rtype: a dictionary-like :py:class:`cookielib.CookieJar`
     """
     jar = cookiejar_from_dict({})
 

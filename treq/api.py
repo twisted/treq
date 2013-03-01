@@ -83,7 +83,11 @@ def request(method, url, **kwargs):
     :param bool allow_redirects: Follow HTTP redirects.  Default: ``True``
 
     :param auth: HTTP Basic Authentication information.
-    :type auth: tuple of ('username', 'password').
+    :type auth: tuple of ``('username', 'password')``.
+
+    :param cookies: Cookies to send with this request.  The HTTP kind, not the
+        tasty kind.
+    :type cookies: ``dict`` or ``cookielib.CookieJar``
 
     :rtype: Deferred that fires with an IResponse provider.
 

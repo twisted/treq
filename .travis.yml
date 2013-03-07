@@ -36,6 +36,6 @@ install:
   - pip install -r requirements-dev.txt --use-mirrors
 
 script:
-  - pep8 treq
+  - pep8 --exclude=_cookies.py treq
   - pyflakes treq
   - trial treq

@@ -217,7 +217,9 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def test_set_cookie(self):
-        response = yield self.get('/cookies/set', allow_redirects=False, params={'hello': 'there'})
+        response = yield self.get('/cookies/set',
+                                  allow_redirects=False,
+                                  params={'hello': 'there'})
         #self.assertEqual(response.code, 200)
         yield print_response(response)
         self.assertEqual(treq.cookies(response)['hello'], 'there')

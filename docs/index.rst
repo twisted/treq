@@ -62,7 +62,7 @@ not enough code could be shared between `requests`_ and treq for it to be worth
 the effort to translate many of the usage patterns from `requests`_.
 
 With the current version of treq I have tried to keep the API simple, yet
-remain familiar to users of Twisted and it's lower-level HTTP libraries.
+remain familiar to users of Twisted and its lower-level HTTP libraries.
 
 
 Feature Parity w/ Requests

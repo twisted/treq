@@ -1,3 +1,4 @@
+from io import BytesIO
 from StringIO import StringIO
 
 from urlparse import urlparse, urlunparse
@@ -18,6 +19,7 @@ from twisted.web.client import (
 from twisted.python.components import registerAdapter
 
 from treq.auth import add_auth
+from treq.multipart import MultiPartProducer
 
 
 def _combine_query_params(url, params):
@@ -46,6 +48,7 @@ def _from_file(orig_file):
 registerAdapter(_from_bytes, str, IBodyProducer)
 registerAdapter(_from_file, file, IBodyProducer)
 registerAdapter(_from_file, StringIO, IBodyProducer)
+registerAdapter(_from_file, BytesIO, IBodyProducer)
 
 
 class HTTPClient(object):
@@ -61,7 +64,7 @@ class HTTPClient(object):
         pool = kwargs.get('pool')
         if not pool:
             persistent = kwargs.get('persistent', True)
-            pool = HTTPConnectionPool(reactor, persitent=persistent)
+            pool = HTTPConnectionPool(reactor, persistent=persistent)
 
         agent = Agent(reactor, pool=pool)
 
@@ -123,6 +126,9 @@ class HTTPClient(object):
                 headers.setRawHeaders(
                     'content-type', ['application/x-www-form-urlencoded'])
                 data = urlencode(data, doseq=True)
+            elif isinstance(data, MultiPartProducer):
+                headers.setRawHeaders(
+                    'content-type', ['multipart/form-data; boundary=%s'% (data.boundary,)])
 
             bodyProducer = IBodyProducer(data)
 

@@ -1,0 +1,21 @@
+Treq Integration
+----------------
+
+These are integraton tests that test treq against webzoo:
+
+http://github.com/klizhentas/webzoo
+
+Installation
+------------
+* Install webzoo and launch images with frameworks you'd wish to test against.
+* Install treq and everything needed for it
+
+Usage
+-----
+> python run.py
+
+What happens:
+
+* run.py will inspect current running images of webzoo and their port mappings.
+* later it will execute tests in file test_treq.py using trial against
+ every image, providing TREQ_PORT to file test_treq.py

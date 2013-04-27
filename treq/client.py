@@ -18,6 +18,7 @@ from twisted.web.client import (
 from twisted.python.components import registerAdapter
 
 from treq.auth import add_auth
+from treq._utils import default_reactor
 
 
 def _combine_query_params(url, params):
@@ -54,14 +55,12 @@ class HTTPClient(object):
 
     @classmethod
     def with_config(cls, **kwargs):
-        reactor = kwargs.get('reactor')
-        if not reactor:
-            from twisted.internet import reactor
+        reactor = default_reactor(kwargs.get('reactor'))
 
         pool = kwargs.get('pool')
         if not pool:
             persistent = kwargs.get('persistent', True)
-            pool = HTTPConnectionPool(reactor, persitent=persistent)
+            pool = HTTPConnectionPool(reactor, persistent=persistent)
 
         agent = Agent(reactor, pool=pool)
 

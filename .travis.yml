@@ -7,10 +7,12 @@ python:
 
 env:
   - TWISTED=svn+svn://svn.twistedmatrix.com/svn/Twisted/trunk PYOPENSSL=PyOpenSSL
+  - TWISTED=Twisted==13.0.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==12.3.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==12.2.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==12.1.0 PYOPENSSL=PyOpenSSL
   - TWISTED=svn+svn://svn.twistedmatrix.com/svn/Twisted/trunk PYOPENSSL=
+  - TWISTED=Twisted==13.0.0 PYOPENSSL=
   - TWISTED=Twisted==12.3.0 PYOPENSSL=
   - TWISTED=Twisted==12.2.0 PYOPENSSL=
   - TWISTED=Twisted==12.1.0 PYOPENSSL=
@@ -19,6 +21,8 @@ matrix:
   allow_failures:
     - python: pypy
       env: TWISTED=svn+svn://svn.twistedmatrix.com/svn/Twisted/trunk PYOPENSSL=PyOpenSSL
+    - python: pypy
+      env: TWISTED=Twisted==13.0.0 PYOPENSSL=PyOpenSSL
     - python: pypy
       env: TWISTED=Twisted==12.3.0 PYOPENSSL=PyOpenSSL
     - python: pypy

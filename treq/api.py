@@ -1,4 +1,5 @@
 from treq.client import HTTPClient
+from treq._utils import default_pool
 
 
 def head(url, **kwargs):
@@ -95,4 +96,8 @@ def request(method, url, **kwargs):
 #
 
 def _client(*args, **kwargs):
+    kwargs['pool'] = default_pool(kwargs.get('reactor'),
+                                  kwargs.get('pool'),
+                                  kwargs.get('persistent'))
+
     return HTTPClient.with_config(**kwargs)

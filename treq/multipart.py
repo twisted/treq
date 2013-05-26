@@ -181,10 +181,10 @@ class MultiPartProducer(object):
                 str(_Header("Content-Length", producer.length)) + CRLF)
         consumer.write(CRLF)
 
-        self._currentProducer = producer
         if isinstance(consumer, _LengthConsumer):
             consumer.write(producer.length)
         else:
+            self._currentProducer = producer
             return producer.startProducing(consumer)
 
 
@@ -194,7 +194,10 @@ def _escape(value):
     a newline in the file name parameter makes form-data request unreadable
     for majority of parsers.
     """
+    if not isinstance(value, (str, unicode)):
+        value = unicode(value)
     return value.replace(u"\r", u"").replace(u"\n", u"").replace(u'"', u'\\"')
+
 
 def _enforce_unicode(value):
     """
@@ -291,7 +294,8 @@ class _Header(object):
 
     def __str__(self):
         with closing(BytesIO()) as h:
-            h.write(b"%s: %s"%(self.name, self.value))
+            h.write(b"%s: %s"%(
+                    self.name, _escape(self.value).encode("us-ascii")))
             if self.params:
                 for index, (name, val) in enumerate(self.params):
                     if index == 0:
@@ -308,11 +312,13 @@ class _Header(object):
 def _sorted(fields):
     """A convenience function that sorts the fields
     where strings are placed before files what makes
-    a request more readable generally as files are bigger
+    a request more readable generally as files are bigger.
+    It also provides deterministic order of fields
+    sorted by key what is easier for testing.
     """
     def key(key, value):
         if isinstance(value, (str, unicode)):
-            return 0
+            return (0, key)
         else:
-            return 1
+            return (1, key)
     return sorted(fields, key)

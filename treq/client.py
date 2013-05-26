@@ -152,9 +152,9 @@ def _convert_files(files):
     for param, val in files.iteritems():
         file_name, content_type, fobj = (None, None, None)
         if isinstance(val, tuple):
-            if len(tuple) == 2:
+            if len(val) == 2:
                 file_name, fobj = val
-            elif len(tuple) == 3:
+            elif len(val) == 3:
                 file_name, content_type, fobj = val
         else:
             fobj = val

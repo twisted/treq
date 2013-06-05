@@ -1,25 +1,13 @@
+# coding: utf-8
+import cgi
 from StringIO import StringIO
 
 from twisted.trial import unittest
-from twisted.web.client import HTTPConnectionPool
 from zope.interface.verify import verifyObject
 
-from twisted.internet import defer,task
-from twisted.python.failure import Failure
-from twisted.python.components import proxyForInterface
-from twisted.test.proto_helpers import StringTransport
-from twisted.test.proto_helpers import MemoryReactor
-from twisted.internet.task import Clock
-from twisted.internet.error import ConnectionRefusedError, ConnectionDone
-from twisted.internet.protocol import Protocol, Factory
-from twisted.internet.defer import Deferred, succeed
-from twisted.internet.endpoints import TCP4ClientEndpoint, SSL4ClientEndpoint
-from twisted.web.client import FileBodyProducer, Request, HTTPConnectionPool
-from twisted.web.client import _WebToNormalContextFactory
-from twisted.web.client import WebClientContextFactory, _HTTP11ClientFactory
-from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer, IResponse
-from twisted.web._newclient import HTTP11ClientProtocol, Response
-from twisted.web.error import SchemeNotSupported
+from twisted.internet import task
+from twisted.web.client import FileBodyProducer
+from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
 
 from treq.multipart import MultiPartProducer
 
@@ -60,6 +48,25 @@ class MultiPartProducerTestCase(unittest.TestCase):
         self._scheduled = []
         self.cooperator = task.Cooperator(
             self._termination, self._scheduled.append)
+
+
+    def getOutput(self, producer, with_producer=False):
+        """
+        A convenience function to consume and return outpute.
+        """
+
+        output = StringIO()
+        consumer = StringConsumer(output)
+
+        producer.startProducing(consumer)
+
+        while self._scheduled:
+            self._scheduled.pop(0)()
+
+        if with_producer:
+            return (output.getvalue(), producer)
+        else:
+            return output.getvalue()
 
     def newLines(self, value):
         return value.replace("\n", "\r\n")
@@ -158,7 +165,7 @@ class MultiPartProducerTestCase(unittest.TestCase):
 
         self.assertTrue(iterations > 1)
         self.assertEqual(self.newLines("""--heyDavid
-Content-Disposition: form-data; name="field", filename="file name"
+Content-Disposition: form-data; name="field"; filename="file name"
 Content-Type: text/hello-world
 Content-Length: 12
 
@@ -305,4 +312,251 @@ Hello, World
         # make sure we started producing new data after resume
         self.assertTrue(len(currentValue) < len(output.getvalue()))
 
+
+    def test_unicodeString(self):
+        """
+        Make sure unicode string is passed properly
+        """
+        output, producer = self.getOutput(
+            MultiPartProducer({
+                "afield": u"Это моя строчечка\r\n",
+                }, cooperator=self.cooperator,
+                boundary="heyDavid"),
+            with_producer=True)
+
+        encoded = u"Это моя строчечка\r\n".encode("utf-8")
+
+        expected = self.newLines(u"""--heyDavid
+Content-Disposition: form-data; name="afield"
+Content-Type: text/plain; charset="utf-8"
+Content-Length: {}
+
+Это моя строчечка
+
+--heyDavid--
+""".format(len(encoded)).encode("utf-8"))
+        self.assertEqual(producer.length, len(expected))
+        self.assertEqual(expected, output)
+
+
+    def test_failOnByteStrings(self):
+        """
+        If byte string is passed as a param and we don't know
+        the encoding, fail early to prevent corrupted form posts
+        """
+        self.assertRaises(
+            ValueError,
+            MultiPartProducer, {
+                "afield": u"это моя строчечка".encode("utf-32"),
+                },
+            cooperator=self.cooperator,
+            boundary="heyDavid")
+
+
+    def test_twoFields(self):
+        """
+        Make sure multiple fields are rendered properly.
+        """
+        output = self.getOutput(
+            MultiPartProducer({
+                "afield": "just a string\r\n",
+                "bfield": "another string"
+                }, cooperator=self.cooperator,
+                boundary="heyDavid"))
+
+        self.assertEqual(self.newLines("""--heyDavid
+Content-Disposition: form-data; name="afield"
+Content-Type: text/plain; charset="utf-8"
+Content-Length: 15
+
+just a string
+
+--heyDavid
+Content-Disposition: form-data; name="bfield"
+Content-Type: text/plain; charset="utf-8"
+Content-Length: 14
+
+another string
+--heyDavid--
+"""), output)
+
+
+    def test_fieldsAndAttachment(self):
+        """
+        Make sure multiple fields are rendered properly.
+        """
+        output, producer = self.getOutput(
+            MultiPartProducer({
+                "bfield": "just a string\r\n",
+                "cfield": "another string",
+                "afield": ('file name', "text/hello-world", FileBodyProducer(
+                            inputFile = StringIO("my lovely bytes"),
+                            cooperator=self.cooperator,
+                            ))
+                }, cooperator=self.cooperator,
+                boundary="heyDavid"),
+            with_producer=True)
+
+        expected = self.newLines("""--heyDavid
+Content-Disposition: form-data; name="bfield"
+Content-Type: text/plain; charset="utf-8"
+Content-Length: 15
+
+just a string
+
+--heyDavid
+Content-Disposition: form-data; name="cfield"
+Content-Type: text/plain; charset="utf-8"
+Content-Length: 14
+
+another string
+--heyDavid
+Content-Disposition: form-data; name="afield"; filename="file name"
+Content-Type: text/hello-world
+Content-Length: 15
+
+my lovely bytes
+--heyDavid--
+""")
+
+        self.assertEqual(producer.length, len(expected))
+        self.assertEqual(output, expected)
+
+
+    def test_multipleFieldsAndAttachments(self):
+        """
+        Make sure multiple fields, attachments etc are rendered properly.
+        """
+        output, producer = self.getOutput(
+            MultiPartProducer({
+                "cfield": "just a string\r\n",
+                "bfield": "another string",
+                "efield": ('ef', "text/html", FileBodyProducer(
+                            inputFile = StringIO("my lovely bytes2"),
+                            cooperator=self.cooperator,
+                            )),
+                "xfield": ('xf', "text/json", FileBodyProducer(
+                            inputFile = StringIO("my lovely bytes219"),
+                            cooperator=self.cooperator,
+                            )),
+                "afield": ('af', "text/xml", FileBodyProducer(
+                            inputFile = StringIO("my lovely bytes22"),
+                            cooperator=self.cooperator,
+                            ))
+                }, cooperator=self.cooperator,
+                boundary="heyDavid"),
+            with_producer=True)
+
+        expected = self.newLines("""--heyDavid
+Content-Disposition: form-data; name="bfield"
+Content-Type: text/plain; charset="utf-8"
+Content-Length: 14
+
+another string
+--heyDavid
+Content-Disposition: form-data; name="cfield"
+Content-Type: text/plain; charset="utf-8"
+Content-Length: 15
+
+just a string
+
+--heyDavid
+Content-Disposition: form-data; name="afield"; filename="af"
+Content-Type: text/xml
+Content-Length: 17
+
+my lovely bytes22
+--heyDavid
+Content-Disposition: form-data; name="efield"; filename="ef"
+Content-Type: text/html
+Content-Length: 16
+
+my lovely bytes2
+--heyDavid
+Content-Disposition: form-data; name="xfield"; filename="xf"
+Content-Type: text/json
+Content-Length: 18
+
+my lovely bytes219
+--heyDavid--
+""")
+        self.assertEqual(producer.length, len(expected))
+        self.assertEqual(output, expected)
+
+    def test_unicodeAttachmentName(self):
+        """
+        Make sure unicode attachment names are supported.
+        """
+        output, producer = self.getOutput(
+            MultiPartProducer({
+                "field": (u'Так себе имя.jpg', "image/jpeg", FileBodyProducer(
+                            inputFile = StringIO("my lovely bytes"),
+                            cooperator=self.cooperator,
+                            ))
+                }, cooperator=self.cooperator,
+                boundary="heyDavid"),
+            with_producer=True)
+
+        expected = self.newLines(u"""--heyDavid
+Content-Disposition: form-data; name="field"; filename="Так себе имя.jpg"
+Content-Type: image/jpeg
+Content-Length: 15
+
+my lovely bytes
+--heyDavid--
+""".encode("utf-8"))
+        self.assertEqual(len(expected), producer.length)
+        self.assertEqual(expected, output)
+
+
+    def test_newLinesInParams(self):
+        """
+        Make sure we generate proper format even with newlines in attachments
+        """
+        output = self.getOutput(
+            MultiPartProducer({
+                "field": (u'\r\noops.j\npg', "image/jp\reg\n", FileBodyProducer(
+                            inputFile = StringIO("my lovely bytes"),
+                            cooperator=self.cooperator,
+                            ))
+                }, cooperator=self.cooperator,
+                boundary="heyDavid"))
+
+        self.assertEqual(self.newLines(u"""--heyDavid
+Content-Disposition: form-data; name="field"; filename="oops.jpg"
+Content-Type: image/jpeg
+Content-Length: 15
+
+my lovely bytes
+--heyDavid--
+""".encode("utf-8")), output)
+
+    def test_worksWithCgi(self):
+        """
+        Make sure the stuff we generated actually parsed by python cgi
+        """
+        output = self.getOutput(
+            MultiPartProducer([
+                ("cfield", "just a string\r\n"),
+                ("cfield", "another string"),
+                ("efield", ('ef', "text/html", FileBodyProducer(
+                            inputFile = StringIO("my lovely bytes2"),
+                            cooperator=self.cooperator,
+                            ))),
+                ("xfield", ('xf', "text/json", FileBodyProducer(
+                            inputFile = StringIO("my lovely bytes219"),
+                            cooperator=self.cooperator,
+                            ))),
+                ("afield", ('af', "text/xml", FileBodyProducer(
+                            inputFile = StringIO("my lovely bytes22"),
+                            cooperator=self.cooperator,
+                            )))
+                ], cooperator=self.cooperator, boundary="heyDavid"))
+        form = cgi.parse_multipart(StringIO(output), {"boundary": "heyDavid"})
+        self.assertEqual(set(['just a string\r\n', 'another string']),
+                         set(form['cfield']))
+
+        self.assertEqual(set(['my lovely bytes2']), set(form['efield']))
+        self.assertEqual(set(['my lovely bytes219']), set(form['xfield']))
+        self.assertEqual(set(['my lovely bytes22']), set(form['afield']))
 

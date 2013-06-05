@@ -164,8 +164,16 @@ class MultiPartProducer(object):
     def _writeString(self, name, value, consumer):
         cdisp = _Header("Content-Disposition", "form-data")
         cdisp.add_param("name", name)
-        consumer.write(str(cdisp) + CRLF + CRLF)
-        consumer.write(value.encode("utf-8"))
+        consumer.write(str(cdisp) + CRLF)
+
+        ctype = _Header(
+            "Content-Type", "text/plain", params=[("charset", "utf-8")])
+        consumer.write(str(ctype) + CRLF)
+
+        encoded = value.encode("utf-8")
+        consumer.write(
+                str(_Header("Content-Length", len(encoded))) + CRLF + CRLF)
+        consumer.write(encoded)
         self._currentProducer = None
 
     def _writeFile(self, name, filename, content_type, producer, consumer):
@@ -226,7 +234,10 @@ def _enforce_unicode(value):
 
 
 def _converted(fields):
-    for name, value in fields.iteritems():
+    if hasattr(fields, "iteritems"):
+        fields = fields.iteritems()
+
+    for name, value in fields:
         name = _enforce_unicode(name)
 
         if isinstance(value, (tuple, list)):
@@ -264,10 +275,10 @@ class _LengthConsumer(object):
         # this means that we have encountered
         # unknown length producer
         # so we need to stop attempts calculating
-        if self.length == UNKNOWN_LENGTH:
+        if self.length is UNKNOWN_LENGTH:
             return
 
-        if value == UNKNOWN_LENGTH:
+        if value is UNKNOWN_LENGTH:
             self.length = value
         elif isinstance(value, int):
             self.length += value
@@ -297,11 +308,8 @@ class _Header(object):
             h.write(b"%s: %s"%(
                     self.name, _escape(self.value).encode("us-ascii")))
             if self.params:
-                for index, (name, val) in enumerate(self.params):
-                    if index == 0:
-                        h.write(b"; ")
-                    else:
-                        h.write(b", ")
+                for (name, val) in self.params:
+                    h.write("; ")
                     h.write(_escape(name).encode("us-ascii"))
                     h.write("=")
                     h.write(b'"%s"'%(_escape(val).encode('utf-8'),))
@@ -316,9 +324,11 @@ def _sorted(fields):
     It also provides deterministic order of fields
     sorted by key what is easier for testing.
     """
-    def key(key, value):
-        if isinstance(value, (str, unicode)):
+    def key(p):
+        key, val = p
+        if isinstance(val, (str, unicode)):
             return (0, key)
         else:
             return (1, key)
-    return sorted(fields, key)
+    return sorted(fields, key=key)
+

@@ -1,4 +1,6 @@
 # coding: utf-8
+# Copyright (c) Twisted Matrix Laboratories.
+# See LICENSE for details.
 import cgi
 from StringIO import StringIO
 
@@ -348,6 +350,39 @@ Content-Length: {}
             ValueError,
             MultiPartProducer, {
                 "afield": u"это моя строчечка".encode("utf-32"),
+                },
+            cooperator=self.cooperator,
+            boundary="heyDavid")
+
+
+    def test_failOnUnknownParams(self):
+        """
+        If byte string is passed as a param and we don't know
+        the encoding, fail early to prevent corrupted form posts
+        """
+        # unknown key
+        self.assertRaises(
+            ValueError,
+            MultiPartProducer, {
+                (1, 2): StringIO("yo"),
+                },
+            cooperator=self.cooperator,
+            boundary="heyDavid")
+
+        # tuple length
+        self.assertRaises(
+            ValueError,
+            MultiPartProducer, {
+                "a": (1,),
+                },
+            cooperator=self.cooperator,
+            boundary="heyDavid")
+
+        # unknown value type
+        self.assertRaises(
+            ValueError,
+            MultiPartProducer, {
+                "a": {"a": "b"},
                 },
             cooperator=self.cooperator,
             boundary="heyDavid")

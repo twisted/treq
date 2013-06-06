@@ -1,3 +1,6 @@
+# Copyright (c) Twisted Matrix Laboratories.
+# See LICENSE for details.
+
 from uuid import uuid4
 from io import BytesIO
 from contextlib import closing
@@ -158,8 +161,6 @@ class MultiPartProducer(object):
             filename, content_type, producer = value
             return self._writeFile(
                 name, filename, content_type, producer, consumer)
-        else:
-            raise ValueError("Unsupported field format")
 
     def _writeString(self, name, value, consumer):
         cdisp = _Header("Content-Disposition", "form-data")
@@ -253,7 +254,7 @@ def _converted(fields):
         else:
             raise ValueError(
                 "Unsupported value, expected string, unicode  "
-                "or tuple (filename, IBodyProducer)")
+                "or tuple (filename, content type, IBodyProducer)")
 
 
 class _LengthConsumer(object):

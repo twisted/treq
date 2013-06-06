@@ -123,12 +123,25 @@ class TreqIntegrationTests(TestCase):
         yield self.assert_data(response, 'Hello!')
         yield print_response(response)
 
-
     @inlineCallbacks
     def test_multipart_post(self):
-        response = yield self.post('/post', data={"a": "b"}, files={"file1": StringIO("file")})
+        class FileLikeObject(StringIO):
+            def __init__(self, val):
+                StringIO.__init__(self, val)
+                self.name = "david.png"
+
+            def read(*args, **kwargs):
+                return StringIO.read(*args, **kwargs)
+
+        response = yield self.post(
+            '/post',
+            data={"a": "b"},
+            files={"file1": FileLikeObject("file")})
         self.assertEqual(response.code, 200)
-        yield self.assert_data(response, 'Hello!')
+
+        body = yield treq.json_content(response)
+        self.assertEqual('b', body['form']['a'])
+        self.assertEqual('file', body['files']['file1'])
         yield print_response(response)
 
     @inlineCallbacks

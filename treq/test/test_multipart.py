@@ -15,10 +15,10 @@ from treq.multipart import MultiPartProducer
 
 MP = MultiPartProducer
 
+
 class StringConsumer(object):
     def __init__(self, outputFile):
         self.outputFile = outputFile
-
 
     def write(self, bytes):
         self.outputFile.write(bytes)
@@ -41,7 +41,6 @@ class MultiPartProducerTestCase(unittest.TestCase):
         """
         return lambda: True
 
-
     def setUp(self):
         """
         Create a L{Cooperator} hooked up to an easily controlled, deterministic
@@ -50,7 +49,6 @@ class MultiPartProducerTestCase(unittest.TestCase):
         self._scheduled = []
         self.cooperator = task.Cooperator(
             self._termination, self._scheduled.append)
-
 
     def getOutput(self, producer, with_producer=False):
         """
@@ -79,7 +77,6 @@ class MultiPartProducerTestCase(unittest.TestCase):
         """
         self.assertTrue(verifyObject(IBodyProducer, MP({})))
 
-
     def test_unknownLength(self):
         """
         If the L{MultiPartProducer} is constructed with a file-like object
@@ -100,7 +97,6 @@ class MultiPartProducerTestCase(unittest.TestCase):
         producer = MP({"f": ("name", None, FileBodyProducer(HasTell()))})
         self.assertEqual(UNKNOWN_LENGTH, producer.length)
 
-
     def test_knownLengthOnFile(self):
         """
         If the L{MultiPartProducer} is constructed with a file-like object with
@@ -111,9 +107,8 @@ class MultiPartProducerTestCase(unittest.TestCase):
         inputFile = StringIO(inputBytes)
         inputFile.seek(5)
         producer = MultiPartProducer({
-                "field": ('file name', None, FileBodyProducer(
-                        inputFile, cooperator=self.cooperator))
-                })
+            "field": ('file name', None, FileBodyProducer(
+                      inputFile, cooperator=self.cooperator))})
 
         # Make sure we are generous enough not to alter seek position:
         self.assertEqual(inputFile.tell(), 5)
@@ -126,19 +121,17 @@ class MultiPartProducerTestCase(unittest.TestCase):
         # Calculating length should not touch producers
         self.assertTrue(producer._currentProducer is None)
 
-
     def test_defaultCooperator(self):
         """
         If no L{Cooperator} instance is passed to L{MultiPartProducer}, the
         global cooperator is used.
         """
         producer = MultiPartProducer({
-                "field": ('file name', None, FileBodyProducer(
-                        StringIO("yo"),
-                        cooperator=self.cooperator))
-                })
+            "field": ('file name', None, FileBodyProducer(
+                      StringIO("yo"),
+                      cooperator=self.cooperator))
+        })
         self.assertEqual(task.cooperate, producer._cooperate)
-
 
     def test_startProducing(self):
         """
@@ -151,12 +144,10 @@ class MultiPartProducerTestCase(unittest.TestCase):
         consumer = StringConsumer(output)
 
         producer = MultiPartProducer({
-                "field": ('file name', "text/hello-world", FileBodyProducer(
-                        StringIO("Hello, World"),
-                        cooperator=self.cooperator,
-                        ))
-                }, cooperator=self.cooperator,
-                boundary="heyDavid")
+            "field": ('file name', "text/hello-world", FileBodyProducer(
+                StringIO("Hello, World"),
+                cooperator=self.cooperator))
+        }, cooperator=self.cooperator, boundary="heyDavid")
 
         complete = producer.startProducing(consumer)
 
@@ -186,12 +177,13 @@ Hello, World
         consumer = StringConsumer(output)
 
         producer = MultiPartProducer({
-                "field": ('file name', "text/hello-world", FileBodyProducer(
-                        inputFile,
-                        cooperator=self.cooperator,
-                        ))
-                }, cooperator=self.cooperator,
-                boundary="heyDavid")
+            "field": (
+                "file name",
+                "text/hello-world",
+                FileBodyProducer(
+                    inputFile,
+                    cooperator=self.cooperator))
+        }, cooperator=self.cooperator, boundary="heyDavid")
 
         producer.startProducing(consumer)
 
@@ -212,12 +204,13 @@ Hello, World
                 raise IOError("Simulated bad thing")
 
         producer = MultiPartProducer({
-                "field": ('file name', "text/hello-world", FileBodyProducer(
-                        BrokenFile(),
-                        cooperator=self.cooperator,
-                        ))
-                }, cooperator=self.cooperator,
-                boundary="heyDavid")
+            "field": (
+                "file name",
+                "text/hello-world",
+                FileBodyProducer(
+                    BrokenFile(),
+                    cooperator=self.cooperator))
+        }, cooperator=self.cooperator, boundary="heyDavid")
 
         complete = producer.startProducing(
             StringConsumer(StringIO()))
@@ -239,19 +232,19 @@ Hello, World
         consumer = StringConsumer(output)
 
         producer = MultiPartProducer({
-                "field": ('file name', "text/hello-world", FileBodyProducer(
-                        inputFile,
-                        cooperator=self.cooperator,
-                        ))
-                }, cooperator=self.cooperator,
-                boundary="heyDavid")
+            "field": (
+                "file name",
+                "text/hello-world",
+                FileBodyProducer(
+                    inputFile,
+                    cooperator=self.cooperator))
+        }, cooperator=self.cooperator, boundary="heyDavid")
         complete = producer.startProducing(consumer)
         self._scheduled.pop(0)()
         producer.stopProducing()
         self.assertTrue(inputFile.closed)
         self._scheduled.pop(0)()
         self.assertNoResult(complete)
-
 
     def test_pauseProducing(self):
         """
@@ -263,12 +256,13 @@ Hello, World
         consumer = StringConsumer(output)
 
         producer = MultiPartProducer({
-                "field": ('file name', "text/hello-world", FileBodyProducer(
-                        inputFile,
-                        cooperator=self.cooperator,
-                        ))
-                }, cooperator=self.cooperator,
-                boundary="heyDavid")
+            "field": (
+                "file name",
+                "text/hello-world",
+                FileBodyProducer(
+                    inputFile,
+                    cooperator=self.cooperator))
+        }, cooperator=self.cooperator, boundary="heyDavid")
         complete = producer.startProducing(consumer)
         self._scheduled.pop(0)()
 
@@ -286,7 +280,6 @@ Hello, World
         self.assertEqual(output.getvalue(), currentValue)
         self.assertNoResult(complete)
 
-
     def test_resumeProducing(self):
         """
         L{MultoPartProducer.resumeProducing} re-commences writing bytes
@@ -298,12 +291,14 @@ Hello, World
         consumer = StringConsumer(output)
 
         producer = MultiPartProducer({
-                "field": ('file name', "text/hello-world", FileBodyProducer(
-                        inputFile,
-                        cooperator=self.cooperator,
-                        ))
-                }, cooperator=self.cooperator,
-                boundary="heyDavid")
+            "field": (
+                "file name",
+                "text/hello-world",
+                FileBodyProducer(
+                    inputFile,
+                    cooperator=self.cooperator))
+        }, cooperator=self.cooperator, boundary="heyDavid")
+
         producer.startProducing(consumer)
         self._scheduled.pop(0)()
         currentValue = output.getvalue()
@@ -314,7 +309,6 @@ Hello, World
         # make sure we started producing new data after resume
         self.assertTrue(len(currentValue) < len(output.getvalue()))
 
-
     def test_unicodeString(self):
         """
         Make sure unicode string is passed properly
@@ -322,8 +316,7 @@ Hello, World
         output, producer = self.getOutput(
             MultiPartProducer({
                 "afield": u"Это моя строчечка\r\n",
-                }, cooperator=self.cooperator,
-                boundary="heyDavid"),
+            }, cooperator=self.cooperator, boundary="heyDavid"),
             with_producer=True)
 
         encoded = u"Это моя строчечка\r\n".encode("utf-8")
@@ -340,7 +333,6 @@ Content-Length: {}
         self.assertEqual(producer.length, len(expected))
         self.assertEqual(expected, output)
 
-
     def test_failOnByteStrings(self):
         """
         If byte string is passed as a param and we don't know
@@ -350,10 +342,8 @@ Content-Length: {}
             ValueError,
             MultiPartProducer, {
                 "afield": u"это моя строчечка".encode("utf-32"),
-                },
-            cooperator=self.cooperator,
-            boundary="heyDavid")
-
+            },
+            cooperator=self.cooperator, boundary="heyDavid")
 
     def test_failOnUnknownParams(self):
         """
@@ -365,28 +355,24 @@ Content-Length: {}
             ValueError,
             MultiPartProducer, {
                 (1, 2): StringIO("yo"),
-                },
-            cooperator=self.cooperator,
-            boundary="heyDavid")
+            },
+            cooperator=self.cooperator, boundary="heyDavid")
 
         # tuple length
         self.assertRaises(
             ValueError,
             MultiPartProducer, {
                 "a": (1,),
-                },
-            cooperator=self.cooperator,
-            boundary="heyDavid")
+            },
+            cooperator=self.cooperator, boundary="heyDavid")
 
         # unknown value type
         self.assertRaises(
             ValueError,
             MultiPartProducer, {
                 "a": {"a": "b"},
-                },
-            cooperator=self.cooperator,
-            boundary="heyDavid")
-
+            },
+            cooperator=self.cooperator, boundary="heyDavid")
 
     def test_twoFields(self):
         """
@@ -396,8 +382,7 @@ Content-Length: {}
             MultiPartProducer({
                 "afield": "just a string\r\n",
                 "bfield": "another string"
-                }, cooperator=self.cooperator,
-                boundary="heyDavid"))
+            }, cooperator=self.cooperator, boundary="heyDavid"))
 
         self.assertEqual(self.newLines("""--heyDavid
 Content-Disposition: form-data; name="afield"
@@ -415,7 +400,6 @@ another string
 --heyDavid--
 """), output)
 
-
     def test_fieldsAndAttachment(self):
         """
         Make sure multiple fields are rendered properly.
@@ -424,12 +408,13 @@ another string
             MultiPartProducer({
                 "bfield": "just a string\r\n",
                 "cfield": "another string",
-                "afield": ('file name', "text/hello-world", FileBodyProducer(
-                            inputFile = StringIO("my lovely bytes"),
-                            cooperator=self.cooperator,
-                            ))
-                }, cooperator=self.cooperator,
-                boundary="heyDavid"),
+                "afield": (
+                    "file name",
+                    "text/hello-world",
+                    FileBodyProducer(
+                        inputFile=StringIO("my lovely bytes"),
+                        cooperator=self.cooperator))
+            }, cooperator=self.cooperator, boundary="heyDavid"),
             with_producer=True)
 
         expected = self.newLines("""--heyDavid
@@ -457,7 +442,6 @@ my lovely bytes
         self.assertEqual(producer.length, len(expected))
         self.assertEqual(output, expected)
 
-
     def test_multipleFieldsAndAttachments(self):
         """
         Make sure multiple fields, attachments etc are rendered properly.
@@ -466,20 +450,25 @@ my lovely bytes
             MultiPartProducer({
                 "cfield": "just a string\r\n",
                 "bfield": "another string",
-                "efield": ('ef', "text/html", FileBodyProducer(
-                            inputFile = StringIO("my lovely bytes2"),
-                            cooperator=self.cooperator,
-                            )),
-                "xfield": ('xf', "text/json", FileBodyProducer(
-                            inputFile = StringIO("my lovely bytes219"),
-                            cooperator=self.cooperator,
-                            )),
-                "afield": ('af', "text/xml", FileBodyProducer(
-                            inputFile = StringIO("my lovely bytes22"),
-                            cooperator=self.cooperator,
-                            ))
-                }, cooperator=self.cooperator,
-                boundary="heyDavid"),
+                "efield": (
+                    "ef",
+                    "text/html",
+                    FileBodyProducer(
+                        inputFile=StringIO("my lovely bytes2"),
+                        cooperator=self.cooperator)),
+                "xfield": (
+                    "xf",
+                    "text/json",
+                    FileBodyProducer(
+                        inputFile=StringIO("my lovely bytes219"),
+                        cooperator=self.cooperator)),
+                "afield": (
+                    "af",
+                    "text/xml",
+                    FileBodyProducer(
+                        inputFile=StringIO("my lovely bytes22"),
+                        cooperator=self.cooperator))
+            }, cooperator=self.cooperator, boundary="heyDavid"),
             with_producer=True)
 
         expected = self.newLines("""--heyDavid
@@ -524,12 +513,15 @@ my lovely bytes219
         """
         output, producer = self.getOutput(
             MultiPartProducer({
-                "field": (u'Так себе имя.jpg', "image/jpeg", FileBodyProducer(
-                            inputFile = StringIO("my lovely bytes"),
-                            cooperator=self.cooperator,
-                            ))
-                }, cooperator=self.cooperator,
-                boundary="heyDavid"),
+                "field": (
+                    u'Так себе имя.jpg',
+                    "image/jpeg",
+                    FileBodyProducer(
+                        inputFile=StringIO("my lovely bytes"),
+                        cooperator=self.cooperator
+                    )
+                )
+            }, cooperator=self.cooperator, boundary="heyDavid"),
             with_producer=True)
 
         expected = self.newLines(u"""--heyDavid
@@ -543,18 +535,21 @@ my lovely bytes
         self.assertEqual(len(expected), producer.length)
         self.assertEqual(expected, output)
 
-
     def test_missingAttachmentName(self):
         """
         Make sure attachments without names are supported
         """
         output, producer = self.getOutput(
             MultiPartProducer({
-                "field": (None, "image/jpeg", FileBodyProducer(
-                            inputFile = StringIO("my lovely bytes"),
-                            cooperator=self.cooperator,
-                            ))
-                }, cooperator=self.cooperator,
+                "field": (
+                    None,
+                    "image/jpeg",
+                    FileBodyProducer(
+                        inputFile=StringIO("my lovely bytes"),
+                        cooperator=self.cooperator,
+                    )
+                )
+            }, cooperator=self.cooperator,
                 boundary="heyDavid"),
             with_producer=True)
 
@@ -569,19 +564,24 @@ my lovely bytes
         self.assertEqual(len(expected), producer.length)
         self.assertEqual(expected, output)
 
-
     def test_newLinesInParams(self):
         """
         Make sure we generate proper format even with newlines in attachments
         """
         output = self.getOutput(
             MultiPartProducer({
-                "field": (u'\r\noops.j\npg', "image/jp\reg\n", FileBodyProducer(
-                            inputFile = StringIO("my lovely bytes"),
-                            cooperator=self.cooperator,
-                            ))
-                }, cooperator=self.cooperator,
-                boundary="heyDavid"))
+                "field": (
+                    u'\r\noops.j\npg',
+                    "image/jp\reg\n",
+                    FileBodyProducer(
+                        inputFile=StringIO("my lovely bytes"),
+                        cooperator=self.cooperator
+                    )
+                )
+            }, cooperator=self.cooperator,
+                boundary="heyDavid"
+            )
+        )
 
         self.assertEqual(self.newLines(u"""--heyDavid
 Content-Disposition: form-data; name="field"; filename="oops.jpg"
@@ -601,18 +601,21 @@ my lovely bytes
                 ("cfield", "just a string\r\n"),
                 ("cfield", "another string"),
                 ("efield", ('ef', "text/html", FileBodyProducer(
-                            inputFile = StringIO("my lovely bytes2"),
+                            inputFile=StringIO("my lovely bytes2"),
                             cooperator=self.cooperator,
                             ))),
                 ("xfield", ('xf', "text/json", FileBodyProducer(
-                            inputFile = StringIO("my lovely bytes219"),
+                            inputFile=StringIO("my lovely bytes219"),
                             cooperator=self.cooperator,
                             ))),
                 ("afield", ('af', "text/xml", FileBodyProducer(
-                            inputFile = StringIO("my lovely bytes22"),
+                            inputFile=StringIO("my lovely bytes22"),
                             cooperator=self.cooperator,
                             )))
-                ], cooperator=self.cooperator, boundary="heyDavid"))
+            ], cooperator=self.cooperator, boundary="heyDavid"
+            )
+        )
+
         form = cgi.parse_multipart(StringIO(output), {"boundary": "heyDavid"})
         self.assertEqual(set(['just a string\r\n', 'another string']),
                          set(form['cfield']))
@@ -620,4 +623,3 @@ my lovely bytes
         self.assertEqual(set(['my lovely bytes2']), set(form['efield']))
         self.assertEqual(set(['my lovely bytes219']), set(form['xfield']))
         self.assertEqual(set(['my lovely bytes22']), set(form['afield']))
-

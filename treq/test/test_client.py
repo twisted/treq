@@ -135,8 +135,7 @@ class HTTPClientTests(TestCase):
             'POST', 'http://example.com/',
             headers=Headers({
                     'Content-Type': [
-                        'multipart/form-data; boundary=heyDavid'
-                        ]}),
+                        'multipart/form-data; boundary=heyDavid']}),
             bodyProducer=self.MultiPartProducer.return_value)
 
         FP = self.FileBodyProducer.return_value
@@ -145,7 +144,6 @@ class HTTPClientTests(TestCase):
                 [('name', (None, 'application/octet-stream', FP))],
                 boundary='heyDavid'),
             self.MultiPartProducer.call_args)
-
 
     @mock.patch.object(
         client, '_make_boundary', mock.Mock(return_value="heyDavid"))
@@ -159,8 +157,7 @@ class HTTPClientTests(TestCase):
             'POST', 'http://example.com/',
             headers=Headers({
                     'Content-Type': [
-                        'multipart/form-data; boundary=heyDavid'
-                        ]}),
+                        'multipart/form-data; boundary=heyDavid']}),
             bodyProducer=self.MultiPartProducer.return_value)
 
         FP = self.FileBodyProducer.return_value
@@ -169,7 +166,6 @@ class HTTPClientTests(TestCase):
                 [('name', ('image.jpg', 'image/jpeg', FP))],
                 boundary='heyDavid'),
             self.MultiPartProducer.call_args)
-
 
     @mock.patch.object(
         client, '_make_boundary', mock.Mock(return_value="heyDavid"))
@@ -183,8 +179,7 @@ class HTTPClientTests(TestCase):
             'POST', 'http://example.com/',
             headers=Headers({
                     'Content-Type': [
-                        'multipart/form-data; boundary=heyDavid'
-                        ]}),
+                        'multipart/form-data; boundary=heyDavid']}),
             bodyProducer=self.MultiPartProducer.return_value)
 
         FP = self.FileBodyProducer.return_value
@@ -214,20 +209,18 @@ class HTTPClientTests(TestCase):
             'POST', 'http://example.com/',
             headers=Headers({
                     'Content-Type': [
-                        'multipart/form-data; boundary=heyDavid'
-                        ]}),
+                        'multipart/form-data; boundary=heyDavid']}),
             bodyProducer=self.MultiPartProducer.return_value)
 
         FP = self.FileBodyProducer.return_value
         self.assertEqual(
-             mock.call([
-                    ('a', 'b'),
-                    ('key', 'val'),
-                    ('file1', ('image.jpg', 'image/jpeg', FP)),
-                    ('file2', ('image.png', 'image/png', FP))],
-                  boundary='heyDavid'),
+            mock.call([
+                ('a', 'b'),
+                ('key', 'val'),
+                ('file1', ('image.jpg', 'image/jpeg', FP)),
+                ('file2', ('image.png', 'image/png', FP))],
+                boundary='heyDavid'),
             self.MultiPartProducer.call_args)
-
 
     @mock.patch.object(
         client, '_make_boundary', mock.Mock(return_value="heyDavid"))
@@ -242,17 +235,16 @@ class HTTPClientTests(TestCase):
             'POST', 'http://example.com/',
             headers=Headers({
                     'Content-Type': [
-                        'multipart/form-data; boundary=heyDavid'
-                        ]}),
+                        'multipart/form-data; boundary=heyDavid']}),
             bodyProducer=self.MultiPartProducer.return_value)
 
         FP = self.FileBodyProducer.return_value
         self.assertEqual(
-             mock.call([
-                    ('key', 'a'),
-                    ('key2', 'b'),
-                    ('file1', (None, 'application/octet-stream', FP))],
-                  boundary='heyDavid'),
+            mock.call([
+                ('key', 'a'),
+                ('key2', 'b'),
+                ('file1', (None, 'application/octet-stream', FP))],
+                boundary='heyDavid'),
             self.MultiPartProducer.call_args)
 
     def test_request_unsupported_params_combination(self):

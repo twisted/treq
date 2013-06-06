@@ -7,11 +7,9 @@ from treq.test.util import TestCase
 from treq.auth import _RequestHeaderSettingAgent, add_auth, UnknownAuthConfig
 
 
-
 class RequestHeaderSettingAgentTests(TestCase):
     def setUp(self):
         self.agent = mock.Mock(Agent)
-
 
     def test_sets_headers(self):
         agent = _RequestHeaderSettingAgent(

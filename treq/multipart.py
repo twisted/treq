@@ -12,6 +12,7 @@ from zope.interface import implementer
 
 CRLF = b"\r\n"
 
+
 @implementer(IBodyProducer)
 class MultiPartProducer(object):
     """
@@ -69,6 +70,7 @@ class MultiPartProducer(object):
         """
         self._task = self._cooperate(self._writeLoop(consumer))
         d = self._task.whenDone()
+
         def maybeStopped(reason):
             reason.trap(task.TaskStopped)
             return defer.Deferred()
@@ -90,8 +92,13 @@ class MultiPartProducer(object):
         by pausing the L{CooperativeTask} which drives that activity.
         """
         if self._currentProducer:
+            # having a current producer means that we are in
+            # the paused state as we've returned the cooperator
+            # the deferred of this producer, so request to pause
+            # us is actually a request to pause our underlying
             self._currentProducer.pauseProducing()
-        self._task.pause()
+        else:
+            self._task.pause()
 
     def resumeProducing(self):
         """
@@ -101,7 +108,8 @@ class MultiPartProducer(object):
         """
         if self._currentProducer:
             self._currentProducer.resumeProducing()
-        self._task.resume()
+        else:
+            self._task.resume()
 
     def _calculateLength(self):
         """
@@ -147,7 +155,6 @@ class MultiPartProducer(object):
             # but with CRLF characers before it and after the line.
             # This is very important.
             # proper boundary is "CRLF--boundary-valueCRLF"
-
             consumer.write(
                 (CRLF if index != 0 else "") + self._getBoundary() + CRLF)
             yield self._writeField(name, value, consumer)
@@ -173,7 +180,7 @@ class MultiPartProducer(object):
 
         encoded = value.encode("utf-8")
         consumer.write(
-                str(_Header("Content-Length", len(encoded))) + CRLF + CRLF)
+            str(_Header("Content-Length", len(encoded))) + CRLF + CRLF)
         consumer.write(encoded)
         self._currentProducer = None
 
@@ -194,7 +201,14 @@ class MultiPartProducer(object):
             consumer.write(producer.length)
         else:
             self._currentProducer = producer
-            return producer.startProducing(consumer)
+
+            def unset(val):
+                self._currentProducer = None
+                return val
+
+            d = producer.startProducing(consumer)
+            d.addCallback(unset)
+            return d
 
 
 def _escape(value):
@@ -307,14 +321,14 @@ class _Header(object):
 
     def __str__(self):
         with closing(BytesIO()) as h:
-            h.write(b"%s: %s"%(
+            h.write(b"%s: %s" % (
                     self.name, _escape(self.value).encode("us-ascii")))
             if self.params:
                 for (name, val) in self.params:
                     h.write("; ")
                     h.write(_escape(name).encode("us-ascii"))
                     h.write("=")
-                    h.write(b'"%s"'%(_escape(val).encode('utf-8'),))
+                    h.write(b'"%s"' % (_escape(val).encode('utf-8'),))
             h.seek(0)
             return h.read()
 
@@ -333,4 +347,3 @@ def _sorted(fields):
         else:
             return (1, key)
     return sorted(fields, key=key)
-

@@ -25,6 +25,7 @@ from twisted.python.components import registerAdapter
 from treq.auth import add_auth
 from treq import multipart
 
+
 class HTTPClient(object):
     def __init__(self, agent):
         self._agent = agent
@@ -102,15 +103,15 @@ class HTTPClient(object):
             files = list(_convert_files(files))
             boundary = _make_boundary()
             headers.setRawHeaders(
-                    'content-type', [
-                        'multipart/form-data; boundary=%s'% (boundary,)])
+                'content-type', [
+                    'multipart/form-data; boundary=%s' % (boundary,)])
             if data:
                 data = _convert_params(data)
             else:
                 data = []
 
             bodyProducer = multipart.MultiPartProducer(
-               data + files, boundary=boundary)
+                data + files, boundary=boundary)
         elif data:
             # otherwise stick to x-www-form-urlencoded format
             if isinstance(data, (dict, list, tuple)):
@@ -125,8 +126,10 @@ class HTTPClient(object):
 
         return d
 
+
 def _make_boundary():
     return uuid.uuid4()
+
 
 def _convert_params(params):
     if hasattr(params, "iteritems"):
@@ -186,11 +189,14 @@ def _combine_query_params(url, params):
                        parsed_url[2], parsed_url[3],
                        ''.join(qs), parsed_url[5]))
 
+
 def _from_bytes(orig_bytes):
     return FileBodyProducer(StringIO(orig_bytes))
 
+
 def _from_file(orig_file):
     return FileBodyProducer(orig_file)
+
 
 def _guess_content_type(filename):
     if filename:
@@ -204,4 +210,3 @@ registerAdapter(_from_bytes, str, IBodyProducer)
 registerAdapter(_from_file, file, IBodyProducer)
 registerAdapter(_from_file, StringIO, IBodyProducer)
 registerAdapter(_from_file, BytesIO, IBodyProducer)
-

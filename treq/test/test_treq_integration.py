@@ -1,3 +1,5 @@
+from StringIO import StringIO
+
 from twisted.trial.unittest import TestCase
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.task import deferLater
@@ -117,6 +119,14 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_post(self):
         response = yield self.post('/post', 'Hello!')
+        self.assertEqual(response.code, 200)
+        yield self.assert_data(response, 'Hello!')
+        yield print_response(response)
+
+
+    @inlineCallbacks
+    def test_multipart_post(self):
+        response = yield self.post('/post', data={"a": "b"}, files={"file1": StringIO("file")})
         self.assertEqual(response.code, 200)
         yield self.assert_data(response, 'Hello!')
         yield print_response(response)

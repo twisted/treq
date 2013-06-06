@@ -23,7 +23,7 @@ from twisted.web.client import (
 from twisted.python.components import registerAdapter
 
 from treq.auth import add_auth
-from treq.multipart import MultiPartProducer
+from treq import multipart
 
 class HTTPClient(object):
     def __init__(self, agent):
@@ -100,14 +100,16 @@ class HTTPClient(object):
         if files:
             # in case of files presens create a multipart/form-data request
             files = list(_convert_files(files))
-            boundary = uuid.uuid4()
+            boundary = _make_boundary()
             headers.setRawHeaders(
                     'content-type', [
                         'multipart/form-data; boundary=%s'% (boundary,)])
             if data:
                 data = _convert_params(data)
+            else:
+                data = []
 
-            bodyProducer = MultiPartProducer(
+            bodyProducer = multipart.MultiPartProducer(
                data + files, boundary=boundary)
         elif data:
             # otherwise stick to x-www-form-urlencoded format
@@ -123,14 +125,14 @@ class HTTPClient(object):
 
         return d
 
+def _make_boundary():
+    return uuid.uuid4()
 
 def _convert_params(params):
     if hasattr(params, "iteritems"):
-        return list(params.iteritems)
-    elif isinstance(params, tuple):
+        return list(sorted(params.iteritems()))
+    elif isinstance(params, (tuple, list)):
         return list(params)
-    elif isinstance(params, list):
-        return params
     else:
         raise ValueError("Unsupported format")
 
@@ -146,10 +148,13 @@ def _convert_files(files):
 
         Our goal is to standardize it to unified form of:
 
-        * [(file name, content type, producer)]
+        * [(param, (file name, content type, producer))]
     """
 
-    for param, val in files.iteritems():
+    if hasattr(files, "iteritems"):
+        files = files.iteritems()
+
+    for param, val in files:
         file_name, content_type, fobj = (None, None, None)
         if isinstance(val, tuple):
             if len(val) == 2:
@@ -164,7 +169,7 @@ def _convert_files(files):
         if not content_type:
             content_type = _guess_content_type(file_name)
 
-        yield (file_name, content_type, IBodyProducer(fobj))
+        yield (param, (file_name, content_type, IBodyProducer(fobj)))
 
 
 def _combine_query_params(url, params):

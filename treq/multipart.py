@@ -246,7 +246,8 @@ def _converted(fields):
                 raise ValueError(
                     "Expected tuple: (filename, content type, producer)")
             filename, content_type, producer = value
-            yield name, (_enforce_unicode(filename), content_type, producer)
+            filename = _enforce_unicode(filename) if filename else None
+            yield name, (filename, content_type, producer)
 
         elif isinstance(value, (str, unicode)):
             yield name, _enforce_unicode(value)

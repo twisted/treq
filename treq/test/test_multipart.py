@@ -544,6 +544,32 @@ my lovely bytes
         self.assertEqual(expected, output)
 
 
+    def test_missingAttachmentName(self):
+        """
+        Make sure attachments without names are supported
+        """
+        output, producer = self.getOutput(
+            MultiPartProducer({
+                "field": (None, "image/jpeg", FileBodyProducer(
+                            inputFile = StringIO("my lovely bytes"),
+                            cooperator=self.cooperator,
+                            ))
+                }, cooperator=self.cooperator,
+                boundary="heyDavid"),
+            with_producer=True)
+
+        expected = self.newLines("""--heyDavid
+Content-Disposition: form-data; name="field"
+Content-Type: image/jpeg
+Content-Length: 15
+
+my lovely bytes
+--heyDavid--
+""")
+        self.assertEqual(len(expected), producer.length)
+        self.assertEqual(expected, output)
+
+
     def test_newLinesInParams(self):
         """
         Make sure we generate proper format even with newlines in attachments

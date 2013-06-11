@@ -144,10 +144,11 @@ class TreqPostTests(TestCase):
     @inlineCallbacks
     def test_multipart_post_params_with_same_names(self):
         """This test upload various files and pictures"""
-        if "php" in environ.get("TREQ_IMAGE"):
+        image = environ.get("TREQ_IMAGE")
+        if "php" in image or "ruby" in image:
             raise unittest.SkipTest(
-                "Skipping test incompabible with php."
-                " PHP does not support parameters with same names without"
+                "Skipping test incompabible with PHP and Ruby."
+                " PHP/Ruby do not support parameters with same names without"
                 " brackets.")
 
         response = yield self.post(
@@ -183,8 +184,10 @@ class TreqPostTests(TestCase):
     def test_multipart_post_params_with_same_names_php_style(self):
         """This test upload various files and pictures"""
 
-        if "php" not in environ.get("TREQ_IMAGE"):
-            raise unittest.SkipTest("Skipping test designed for php.")
+        image = environ.get("TREQ_IMAGE")
+        if "php" not in image and "ruby" not in image:
+            raise unittest.SkipTest(
+                "Skipping test designed for php and ruby")
 
         response = yield self.post(
             '/',

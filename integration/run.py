@@ -33,4 +33,5 @@ for image, port in images():
     print "Testing ", image, "at", port
     print "-"*100
     subprocess.call(
-        "TREQ_PORT={} trial test_treq.py".format(port), shell=True)
+        "TREQ_PORT={} TREQ_IMAGE={} trial test_treq.py".format(port, image),
+        shell=True)

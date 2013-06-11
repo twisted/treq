@@ -5,6 +5,7 @@ This test suite tests against webzoo frameworks:
 https://github.com/klizhentas/webzoo
 
 """
+import unittest
 from os import path, environ
 from StringIO import StringIO
 from base64 import b64decode
@@ -143,6 +144,11 @@ class TreqPostTests(TestCase):
     @inlineCallbacks
     def test_multipart_post_params_with_same_names(self):
         """This test upload various files and pictures"""
+        if "php" in environ.get("TREQ_IMAGE"):
+            raise unittest.SkipTest(
+                "Skipping test incompabible with php."
+                " PHP does not support parameters with same names without"
+                " brackets.")
 
         response = yield self.post(
             '/',
@@ -154,6 +160,42 @@ class TreqPostTests(TestCase):
                 ("attachment", FileLikeObject("name1", "file1")),
                 ("attachment", FileLikeObject("name2", "file2")),
                 ("attachment", FileLikeObject("name3", "file3"))
+            ])
+
+        self.assertEqual(response.code, 200)
+        body = yield treq.json_content(response)
+
+        self.assertEqual(["body1", "body2"], body['form']['param'])
+
+        files = body['files']['attachment']
+        self.assertEqual("name1", files[0]["name"])
+        self.assertEqual("name2", files[1]["name"])
+        self.assertEqual("name3", files[2]["name"])
+
+        self.assertEqual("file1", b64decode(files[0]["data"]))
+        self.assertEqual("file2", b64decode(files[1]["data"]))
+        self.assertEqual("file3", b64decode(files[2]["data"]))
+
+        yield print_response(response)
+
+
+    @inlineCallbacks
+    def test_multipart_post_params_with_same_names_php_style(self):
+        """This test upload various files and pictures"""
+
+        if "php" not in environ.get("TREQ_IMAGE"):
+            raise unittest.SkipTest("Skipping test designed for php.")
+
+        response = yield self.post(
+            '/',
+            data=[
+                ("param[]", "body1"),
+                ("param[]", "body2")
+            ],
+            files=[
+                ("attachment[]", FileLikeObject("name1", "file1")),
+                ("attachment[]", FileLikeObject("name2", "file2")),
+                ("attachment[]", FileLikeObject("name3", "file3"))
             ])
 
         self.assertEqual(response.code, 200)

@@ -17,10 +17,10 @@ HTTPBIN_URL = "http://httpbin.org"
 HTTPSBIN_URL = "https://httpbin.org"
 
 
-def skip_relative_redirect(test_method):
+def todo_relative_redirect(test_method):
     expected_version = Version('twisted', 13, 1, 0)
     if current_version < expected_version:
-        test_method.skip = (
+        test_method.todo = (
             "Relative Redirects are not supported in Twisted versions "
             "prior to: {0}").format(expected_version.short())
 
@@ -130,7 +130,7 @@ class TreqIntegrationTests(TestCase):
         self.assertEqual(response.code, 200)
         yield print_response(response)
 
-    @skip_relative_redirect
+    @todo_relative_redirect
     @inlineCallbacks
     def test_head_302_relative_redirect(self):
         response = yield self.head('/relative-redirect/1')
@@ -212,7 +212,7 @@ class HTTPSTreqIntegrationTests(TreqIntegrationTests):
     baseurl = HTTPSBIN_URL
 
     if is_pypy:
-        skip = "These tests segfault (or hang) on PyPy."
+        todo = "These tests segfault (or hang) on PyPy."
 
     if not has_ssl:
-        skip = "These tests require pyOpenSSL."
+        todo = "These tests require pyOpenSSL."

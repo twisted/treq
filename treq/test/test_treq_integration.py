@@ -22,7 +22,7 @@ def skip_relative_redirect(test_method):
     if current_version < expected_version:
         test_method.skip = (
             "Relative Redirects are not supported in Twisted versions "
-            "prior to: {0}").format(expected_version)
+            "prior to: {0}").format(expected_version.short())
 
     return test_method
 
@@ -98,11 +98,12 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def test_get_302_absolute_redirect(self):
-        response = yield self.get('/redirect-to?url={0}/get'.format(self.baseurl))
+        response = yield self.get(
+            '/redirect-to?url={0}/get'.format(self.baseurl))
         self.assertEqual(response.code, 200)
         yield print_response(response)
 
-    @skip_relative_redirect
+    @todo_relative_redirect
     @inlineCallbacks
     def test_get_302_relative_redirect(self):
         response = yield self.get('/relative-redirect/1')
@@ -124,7 +125,8 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def test_head_302_absolute_redirect(self):
-        response = yield self.head('/redirect-to?url={0}/get'.format(self.baseurl))
+        response = yield self.head(
+            '/redirect-to?url={0}/get'.format(self.baseurl))
         self.assertEqual(response.code, 200)
         yield print_response(response)
 

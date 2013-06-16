@@ -23,7 +23,7 @@ from treq.auth import add_auth
 from treq._utils import default_reactor
 
 from cookielib import CookieJar
-from treq._cookies import cookiejar_from_dict
+from requests.cookies import cookiejar_from_dict
 
 
 _cookie_jars = WeakKeyDictionary()

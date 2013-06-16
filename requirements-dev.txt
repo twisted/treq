@@ -3,3 +3,4 @@ pyflakes
 pep8
 sphinx
 mock
+requests

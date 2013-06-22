@@ -7,13 +7,13 @@ from twisted.web.http_headers import Headers
 
 from treq.test.util import TestCase
 
-from treq import client
+from treq.client import HTTPClient
 
 
 class HTTPClientTests(TestCase):
     def setUp(self):
         self.agent = mock.Mock(Agent)
-        self.client = client.HTTPClient(self.agent)
+        self.client = HTTPClient(self.agent)
 
         self.fbp_patcher = mock.patch('treq.client.FileBodyProducer')
         self.FileBodyProducer = self.fbp_patcher.start()
@@ -124,8 +124,7 @@ class HTTPClientTests(TestCase):
 
         self.assertBody('hello')
 
-    @mock.patch.object(
-        client, '_make_boundary', mock.Mock(return_value="heyDavid"))
+    @mock.patch('treq.client.uuid.uuid4', mock.Mock(return_value="heyDavid"))
     def test_request_no_name_attachment(self):
 
         self.client.request(
@@ -145,8 +144,7 @@ class HTTPClientTests(TestCase):
                 boundary='heyDavid'),
             self.MultiPartProducer.call_args)
 
-    @mock.patch.object(
-        client, '_make_boundary', mock.Mock(return_value="heyDavid"))
+    @mock.patch('treq.client.uuid.uuid4', mock.Mock(return_value="heyDavid"))
     def test_request_named_attachment(self):
 
         self.client.request(
@@ -167,8 +165,7 @@ class HTTPClientTests(TestCase):
                 boundary='heyDavid'),
             self.MultiPartProducer.call_args)
 
-    @mock.patch.object(
-        client, '_make_boundary', mock.Mock(return_value="heyDavid"))
+    @mock.patch('treq.client.uuid.uuid4', mock.Mock(return_value="heyDavid"))
     def test_request_named_attachment_and_ctype(self):
 
         self.client.request(
@@ -189,8 +186,7 @@ class HTTPClientTests(TestCase):
                 boundary='heyDavid'),
             self.MultiPartProducer.call_args)
 
-    @mock.patch.object(
-        client, '_make_boundary', mock.Mock(return_value="heyDavid"))
+    @mock.patch('treq.client.uuid.uuid4', mock.Mock(return_value="heyDavid"))
     def test_request_mixed_params(self):
 
         class NamedFile(StringIO):
@@ -222,8 +218,7 @@ class HTTPClientTests(TestCase):
                 boundary='heyDavid'),
             self.MultiPartProducer.call_args)
 
-    @mock.patch.object(
-        client, '_make_boundary', mock.Mock(return_value="heyDavid"))
+    @mock.patch('treq.client.uuid.uuid4', mock.Mock(return_value="heyDavid"))
     def test_request_mixed_params_dict(self):
 
         self.client.request(

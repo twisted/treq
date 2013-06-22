@@ -74,12 +74,14 @@ class HTTPClient(object):
     def request(self, method, url, **kwargs):
         method = method.upper()
 
-        # accept params
+        # Join parameters provided in the URL
+        # and the ones passed as argument.
         params = kwargs.get('params')
         if params:
             url = _combine_query_params(url, params)
 
-        # convert headers
+        # Convert headers dictionary to
+        # twisted raw headers format.
         headers = kwargs.get('headers')
         if headers:
             if isinstance(headers, dict):
@@ -94,13 +96,17 @@ class HTTPClient(object):
         else:
             headers = Headers({})
 
+        # Here we choose a right producer
+        # based on the parameters passed in.
         bodyProducer = None
         data = kwargs.get('data')
         files = kwargs.get('files')
         if files:
-            # in case of files presens create a multipart/form-data request
+            # If the files keyword is present we will issue a
+            # multipart/form-data request as it suits better for cases
+            # with files and/or large objects.
             files = list(_convert_files(files))
-            boundary = _make_boundary()
+            boundary = uuid.uuid4()
             headers.setRawHeaders(
                 'content-type', [
                     'multipart/form-data; boundary=%s' % (boundary,)])
@@ -112,7 +118,8 @@ class HTTPClient(object):
             bodyProducer = multipart.MultiPartProducer(
                 data + files, boundary=boundary)
         elif data:
-            # otherwise stick to x-www-form-urlencoded format
+            # Otherwise stick to x-www-form-urlencoded format
+            # as it's generally faster for smaller requests.
             if isinstance(data, (dict, list, tuple)):
                 headers.setRawHeaders(
                     'content-type', ['application/x-www-form-urlencoded'])
@@ -124,10 +131,6 @@ class HTTPClient(object):
             bodyProducer=bodyProducer)
 
         return d
-
-
-def _make_boundary():
-    return uuid.uuid4()
 
 
 def _convert_params(params):

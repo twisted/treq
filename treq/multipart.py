@@ -53,7 +53,7 @@ class MultiPartProducer(object):
     """
 
     def __init__(self, fields, boundary=None, cooperator=task):
-        self._fields = list(_sorted(_converted(fields)))
+        self._fields = list(_sorted_by_type(_converted(fields)))
         self._currentProducer = None
         self._cooperate = cooperator.cooperate
 
@@ -92,10 +92,12 @@ class MultiPartProducer(object):
         by pausing the L{CooperativeTask} which drives that activity.
         """
         if self._currentProducer:
-            # having a current producer means that we are in
-            # the paused state as we've returned the cooperator
-            # the deferred of this producer, so request to pause
-            # us is actually a request to pause our underlying
+            # Having a current producer means that we are in
+            # the paused state because we've returned
+            # the deferred of the current producer to the
+            # the cooperator. So this request
+            # for pausing us is actually a request to pause
+            # our underlying current producer.
             self._currentProducer.pauseProducing()
         else:
             self._task.pause()
@@ -332,12 +334,11 @@ class _Header(object):
             return h.read()
 
 
-def _sorted(fields):
-    """A convenience function that sorts the fields
-    where strings are placed before files what makes
-    a request more readable generally as files are bigger.
-    It also provides deterministic order of fields
-    sorted by key what is easier for testing.
+def _sorted_by_type(fields):
+    """Sorts params so that strings are placed before files.
+
+    That makes a request more readable, as generally files are bigger.
+    It also provides deterministic order of fields what is easier for testing.
     """
     def key(p):
         key, val = p

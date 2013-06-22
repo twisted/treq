@@ -13,16 +13,6 @@ from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
 
 from treq.multipart import MultiPartProducer
 
-MP = MultiPartProducer
-
-
-class StringConsumer(object):
-    def __init__(self, outputFile):
-        self.outputFile = outputFile
-
-    def write(self, bytes):
-        self.outputFile.write(bytes)
-
 
 class MultiPartProducerTestCase(unittest.TestCase):
 
@@ -54,9 +44,7 @@ class MultiPartProducerTestCase(unittest.TestCase):
         """
         A convenience function to consume and return outpute.
         """
-
-        output = StringIO()
-        consumer = StringConsumer(output)
+        consumer = output = StringIO()
 
         producer.startProducing(consumer)
 
@@ -75,7 +63,9 @@ class MultiPartProducerTestCase(unittest.TestCase):
         """
         L{MultiPartProducer} instances provide L{IBodyProducer}.
         """
-        self.assertTrue(verifyObject(IBodyProducer, MP({})))
+        self.assertTrue(
+            verifyObject(
+                IBodyProducer, MultiPartProducer({})))
 
     def test_unknownLength(self):
         """
@@ -91,10 +81,12 @@ class MultiPartProducerTestCase(unittest.TestCase):
             def tell(self):
                 pass
 
-        producer = MP({"f": ("name", None, FileBodyProducer(HasSeek()))})
+        producer = MultiPartProducer(
+            {"f": ("name", None, FileBodyProducer(HasSeek()))})
         self.assertEqual(UNKNOWN_LENGTH, producer.length)
 
-        producer = MP({"f": ("name", None, FileBodyProducer(HasTell()))})
+        producer = MultiPartProducer(
+            {"f": ("name", None, FileBodyProducer(HasTell()))})
         self.assertEqual(UNKNOWN_LENGTH, producer.length)
 
     def test_knownLengthOnFile(self):
@@ -139,9 +131,7 @@ class MultiPartProducerTestCase(unittest.TestCase):
         file to the given L{IConsumer} and returns a L{Deferred} which fires
         when they have all been written.
         """
-
-        output = StringIO()
-        consumer = StringConsumer(output)
+        consumer = output = StringIO()
 
         producer = MultiPartProducer({
             "field": ('file name', "text/hello-world", FileBodyProducer(
@@ -172,9 +162,8 @@ Hello, World
         When L{MultiPartProducer} reaches end-of-file on the input
         file given to it, the input file is closed.
         """
-        output = StringIO()
         inputFile = StringIO("hello, world!")
-        consumer = StringConsumer(output)
+        consumer = StringIO()
 
         producer = MultiPartProducer({
             "field": (
@@ -212,8 +201,7 @@ Hello, World
                     cooperator=self.cooperator))
         }, cooperator=self.cooperator, boundary="heyDavid")
 
-        complete = producer.startProducing(
-            StringConsumer(StringIO()))
+        complete = producer.startProducing(StringIO())
 
         while self._scheduled:
             self._scheduled.pop(0)()
@@ -227,9 +215,8 @@ Hello, World
         calling C{resumeProducing} and closes the input file but does
         not cause the L{Deferred} returned by C{startProducing} to fire.
         """
-        output = StringIO()
         inputFile = StringIO("hello, world!")
-        consumer = StringConsumer(output)
+        consumer = StringIO()
 
         producer = MultiPartProducer({
             "field": (
@@ -251,9 +238,8 @@ Hello, World
         L{MultiPartProducer.pauseProducing} temporarily suspends writing bytes
         from the input file to the given L{IConsumer}.
         """
-        output = StringIO()
         inputFile = StringIO("hello, world!")
-        consumer = StringConsumer(output)
+        consumer = output = StringIO()
 
         producer = MultiPartProducer({
             "field": (
@@ -286,9 +272,8 @@ Hello, World
         from the input file to the given L{IConsumer} after it was previously
         paused with L{MultiPartProducer.pauseProducing}.
         """
-        output = StringIO()
         inputFile = StringIO("hello, world!")
-        consumer = StringConsumer(output)
+        consumer = output = StringIO()
 
         producer = MultiPartProducer({
             "field": (

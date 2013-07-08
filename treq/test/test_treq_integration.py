@@ -6,6 +6,9 @@ from twisted.internet.task import deferLater
 from twisted.internet import reactor
 from twisted.internet.tcp import Client
 
+from twisted import version as current_version
+from twisted.python.versions import Version
+
 from twisted.web.client import HTTPConnectionPool
 
 from treq.test.util import DEBUG, is_pypy, has_ssl
@@ -14,6 +17,16 @@ import treq
 
 HTTPBIN_URL = "http://httpbin.org"
 HTTPSBIN_URL = "https://httpbin.org"
+
+
+def todo_relative_redirect(test_method):
+    expected_version = Version('twisted', 13, 1, 0)
+    if current_version < expected_version:
+        test_method.todo = (
+            "Relative Redirects are not supported in Twisted versions "
+            "prior to: {0}").format(expected_version.short())
+
+    return test_method
 
 
 @inlineCallbacks
@@ -86,8 +99,16 @@ class TreqIntegrationTests(TestCase):
         yield print_response(response)
 
     @inlineCallbacks
-    def test_get_302_redirect_allowed(self):
-        response = yield self.get('/redirect/1')
+    def test_get_302_absolute_redirect(self):
+        response = yield self.get(
+            '/redirect-to?url={0}/get'.format(self.baseurl))
+        self.assertEqual(response.code, 200)
+        yield print_response(response)
+
+    @todo_relative_redirect
+    @inlineCallbacks
+    def test_get_302_relative_redirect(self):
+        response = yield self.get('/relative-redirect/1')
         self.assertEqual(response.code, 200)
         yield print_response(response)
 
@@ -105,8 +126,16 @@ class TreqIntegrationTests(TestCase):
         yield print_response(response)
 
     @inlineCallbacks
-    def test_head_302_redirect_allowed(self):
-        response = yield self.head('/redirect/1')
+    def test_head_302_absolute_redirect(self):
+        response = yield self.head(
+            '/redirect-to?url={0}/get'.format(self.baseurl))
+        self.assertEqual(response.code, 200)
+        yield print_response(response)
+
+    @todo_relative_redirect
+    @inlineCallbacks
+    def test_head_302_relative_redirect(self):
+        response = yield self.head('/relative-redirect/1')
         self.assertEqual(response.code, 200)
         yield print_response(response)
 
@@ -206,7 +235,7 @@ class HTTPSTreqIntegrationTests(TreqIntegrationTests):
     baseurl = HTTPSBIN_URL
 
     if is_pypy:
-        skip = "These tests segfault (or hang) on PyPy."
+        todo = "These tests segfault (or hang) on PyPy."
 
     if not has_ssl:
-        skip = "These tests require pyOpenSSL."
+        todo = "These tests require pyOpenSSL."

@@ -7,6 +7,7 @@ from StringIO import StringIO
 from twisted.trial import unittest
 from zope.interface.verify import verifyObject
 
+from twisted.python import failure
 from twisted.internet import task
 from twisted.web.client import FileBodyProducer
 from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
@@ -39,6 +40,51 @@ class MultiPartProducerTestCase(unittest.TestCase):
         self._scheduled = []
         self.cooperator = task.Cooperator(
             self._termination, self._scheduled.append)
+
+    def successResultOf(self, deferred):
+        """
+        Backport from 13.0 for compatibility with older Twisted versions
+        """
+        result = []
+        deferred.addBoth(result.append)
+        if not result:
+            self.fail(
+                "Success result expected on %r, found no result instead" % (
+                    deferred,))
+        elif isinstance(result[0], failure.Failure):
+            self.fail(
+                "Success result expected on %r, "
+                "found failure result (%r) instead" % (deferred, result[0]))
+        else:
+            return result[0]
+
+    def assertNoResult(self, deferred):
+        """
+        Backport from 13.0 for compatibility with older Twisted versions
+        """
+        result = []
+        deferred.addBoth(result.append)
+        if result:
+            self.fail(
+                "No result expected on %r, found %r instead" % (
+                    deferred, result[0]))
+
+    def failureResultOf(self, deferred):
+        """
+        Backport from 13.0 for compatibility with older Twisted versions
+        """
+        result = []
+        deferred.addBoth(result.append)
+        if not result:
+            self.fail(
+                "Failure result expected on %r, found no result instead" % (
+                    deferred,))
+        elif not isinstance(result[0], failure.Failure):
+            self.fail(
+                "Failure result expected on %r, "
+                "found success result (%r) instead" % (deferred, result[0]))
+        else:
+            return result[0]
 
     def getOutput(self, producer, with_producer=False):
         """

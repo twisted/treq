@@ -1,4 +1,9 @@
+import mimetypes
+import uuid
+
+from io import BytesIO
 from StringIO import StringIO
+from os import path
 
 from urlparse import urlparse, urlunparse
 from urllib import urlencode
@@ -17,36 +22,9 @@ from twisted.web.client import (
 
 from twisted.python.components import registerAdapter
 
-from treq.auth import add_auth
 from treq._utils import default_reactor
-
-
-def _combine_query_params(url, params):
-    parsed_url = urlparse(url)
-
-    qs = []
-
-    if parsed_url.query:
-        qs.extend([parsed_url.query, '&'])
-
-    qs.append(urlencode(params, doseq=True))
-
-    return urlunparse((parsed_url[0], parsed_url[1],
-                       parsed_url[2], parsed_url[3],
-                       ''.join(qs), parsed_url[5]))
-
-
-def _from_bytes(orig_bytes):
-    return FileBodyProducer(StringIO(orig_bytes))
-
-
-def _from_file(orig_file):
-    return FileBodyProducer(orig_file)
-
-
-registerAdapter(_from_bytes, str, IBodyProducer)
-registerAdapter(_from_file, file, IBodyProducer)
-registerAdapter(_from_file, StringIO, IBodyProducer)
+from treq.auth import add_auth
+from treq import multipart
 
 
 class HTTPClient(object):
@@ -96,12 +74,15 @@ class HTTPClient(object):
     def request(self, method, url, **kwargs):
         method = method.upper()
 
+        # Join parameters provided in the URL
+        # and the ones passed as argument.
         params = kwargs.get('params')
         if params:
             url = _combine_query_params(url, params)
 
+        # Convert headers dictionary to
+        # twisted raw headers format.
         headers = kwargs.get('headers')
-
         if headers:
             if isinstance(headers, dict):
                 h = Headers({})
@@ -115,17 +96,119 @@ class HTTPClient(object):
         else:
             headers = Headers({})
 
-        data = kwargs.get('data')
+        # Here we choose a right producer
+        # based on the parameters passed in.
         bodyProducer = None
-        if data:
+        data = kwargs.get('data')
+        files = kwargs.get('files')
+        if files:
+            # If the files keyword is present we will issue a
+            # multipart/form-data request as it suits better for cases
+            # with files and/or large objects.
+            files = list(_convert_files(files))
+            boundary = uuid.uuid4()
+            headers.setRawHeaders(
+                'content-type', [
+                    'multipart/form-data; boundary=%s' % (boundary,)])
+            if data:
+                data = _convert_params(data)
+            else:
+                data = []
+
+            bodyProducer = multipart.MultiPartProducer(
+                data + files, boundary=boundary)
+        elif data:
+            # Otherwise stick to x-www-form-urlencoded format
+            # as it's generally faster for smaller requests.
             if isinstance(data, (dict, list, tuple)):
                 headers.setRawHeaders(
                     'content-type', ['application/x-www-form-urlencoded'])
                 data = urlencode(data, doseq=True)
-
             bodyProducer = IBodyProducer(data)
 
         d = self._agent.request(
-            method, url, headers=headers, bodyProducer=bodyProducer)
+            method, url, headers=headers,
+            bodyProducer=bodyProducer)
 
         return d
+
+
+def _convert_params(params):
+    if hasattr(params, "iteritems"):
+        return list(sorted(params.iteritems()))
+    elif isinstance(params, (tuple, list)):
+        return list(params)
+    else:
+        raise ValueError("Unsupported format")
+
+
+def _convert_files(files):
+    """Files can be passed in a variety of formats:
+
+        * {'file': open("bla.f")}
+        * {'file': (name, open("bla.f"))}
+        * {'file': (name, content-type, open("bla.f"))}
+        * Anything that has iteritems method, e.g. MultiDict:
+          MultiDict([(name, open()), (name, open())]
+
+        Our goal is to standardize it to unified form of:
+
+        * [(param, (file name, content type, producer))]
+    """
+
+    if hasattr(files, "iteritems"):
+        files = files.iteritems()
+
+    for param, val in files:
+        file_name, content_type, fobj = (None, None, None)
+        if isinstance(val, tuple):
+            if len(val) == 2:
+                file_name, fobj = val
+            elif len(val) == 3:
+                file_name, content_type, fobj = val
+        else:
+            fobj = val
+            if hasattr(fobj, "name"):
+                file_name = path.basename(fobj.name)
+
+        if not content_type:
+            content_type = _guess_content_type(file_name)
+
+        yield (param, (file_name, content_type, IBodyProducer(fobj)))
+
+
+def _combine_query_params(url, params):
+    parsed_url = urlparse(url)
+
+    qs = []
+
+    if parsed_url.query:
+        qs.extend([parsed_url.query, '&'])
+
+    qs.append(urlencode(params, doseq=True))
+
+    return urlunparse((parsed_url[0], parsed_url[1],
+                       parsed_url[2], parsed_url[3],
+                       ''.join(qs), parsed_url[5]))
+
+
+def _from_bytes(orig_bytes):
+    return FileBodyProducer(StringIO(orig_bytes))
+
+
+def _from_file(orig_file):
+    return FileBodyProducer(orig_file)
+
+
+def _guess_content_type(filename):
+    if filename:
+        guessed = mimetypes.guess_type(filename)[0]
+    else:
+        guessed = None
+    return guessed or 'application/octet-stream'
+
+
+registerAdapter(_from_bytes, str, IBodyProducer)
+registerAdapter(_from_file, file, IBodyProducer)
+registerAdapter(_from_file, StringIO, IBodyProducer)
+registerAdapter(_from_file, BytesIO, IBodyProducer)

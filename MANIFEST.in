@@ -1,3 +1,5 @@
 include treq/_version
 include README.rst
 include LICENSE
+recursive-include docs *
+prune docs/build

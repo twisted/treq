@@ -84,8 +84,14 @@ def request(method, url, **kwargs):
 
     :param auth: HTTP Basic Authentication information.
     :type auth: tuple of ('username', 'password').
+	
+    :param str bindAddress: specifies the IP address to use as source address. 
+        Default: ``None``
+	    		
+    :param int bindPort: specifies the port to use as the source port. 
+        Default: ``0``
 
-    :rtype: Deferred that fires with an IResponse provider.
+    :rtype: Deferred that fires with an IResponse provider. 
 
     """
     return _client(**kwargs).request(method, url, **kwargs)

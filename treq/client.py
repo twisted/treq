@@ -39,8 +39,8 @@ class HTTPClient(object):
         if not pool:
             persistent = kwargs.get('persistent', True)
             pool = HTTPConnectionPool(reactor, persistent=persistent)
-
-        agent = Agent(reactor, pool=pool)
+        bindAddress=kwargs.get('bindAddress')
+        agent = Agent(reactor, pool=pool,bindAddress=bindAddress)
 
         if kwargs.get('allow_redirects', True):
             agent = RedirectAgent(agent)

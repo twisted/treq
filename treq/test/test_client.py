@@ -5,7 +5,7 @@ import mock
 from twisted.web.client import Agent
 from twisted.web.http_headers import Headers
 
-from treq.test.util import TestCase
+from treq.test.util import TestCase, with_clock
 
 from treq.client import HTTPClient
 
@@ -260,3 +260,36 @@ class HTTPClientTests(TestCase):
             headers=Headers({'User-Agent': ['treq/0.1dev'],
                              'Accept': ['application/json', 'text/plain']}),
             bodyProducer=None)
+
+    @with_clock
+    def test_request_timeout_fired(self, clock):
+        """
+        Verify the request is cancelled if a response is not received
+        within specified timeout period.
+        """
+        self.client.request('GET', 'http://example.com', timeout=2)
+
+        # simulate we haven't gotten a response within timeout seconds
+        clock.advance(3)
+        deferred = self.agent.request.return_value
+
+        # a deferred should have been cancelled
+        self.assertTrue(deferred.cancel.called)
+
+    @with_clock
+    def test_request_timeout_cancelled(self, clock):
+        """
+        Verify timeout is cancelled if a response is received before
+        timeout period elapses.
+        """
+        self.client.request('GET', 'http://example.com', timeout=2)
+
+        # simulate a response
+        deferred = self.agent.request.return_value
+        gotResult = deferred.addBoth.call_args[0][0]
+        gotResult('result')
+
+        # now advance the clock but since we already got a result,
+        # a cancellation timer should have been cancelled
+        clock.advance(3)
+        self.assertFalse(deferred.cancel.called)

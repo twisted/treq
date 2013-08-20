@@ -1,7 +1,7 @@
 from StringIO import StringIO
 
 from twisted.trial.unittest import TestCase
-from twisted.internet.defer import inlineCallbacks
+from twisted.internet.defer import CancelledError, inlineCallbacks
 from twisted.internet.task import deferLater
 from twisted.internet import reactor
 from twisted.internet.tcp import Client
@@ -9,7 +9,7 @@ from twisted.internet.tcp import Client
 from twisted import version as current_version
 from twisted.python.versions import Version
 
-from twisted.web.client import HTTPConnectionPool
+from twisted.web.client import HTTPConnectionPool, ResponseFailed
 
 from treq.test.util import DEBUG, is_pypy, has_ssl
 
@@ -229,6 +229,15 @@ class TreqIntegrationTests(TestCase):
                                   auth=('not-treq', 'not-treq'))
         self.assertEqual(response.code, 401)
         yield print_response(response)
+
+    @inlineCallbacks
+    def test_timeout(self):
+        """
+        Verify a timeout fires if a request takes too long.
+        """
+        yield self.assertFailure(self.get('/delay/2', timeout=1),
+                                 CancelledError,
+                                 ResponseFailed)
 
 
 class HTTPSTreqIntegrationTests(TreqIntegrationTests):

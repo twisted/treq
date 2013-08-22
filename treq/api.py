@@ -85,6 +85,10 @@ def request(method, url, **kwargs):
     :param auth: HTTP Basic Authentication information.
     :type auth: tuple of ('username', 'password').
 
+    :param int timeout: Request timeout seconds. If a response is not
+        received within this timeframe, a connection is aborted with
+        ``CancelledError``.
+
     :rtype: Deferred that fires with an IResponse provider.
 
     """

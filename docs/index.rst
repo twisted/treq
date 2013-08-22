@@ -94,7 +94,7 @@ features is.  Here is a list of `requests`_ features and their status in treq.
 +----------------------------------+----------+------+---+
 | Multipart File Uploads           | yes      | no   |   |
 +----------------------------------+----------+------+---+
-| Connection Timeouts              | yes      | no   |   |
+| Connection Timeouts              | yes      | yes  |   |
 +----------------------------------+----------+------+---+
 | .netrc support                   | yes      | no   |   |
 +----------------------------------+----------+------+---+
@@ -127,4 +127,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

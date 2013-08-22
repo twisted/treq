@@ -130,6 +130,18 @@ class HTTPClient(object):
             method, url, headers=headers,
             bodyProducer=bodyProducer)
 
+        timeout = kwargs.get('timeout')
+        if timeout:
+            delayedCall = default_reactor(kwargs.get('reactor')).callLater(
+                timeout, d.cancel)
+
+            def gotResult(result):
+                if delayedCall.active():
+                    delayedCall.cancel()
+                return result
+
+            d.addBoth(gotResult)
+
         return d
 
 

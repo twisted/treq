@@ -39,8 +39,8 @@ class HTTPClient(object):
         if not pool:
             persistent = kwargs.get('persistent', True)
             pool = HTTPConnectionPool(reactor, persistent=persistent)
-
-        bindAddress = (kwargs.get('bindAddress', None),
+        # if hosst or port are zero, then OS choses the default behaviour
+        bindAddress = (kwargs.get('bindAddress', 0),
                        kwargs.get('bindPort', 0)
                        )
 

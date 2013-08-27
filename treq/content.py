@@ -5,7 +5,23 @@ from weakref import WeakKeyDictionary
 from twisted.internet.defer import Deferred, succeed
 
 from twisted.internet.protocol import Protocol
+from twisted.python.constants import Names, NamedConstant
 from twisted.web.client import ResponseDone
+
+
+class CollectorResult(Names):
+    """
+    Return values to affect the behaviour of `collect`.
+
+    :cvar CONTINUE: Continue collecting data as normal, the same behaviour as
+        returning `None` from the collector.
+
+    :cvar ABORT_TRANSPORT: Abort the transport data is being collected over,
+        this will result in the errback for the `Deferred` returned from
+        `collect` being fired.
+    """
+    CONTINUE = NamedConstant()
+    ABORT_TRANSPORT = NamedConstant()
 
 
 def _encoding_from_headers(headers):
@@ -28,7 +44,9 @@ class _BodyCollector(Protocol):
         self.collector = collector
 
     def dataReceived(self, data):
-        self.collector(data)
+        result = self.collector(data)
+        if result is CollectorResult.ABORT_TRANSPORT:
+            self.transport.abortConnection()
 
     def connectionLost(self, reason):
         if reason.check(ResponseDone):
@@ -46,7 +64,9 @@ def collect(response, collector):
 
     :param IResponse response: The HTTP response to collect the body from.
     :param collector: A callable to be called each time data is available
-        from the response body.
+        from the response body; `CollectorResult` specifies meaningful return
+        values the collector might return to affect the behaviour of the
+        collection process.
     :type collector: single argument callable
 
     :rtype: Deferred that fires with None when the entire body has been read.

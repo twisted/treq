@@ -1,5 +1,9 @@
 import mock
 
+from twisted.test.proto_helpers import StringTransport
+
+from twisted.internet.error import ConnectionAborted
+
 from twisted.python.failure import Failure
 
 from twisted.web.http_headers import Headers
@@ -7,7 +11,35 @@ from twisted.web.client import ResponseDone, ResponseFailed
 
 from treq.test.util import TestCase
 
-from treq import collect, content, json_content, text_content
+from treq import collect, content, json_content, text_content, CollectorResult
+
+
+class StringTransportWithAborting(StringTransport):
+    """
+    A `StringTransport` which can be aborted.
+    """
+    def abortConnection(self):
+        if self.connected:
+            self.connected = False
+            self.protocol.connectionLost(Failure(ConnectionAborted()))
+
+
+class _ListCollector(object):
+    """
+    A collector, for use with `collect`, to gather data in a list.
+
+    :ivar data: The collected data.
+
+    :ivar result: The result to return from the collector callable, defaults to
+        `None`.
+    """
+    def __init__(self, result=None):
+        self.result = result
+        self.data = []
+
+    def collect(self, data):
+        self.data.append(data)
+        return self.result
 
 
 class ContentTests(TestCase):
@@ -16,6 +48,9 @@ class ContentTests(TestCase):
         self.protocol = None
 
         def deliverBody(protocol):
+            transport = StringTransportWithAborting()
+            protocol.makeConnection(transport)
+            transport.protocol = protocol
             self.protocol = protocol
 
         self.response.deliverBody.side_effect = deliverBody
@@ -56,6 +91,22 @@ class ContentTests(TestCase):
             lambda d: self.fail("Unexpectedly called with: {0}".format(d)))
 
         self.successResultOf(d, None)
+
+    def test_collect_abort(self):
+        """
+        If `CollectorResult.ABORT_TRANSPORT` is returned from a collector, the
+        transport connection is aborted.
+        """
+        collector = _ListCollector()
+        d = collect(self.response, collector.collect)
+
+        self.protocol.dataReceived('{')
+        collector.result = CollectorResult.ABORT_TRANSPORT
+        self.protocol.dataReceived('"msg": "hell')
+
+        self.failureResultOf(d, ConnectionAborted)
+
+        self.assertEqual(collector.data, ['{', '"msg": "hell'])
 
     def test_content(self):
         d = content(self.response)

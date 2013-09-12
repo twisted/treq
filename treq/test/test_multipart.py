@@ -350,17 +350,13 @@ Hello, World
             }, cooperator=self.cooperator, boundary="heyDavid"),
             with_producer=True)
 
-        encoded = u"Это моя строчечка\r\n".encode("utf-8")
-
-        expected = self.newLines((u"""--heyDavid
+        expected = self.newLines(u"""--heyDavid
 Content-Disposition: form-data; name="afield"
-Content-Type: text/plain; charset="utf-8"
-Content-Length: %s
 
 Это моя строчечка
 
 --heyDavid--
-""" % (len(encoded),)).encode("utf-8"))
+""".encode("utf-8"))
         self.assertEqual(producer.length, len(expected))
         self.assertEqual(expected, output)
 
@@ -417,15 +413,11 @@ Content-Length: %s
 
         self.assertEqual(self.newLines("""--heyDavid
 Content-Disposition: form-data; name="afield"
-Content-Type: text/plain; charset="utf-8"
-Content-Length: 15
 
 just a string
 
 --heyDavid
 Content-Disposition: form-data; name="bfield"
-Content-Type: text/plain; charset="utf-8"
-Content-Length: 14
 
 another string
 --heyDavid--
@@ -450,15 +442,11 @@ another string
 
         expected = self.newLines("""--heyDavid
 Content-Disposition: form-data; name="bfield"
-Content-Type: text/plain; charset="utf-8"
-Content-Length: 15
 
 just a string
 
 --heyDavid
 Content-Disposition: form-data; name="cfield"
-Content-Type: text/plain; charset="utf-8"
-Content-Length: 14
 
 another string
 --heyDavid
@@ -504,14 +492,10 @@ my lovely bytes
 
         expected = self.newLines("""--heyDavid
 Content-Disposition: form-data; name="bfield"
-Content-Type: text/plain; charset="utf-8"
-Content-Length: 14
 
 another string
 --heyDavid
 Content-Disposition: form-data; name="cfield"
-Content-Type: text/plain; charset="utf-8"
-Content-Length: 15
 
 just a string
 

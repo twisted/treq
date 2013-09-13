@@ -174,15 +174,9 @@ class MultiPartProducer(object):
     def _writeString(self, name, value, consumer):
         cdisp = _Header("Content-Disposition", "form-data")
         cdisp.add_param("name", name)
-        consumer.write(str(cdisp) + CRLF)
-
-        ctype = _Header(
-            "Content-Type", "text/plain", params=[("charset", "utf-8")])
-        consumer.write(str(ctype) + CRLF)
+        consumer.write(str(cdisp) + CRLF + CRLF)
 
         encoded = value.encode("utf-8")
-        consumer.write(
-            str(_Header("Content-Length", len(encoded))) + CRLF + CRLF)
         consumer.write(encoded)
         self._currentProducer = None
 

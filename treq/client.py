@@ -150,7 +150,7 @@ class HTTPClient(object):
                 prev = prev.previousResponse
             result.history = history
             return result
-        d.addBoth(buildHistory)
+        d.addCallback(buildHistory)
 
         return d
 

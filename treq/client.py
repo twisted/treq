@@ -148,6 +148,7 @@ class HTTPClient(object):
             while prev:
                 history.append(prev)
                 prev = prev.previousResponse
+            history.reverse()
             result.history = history
             return result
         d.addCallback(buildHistory)

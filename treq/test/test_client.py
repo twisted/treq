@@ -293,3 +293,14 @@ class HTTPClientTests(TestCase):
         # a cancellation timer should have been cancelled
         clock.advance(3)
         self.assertFalse(deferred.cancel.called)
+
+    def test_request_history(self):
+        deferred = self.agent.request.return_value
+        self.client.request('GET', 'http://example.com/')
+        buildHistory = deferred.addBoth.mock_calls[0][1][0]
+        response = mock.Mock()
+        response.previousResponse = mock.Mock(previousResponse=None)
+        result = buildHistory(response)
+        self.assertTrue(response.previousResponse in result.history)
+
+

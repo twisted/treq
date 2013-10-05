@@ -286,7 +286,7 @@ class HTTPClientTests(TestCase):
 
         # simulate a response
         deferred = self.agent.request.return_value
-        gotResult = deferred.addBoth.call_args[0][0]
+        gotResult = deferred.addBoth.mock_calls[0][1][0]
         gotResult('result')
 
         # now advance the clock but since we already got a result,

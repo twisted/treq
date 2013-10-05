@@ -302,5 +302,3 @@ class HTTPClientTests(TestCase):
         response.previousResponse = mock.Mock(previousResponse=None)
         result = buildHistory(response)
         self.assertTrue(response.previousResponse in result.history)
-
-

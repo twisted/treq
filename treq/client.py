@@ -64,7 +64,6 @@ class _BufferedResponse(proxyForInterface(IResponse)):
                 waiter.dataReceived(segment)
             waiter.connectionLost(reason)
 
-
     def deliverBody(self, protocol):
         if self._waiting is None and not self._finished:
             self._waiting = Deferred()
@@ -82,7 +81,6 @@ class _BufferedResponse(proxyForInterface(IResponse)):
             protocol.connectionLost(self._reason)
         else:
             self._waiters.append(protocol)
-
 
 
 class HTTPClient(object):

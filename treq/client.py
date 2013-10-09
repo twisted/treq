@@ -21,8 +21,7 @@ from twisted.web.client import (
     HTTPConnectionPool,
     RedirectAgent,
     ContentDecoderAgent,
-    GzipDecoder,
-    ResponseDone
+    GzipDecoder
 )
 
 from twisted.python.components import registerAdapter

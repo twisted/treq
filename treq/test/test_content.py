@@ -8,6 +8,7 @@ from twisted.web.client import ResponseDone, ResponseFailed
 from treq.test.util import TestCase
 
 from treq import collect, content, json_content, text_content
+from treq.client import _BufferedResponse
 
 
 class ContentTests(TestCase):
@@ -19,6 +20,7 @@ class ContentTests(TestCase):
             self.protocol = protocol
 
         self.response.deliverBody.side_effect = deliverBody
+        self.response = _BufferedResponse(self.response)
 
     def test_collect(self):
         data = []
@@ -78,7 +80,7 @@ class ContentTests(TestCase):
         def _fail_deliverBody(protocol):
             self.fail("deliverBody unexpectedly called.")
 
-        self.response.deliverBody.side_effect = _fail_deliverBody
+        self.response.original.deliverBody.side_effect = _fail_deliverBody
 
         d3 = content(self.response)
 

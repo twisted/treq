@@ -39,7 +39,7 @@ else:
 
             if not isinstance(results[0], Failure):
                 self.fail("Expected one of {0} got {1}.".format(
-                            errorTypes, results[0]))
+                    errorTypes, results[0]))
 
             self.assertTrue(results[0].check(*errorTypes))
             return results[0]

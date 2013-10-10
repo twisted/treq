@@ -313,7 +313,6 @@ class HTTPClientTests(TestCase):
         result.deliverBody(protocol)
         self.assertEqual(response.deliverBody.call_count, 1)
 
-
     def test_response_buffering_is_disabled_with_unbufferred_arg(self):
         response = mock.Mock()
 

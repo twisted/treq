@@ -20,24 +20,29 @@ except ImportError:
     has_ssl = False
 
 
-class TestCase(TestCase):
-    def successResultOf(self, d, expected):
-        results = []
-        d.addBoth(results.append)
+if hasattr(TestCase, "successResultOf"):
+    TestCase = TestCase
+else:
+    class TestCase(TestCase):
+        def successResultOf(self, d):
+            results = []
+            d.addBoth(results.append)
 
-        if isinstance(results[0], Failure):
-            results[0].raiseException()
+            if isinstance(results[0], Failure):
+                results[0].raiseException()
 
-        self.assertEqual(results[0], expected)
+            results[0]
 
-    def failureResultOf(self, d, errorType):
-        results = []
-        d.addBoth(results.append)
+        def failureResultOf(self, d, *errorTypes):
+            results = []
+            d.addBoth(results.append)
 
-        if not isinstance(results[0], Failure):
-            self.fail("Expected {0} got {1}.".format(errorType, results[0]))
+            if not isinstance(results[0], Failure):
+                self.fail("Expected one of {0} got {1}.".format(
+                            errorTypes, results[0]))
 
-        self.assertTrue(results[0].check(errorType))
+            self.assertTrue(results[0].check(*errorTypes))
+            return results[0]
 
 
 def with_clock(fn):

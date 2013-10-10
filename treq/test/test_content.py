@@ -33,7 +33,7 @@ class ContentTests(TestCase):
 
         self.protocol.connectionLost(Failure(ResponseDone()))
 
-        self.successResultOf(d, None)
+        self.assertEqual(self.successResultOf(d), None)
 
         self.assertEqual(data, ['{', '"msg": "hell', 'o"}'])
 
@@ -57,7 +57,7 @@ class ContentTests(TestCase):
             self.response,
             lambda d: self.fail("Unexpectedly called with: {0}".format(d)))
 
-        self.successResultOf(d, None)
+        self.assertEqual(self.successResultOf(d), None)
 
     def test_content(self):
         d = content(self.response)
@@ -66,7 +66,7 @@ class ContentTests(TestCase):
         self.protocol.dataReceived('bar')
         self.protocol.connectionLost(Failure(ResponseDone()))
 
-        self.successResultOf(d, 'foobar')
+        self.assertEqual(self.successResultOf(d), 'foobar')
 
     def test_content_cached(self):
         d1 = content(self.response)
@@ -75,7 +75,7 @@ class ContentTests(TestCase):
         self.protocol.dataReceived('bar')
         self.protocol.connectionLost(Failure(ResponseDone()))
 
-        self.successResultOf(d1, 'foobar')
+        self.assertEqual(self.successResultOf(d1), 'foobar')
 
         def _fail_deliverBody(protocol):
             self.fail("deliverBody unexpectedly called.")
@@ -84,7 +84,7 @@ class ContentTests(TestCase):
 
         d3 = content(self.response)
 
-        self.successResultOf(d3, 'foobar')
+        self.assertEqual(self.successResultOf(d3), 'foobar')
 
         self.assertNotIdentical(d1, d3)
 
@@ -95,8 +95,8 @@ class ContentTests(TestCase):
         self.protocol.dataReceived('foo')
         self.protocol.connectionLost(Failure(ResponseDone()))
 
-        self.successResultOf(d1, 'foo')
-        self.successResultOf(d2, 'foo')
+        self.assertEqual(self.successResultOf(d1), 'foo')
+        self.assertEqual(self.successResultOf(d2), 'foo')
 
         self.assertNotIdentical(d1, d2)
 
@@ -106,7 +106,7 @@ class ContentTests(TestCase):
         self.protocol.dataReceived('{"msg":"hello!"}')
         self.protocol.connectionLost(Failure(ResponseDone()))
 
-        self.successResultOf(d, {'msg': 'hello!'})
+        self.assertEqual(self.successResultOf(d), {"msg": "hello!"})
 
     def test_text_content(self):
         self.response.headers = Headers(
@@ -117,7 +117,7 @@ class ContentTests(TestCase):
         self.protocol.dataReceived('\xe2\x98\x83')
         self.protocol.connectionLost(Failure(ResponseDone()))
 
-        self.successResultOf(d, u'\u2603')
+        self.assertEqual(self.successResultOf(d), u'\u2603')
 
     def test_text_content_default_encoding_no_param(self):
         self.response.headers = Headers(
@@ -128,7 +128,7 @@ class ContentTests(TestCase):
         self.protocol.dataReceived('\xa1')
         self.protocol.connectionLost(Failure(ResponseDone()))
 
-        self.successResultOf(d, u'\xa1')
+        self.assertEqual(self.successResultOf(d), u'\xa1')
 
     def test_text_content_default_encoding_no_header(self):
         self.response.headers = Headers()
@@ -138,4 +138,4 @@ class ContentTests(TestCase):
         self.protocol.dataReceived('\xa1')
         self.protocol.connectionLost(Failure(ResponseDone()))
 
-        self.successResultOf(d, u'\xa1')
+        self.assertEqual(self.successResultOf(d), u'\xa1')

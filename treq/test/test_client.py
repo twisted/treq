@@ -2,7 +2,7 @@ from StringIO import StringIO
 
 import mock
 
-from twisted.internet.defer import Deferred
+from twisted.internet.defer import Deferred, succeed
 from twisted.internet.protocol import Protocol
 
 from twisted.web.client import Agent
@@ -296,6 +296,32 @@ class HTTPClientTests(TestCase):
         # a cancellation timer should have been cancelled
         clock.advance(3)
         self.assertFalse(deferred.cancel.called)
+
+    def test_response_is_buffered(self):
+        response = mock.Mock(deliverBody=mock.Mock())
+
+        self.agent.request.return_value = succeed(response)
+
+        d = self.client.get('http://www.example.com')
+
+        result = self.successResultOf(d)
+
+        protocol = mock.Mock(Protocol)
+        result.deliverBody(protocol)
+        self.assertEqual(response.deliverBody.call_count, 1)
+
+        result.deliverBody(protocol)
+        self.assertEqual(response.deliverBody.call_count, 1)
+
+
+    def test_response_buffering_is_disabled_with_unbufferred_arg(self):
+        response = mock.Mock()
+
+        self.agent.request.return_value = succeed(response)
+
+        d = self.client.get('http://www.example.com', unbuffered=True)
+
+        self.assertEqual(self.successResultOf(d), response)
 
 
 class BodyBufferingProtocolTests(TestCase):

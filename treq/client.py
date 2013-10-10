@@ -197,7 +197,7 @@ class HTTPClient(object):
 
             d.addBoth(gotResult)
 
-        if kwargs.get('unbuffered', True):
+        if not kwargs.get('unbuffered', False):
             d.addCallback(_BufferedResponse)
 
         return d

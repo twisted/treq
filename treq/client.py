@@ -39,7 +39,6 @@ class _BodyBufferingProtocol(Protocol):
 
     def dataReceived(self, data):
         self.buffer.append(data)
-
         self.original.dataReceived(data)
 
     def connectionLost(self, reason):

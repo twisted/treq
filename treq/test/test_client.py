@@ -2,12 +2,15 @@ from StringIO import StringIO
 
 import mock
 
+from twisted.internet.defer import Deferred
+from twisted.internet.protocol import Protocol
+
 from twisted.web.client import Agent
 from twisted.web.http_headers import Headers
 
 from treq.test.util import TestCase, with_clock
 
-from treq.client import HTTPClient
+from treq.client import HTTPClient, _BodyBufferingProtocol
 
 
 class HTTPClientTests(TestCase):
@@ -293,3 +296,63 @@ class HTTPClientTests(TestCase):
         # a cancellation timer should have been cancelled
         clock.advance(3)
         self.assertFalse(deferred.cancel.called)
+
+
+class BodyBufferingProtocolTests(TestCase):
+    def test_buffers_data(self):
+        buffer = []
+        protocol = _BodyBufferingProtocol(
+            mock.Mock(Protocol),
+            buffer,
+            None
+        )
+
+        protocol.dataReceived("foo")
+        self.assertEqual(buffer, ["foo"])
+
+        protocol.dataReceived("bar")
+        self.assertEqual(buffer, ["foo", "bar"])
+
+    def test_propagates_data_to_destination(self):
+        destination = mock.Mock(Protocol)
+        protocol = _BodyBufferingProtocol(
+            destination,
+            [],
+            None
+        )
+
+        protocol.dataReceived("foo")
+        destination.dataReceived.assert_called_once_with("foo")
+
+        protocol.dataReceived("bar")
+        destination.dataReceived.assert_called_with("bar")
+
+    def test_fires_finished_deferred(self):
+        finished = Deferred()
+        protocol = _BodyBufferingProtocol(
+            mock.Mock(Protocol),
+            [],
+            finished
+        )
+
+        class TestResponseDone(object):
+            pass
+
+        protocol.connectionLost(TestResponseDone())
+
+        self.failureResultOf(finished, TestResponseDone)
+
+    def test_propogates_connectionLost_reason(self):
+        destination = mock.Mock(Protocol)
+        protocol = _BodyBufferingProtocol(
+            destination,
+            [],
+            Deferred().addErrback(lambda ign: None)
+        )
+
+        class TestResponseDone(object):
+            pass
+
+        reason = TestResponseDone()
+        protocol.connectionLost(reason)
+        destination.connectionLost.assert_called_once_with(reason)

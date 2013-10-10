@@ -197,7 +197,10 @@ class HTTPClient(object):
 
             d.addBoth(gotResult)
 
-        return d.addCallback(_BufferedResponse)
+        if kwargs.get('unbuffered', True):
+            d.addCallback(_BufferedResponse)
+
+        return d
 
 
 def _convert_params(params):

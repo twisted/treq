@@ -7,11 +7,13 @@ python:
 
 env:
   - TWISTED=svn+svn://svn.twistedmatrix.com/svn/Twisted/trunk PYOPENSSL=PyOpenSSL
+  - TWISTED=Twisted==13.1.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==13.0.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==12.3.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==12.2.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==12.1.0 PYOPENSSL=PyOpenSSL
   - TWISTED=svn+svn://svn.twistedmatrix.com/svn/Twisted/trunk PYOPENSSL=
+  - TWISTED=Twisted==13.1.0 PYOPENSSL=
   - TWISTED=Twisted==13.0.0 PYOPENSSL=
   - TWISTED=Twisted==12.3.0 PYOPENSSL=
   - TWISTED=Twisted==12.2.0 PYOPENSSL=
@@ -24,6 +26,8 @@ matrix:
     - python: pypy
       env: TWISTED=Twisted==13.0.0 PYOPENSSL=PyOpenSSL
     - python: pypy
+      env: TWISTED=Twisted==13.1.0 PYOPENSSL=PyOpenSSL
+    - python: pypy
       env: TWISTED=Twisted==12.3.0 PYOPENSSL=PyOpenSSL
     - python: pypy
       env: TWISTED=Twisted==12.2.0 PYOPENSSL=PyOpenSSL
@@ -31,6 +35,8 @@ matrix:
       env: TWISTED=Twisted==12.1.0 PYOPENSSL=PyOpenSSL
     - python: pypy
       env: TWISTED=svn+svn://svn.twistedmatrix.com/svn/Twisted/trunk PYOPENSSL=
+    - python: pypy
+      env: TWISTED=Twisted==13.1.0 PYOPENSSL=
     - python: pypy
       env: TWISTED=Twisted==13.0.0 PYOPENSSL=
     - python: pypy
@@ -41,9 +47,9 @@ matrix:
       env: TWISTED=Twisted==12.1.0 PYOPENSSL=
 
 install:
-  - pip install $TWISTED --use-mirrors
-  - 'test -n "$PYOPENSSL" && pip install $PYOPENSSL --use-mirrors || true'
-  - pip install -r requirements-dev.txt --use-mirrors
+  - pip install $TWISTED
+  - 'test -n "$PYOPENSSL" && pip install $PYOPENSSL || true'
+  - pip install -r requirements-dev.txt
 
 script:
   - pep8 treq

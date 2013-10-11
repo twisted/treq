@@ -29,7 +29,7 @@ from twisted.python.components import registerAdapter
 from treq._utils import default_reactor
 from treq.auth import add_auth
 from treq import multipart
-from treq.response import Response
+from treq.response import _Response
 
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
@@ -201,7 +201,7 @@ class HTTPClient(object):
         if not kwargs.get('unbuffered', False):
             d.addCallback(_BufferedResponse)
 
-        return d.addCallback(Response)
+        return d.addCallback(_Response)
 
 
 def _convert_params(params):

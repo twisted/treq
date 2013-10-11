@@ -447,4 +447,3 @@ class BufferedResponseTests(TestCase):
 
         finished.dataReceived.assert_called_once_with("foo")
         finished.connectionLost.assert_called_once_with(done)
-

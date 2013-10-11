@@ -5,12 +5,16 @@ import mock
 from twisted.internet.defer import Deferred, succeed
 from twisted.internet.protocol import Protocol
 
+from twisted.python.failure import Failure
+
 from twisted.web.client import Agent
 from twisted.web.http_headers import Headers
 
 from treq.test.util import TestCase, with_clock
 
-from treq.client import HTTPClient, _BodyBufferingProtocol
+from treq.client import (
+    HTTPClient, _BodyBufferingProtocol, _BufferedResponse
+)
 
 
 class HTTPClientTests(TestCase):
@@ -381,3 +385,66 @@ class BodyBufferingProtocolTests(TestCase):
         reason = TestResponseDone()
         protocol.connectionLost(reason)
         destination.connectionLost.assert_called_once_with(reason)
+
+
+class BufferedResponseTests(TestCase):
+    def test_wraps_protocol(self):
+        wrappers = []
+        wrapped = mock.Mock(Protocol)
+        response = mock.Mock(deliverBody=mock.Mock(wraps=wrappers.append))
+
+        br = _BufferedResponse(response)
+
+        br.deliverBody(wrapped)
+        response.deliverBody.assert_called_once_with(wrappers[0])
+        self.assertNotEqual(wrapped, wrappers[0])
+
+    def test_concurrent_receivers(self):
+        wrappers = []
+        wrapped = mock.Mock(Protocol)
+        unwrapped = mock.Mock(Protocol)
+        response = mock.Mock(deliverBody=mock.Mock(wraps=wrappers.append))
+
+        br = _BufferedResponse(response)
+
+        br.deliverBody(wrapped)
+        br.deliverBody(unwrapped)
+        response.deliverBody.assert_called_once_with(wrappers[0])
+
+        wrappers[0].dataReceived("foo")
+        wrapped.dataReceived.assert_called_once_with("foo")
+
+        self.assertEqual(unwrapped.dataReceived.call_count, 0)
+
+        class TestResponseDone(Exception):
+            pass
+
+        done = Failure(TestResponseDone())
+
+        wrappers[0].connectionLost(done)
+        wrapped.connectionLost.assert_called_once_with(done)
+        unwrapped.dataReceived.assert_called_once_with("foo")
+        unwrapped.connectionLost.assert_called_once_with(done)
+
+    def test_receiver_after_finished(self):
+        wrappers = []
+        finished = mock.Mock(Protocol)
+
+        response = mock.Mock(deliverBody=mock.Mock(wraps=wrappers.append))
+
+        br = _BufferedResponse(response)
+        br.deliverBody(mock.Mock(Protocol))
+        wrappers[0].dataReceived("foo")
+
+        class TestResponseDone(Exception):
+            pass
+
+        done = Failure(TestResponseDone())
+
+        wrappers[0].connectionLost(done)
+
+        br.deliverBody(finished)
+
+        finished.dataReceived.assert_called_once_with("foo")
+        finished.connectionLost.assert_called_once_with(done)
+

@@ -1,6 +1,5 @@
 import cgi
 import json
-from weakref import WeakKeyDictionary
 
 from twisted.internet.defer import Deferred, succeed
 
@@ -59,10 +58,6 @@ def collect(response, collector):
     return d
 
 
-_content_cache = WeakKeyDictionary()
-_content_waiters = WeakKeyDictionary()
-
-
 def content(response):
     """
     Read the contents of an HTTP response.
@@ -74,25 +69,9 @@ def content(response):
 
     :rtype: Deferred that fires with the content as a str.
     """
-    if response in _content_cache:
-        return succeed(_content_cache[response])
-    if response in _content_waiters:
-        d = Deferred()
-        _content_waiters[response].append(d)
-        return d
-
-    def _cache_content(c):
-        _content_cache[response] = c
-        for d in _content_waiters[response]:
-            d.callback(c)
-        del _content_waiters[response]
-        return c
-
     _content = []
-    _content_waiters[response] = []
     d = collect(response, _content.append)
     d.addCallback(lambda _: ''.join(_content))
-    d.addCallback(_cache_content)
     return d
 
 

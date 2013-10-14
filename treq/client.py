@@ -8,7 +8,7 @@ from os import path
 from urlparse import urlparse, urlunparse
 from urllib import urlencode
 
-from twisted.internet.protocol import Protocol
+from twisted.internet.interfaces import IProtocol
 from twisted.internet.defer import Deferred
 from twisted.python.components import proxyForInterface
 
@@ -31,7 +31,7 @@ from treq.auth import add_auth
 from treq import multipart
 
 
-class _BodyBufferingProtocol(Protocol):
+class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
     def __init__(self, original, buffer, finished):
         self.original = original
         self.buffer = buffer

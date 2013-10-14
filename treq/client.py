@@ -8,8 +8,12 @@ from os import path
 from urlparse import urlparse, urlunparse
 from urllib import urlencode
 
+from twisted.internet.interfaces import IProtocol
+from twisted.internet.defer import Deferred
+from twisted.python.components import proxyForInterface
+
 from twisted.web.http_headers import Headers
-from twisted.web.iweb import IBodyProducer
+from twisted.web.iweb import IBodyProducer, IResponse
 
 from twisted.web.client import (
     Agent,
@@ -25,6 +29,57 @@ from twisted.python.components import registerAdapter
 from treq._utils import default_reactor
 from treq.auth import add_auth
 from treq import multipart
+
+
+class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
+    def __init__(self, original, buffer, finished):
+        self.original = original
+        self.buffer = buffer
+        self.finished = finished
+
+    def dataReceived(self, data):
+        self.buffer.append(data)
+        self.original.dataReceived(data)
+
+    def connectionLost(self, reason):
+        self.original.connectionLost(reason)
+        self.finished.errback(reason)
+
+
+class _BufferedResponse(proxyForInterface(IResponse)):
+    def __init__(self, original):
+        self.original = original
+        self._buffer = []
+        self._waiters = []
+        self._waiting = None
+        self._finished = False
+        self._reason = None
+
+    def _deliverWaiting(self, reason):
+        self._reason = reason
+        self._finished = True
+        for waiter in self._waiters:
+            for segment in self._buffer:
+                waiter.dataReceived(segment)
+            waiter.connectionLost(reason)
+
+    def deliverBody(self, protocol):
+        if self._waiting is None and not self._finished:
+            self._waiting = Deferred()
+            self._waiting.addBoth(self._deliverWaiting)
+            self.original.deliverBody(
+                _BodyBufferingProtocol(
+                    protocol,
+                    self._buffer,
+                    self._waiting
+                )
+            )
+        elif self._finished:
+            for segment in self._buffer:
+                protocol.dataReceived(segment)
+            protocol.connectionLost(self._reason)
+        else:
+            self._waiters.append(protocol)
 
 
 class HTTPClient(object):
@@ -141,6 +196,9 @@ class HTTPClient(object):
                 return result
 
             d.addBoth(gotResult)
+
+        if not kwargs.get('unbuffered', False):
+            d.addCallback(_BufferedResponse)
 
         return d
 

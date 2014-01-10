@@ -7,17 +7,27 @@ python:
 
 env:
   - TWISTED=svn+svn://svn.twistedmatrix.com/svn/Twisted/trunk PYOPENSSL=PyOpenSSL
+  - TWISTED=Twisted==13.2.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==13.1.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==13.0.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==12.3.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==12.2.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==12.1.0 PYOPENSSL=PyOpenSSL
   - TWISTED=svn+svn://svn.twistedmatrix.com/svn/Twisted/trunk PYOPENSSL=
+  - TWISTED=Twisted==13.2.0 PYOPENSSL=
   - TWISTED=Twisted==13.1.0 PYOPENSSL=
   - TWISTED=Twisted==13.0.0 PYOPENSSL=
   - TWISTED=Twisted==12.3.0 PYOPENSSL=
   - TWISTED=Twisted==12.2.0 PYOPENSSL=
   - TWISTED=Twisted==12.1.0 PYOPENSSL=
+  - TWISTED=svn+svn://svn.twistedmatrix.com/svn/Twisted/trunk PYOPENSSL="cryptography https://github.com/pyca/pyopenssl/archive/v0.14a1.tar.gz"
+  - TWISTED=Twisted==13.2.0 PYOPENSSL="cryptography https://github.com/pyca/pyopenssl/archive/v0.14a1.tar.gz"
+  - TWISTED=Twisted==13.1.0 PYOPENSSL="cryptography https://github.com/pyca/pyopenssl/archive/v0.14a1.tar.gz"
+  - TWISTED=Twisted==13.0.0 PYOPENSSL="cryptography https://github.com/pyca/pyopenssl/archive/v0.14a1.tar.gz"
+  - TWISTED=Twisted==12.3.0 PYOPENSSL="cryptography https://github.com/pyca/pyopenssl/archive/v0.14a1.tar.gz"
+  - TWISTED=Twisted==12.2.0 PYOPENSSL="cryptography https://github.com/pyca/pyopenssl/archive/v0.14a1.tar.gz"
+  - TWISTED=Twisted==12.1.0 PYOPENSSL="cryptography https://github.com/pyca/pyopenssl/archive/v0.14a1.tar.gz"
+
 
 install:
   - pip install $TWISTED

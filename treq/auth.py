@@ -1,4 +1,5 @@
 from twisted.web.http_headers import Headers
+import base64
 
 
 class UnknownAuthConfig(Exception):
@@ -24,7 +25,7 @@ class _RequestHeaderSettingAgent(object):
 
 
 def add_basic_auth(agent, username, password):
-    creds = '{0}:{1}'.format(username, password).encode('base64').strip()
+    creds = base64.b64encode('{0}:{1}'.format(username, password))
     return _RequestHeaderSettingAgent(
         agent,
         Headers({'Authorization': ['Basic {0}'.format(creds)]}))

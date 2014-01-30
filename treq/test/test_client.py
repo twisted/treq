@@ -324,7 +324,8 @@ class HTTPClientTests(TestCase):
 
         d = self.client.get('http://www.example.com', unbuffered=True)
 
-        self.assertEqual(self.successResultOf(d), response)
+        # YOLO public attribute.
+        self.assertEqual(self.successResultOf(d).original, response)
 
 
 class BodyBufferingProtocolTests(TestCase):

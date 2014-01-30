@@ -5,6 +5,7 @@ from twisted.internet.defer import Deferred, succeed
 
 from twisted.internet.protocol import Protocol
 from twisted.web.client import ResponseDone
+from twisted.web.http import PotentialDataLoss
 
 
 def _encoding_from_headers(headers):
@@ -32,9 +33,11 @@ class _BodyCollector(Protocol):
     def connectionLost(self, reason):
         if reason.check(ResponseDone):
             self.finished.callback(None)
-            return
-
-        self.finished.errback(reason)
+        elif reason.check(PotentialDataLoss):
+            # http://twistedmatrix.com/trac/ticket/4840
+            self.finished.callback(None)
+        else:
+            self.finished.errback(reason)
 
 
 def collect(response, collector):

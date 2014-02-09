@@ -4,6 +4,7 @@ from twisted.python.failure import Failure
 
 from twisted.web.http_headers import Headers
 from twisted.web.client import ResponseDone, ResponseFailed
+from twisted.web.http import PotentialDataLoss
 
 from treq.test.util import TestCase
 
@@ -47,6 +48,22 @@ class ContentTests(TestCase):
         self.protocol.connectionLost(Failure(ResponseFailed("test failure")))
 
         self.failureResultOf(d, ResponseFailed)
+
+        self.assertEqual(data, ['foo'])
+
+    def test_collect_failure_potential_data_loss(self):
+        """
+        PotentialDataLoss failures are treated as success.
+        """
+        data = []
+
+        d = collect(self.response, data.append)
+
+        self.protocol.dataReceived('foo')
+
+        self.protocol.connectionLost(Failure(PotentialDataLoss()))
+
+        self.assertEqual(self.successResultOf(d), None)
 
         self.assertEqual(data, ['foo'])
 

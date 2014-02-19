@@ -35,6 +35,7 @@ from treq.response import _Response
 from cookielib import CookieJar
 from requests.cookies import cookiejar_from_dict
 
+from weakref import WeakKeyDictionary
 
 _cookie_jars = WeakKeyDictionary()
 

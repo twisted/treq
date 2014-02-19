@@ -21,7 +21,8 @@ from twisted.web.client import (
     HTTPConnectionPool,
     RedirectAgent,
     ContentDecoderAgent,
-    GzipDecoder
+    GzipDecoder,
+    CookieAgent
 )
 
 from twisted.python.components import registerAdapter
@@ -30,6 +31,32 @@ from treq._utils import default_reactor
 from treq.auth import add_auth
 from treq import multipart
 from treq.response import _Response
+
+from cookielib import CookieJar
+from requests.cookies import cookiejar_from_dict
+
+
+_cookie_jars = WeakKeyDictionary()
+
+
+def cookies(response):
+    """
+    Returns a dictionary-like CookieJar based on the cookies from the
+    response.
+
+    :param IResponse response: The HTTP response that has some cookies.
+
+    :rtype: a dictionary-like :py:class:`cookielib.CookieJar`
+    """
+    jar = cookiejar_from_dict({})
+
+    resp_jar = _cookie_jars.get(response, None)
+
+    if resp_jar is not None:
+        for cookie in resp_jar:
+            jar.set_cookie(cookie)
+
+    return jar
 
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
@@ -84,8 +111,9 @@ class _BufferedResponse(proxyForInterface(IResponse)):
 
 
 class HTTPClient(object):
-    def __init__(self, agent):
+    def __init__(self, agent, cookiejar=None):
         self._agent = agent
+        self._cookiejar = cookiejar
 
     @classmethod
     def with_config(cls, **kwargs):
@@ -98,6 +126,20 @@ class HTTPClient(object):
 
         agent = Agent(reactor, pool=pool)
 
+        cookiejar = None
+        cookies = kwargs.get('cookies')
+
+        if cookies:
+            if isinstance(cookies, dict):
+                cookiejar = cookiejar_from_dict(cookies)
+            elif isinstance(cookies, CookieJar):
+                cookiejar = cookies
+
+        if cookiejar is None:
+            cookiejar = CookieJar()
+
+        agent = CookieAgent(agent, cookiejar)
+
         if kwargs.get('allow_redirects', True):
             agent = RedirectAgent(agent)
 
@@ -107,7 +149,7 @@ class HTTPClient(object):
         if auth:
             agent = add_auth(agent, auth)
 
-        return cls(agent)
+        return cls(agent, cookiejar=cookiejar)
 
     def get(self, url, **kwargs):
         return self.request('GET', url, **kwargs)
@@ -183,8 +225,13 @@ class HTTPClient(object):
             bodyProducer = IBodyProducer(data)
 
         d = self._agent.request(
-            method, url, headers=headers,
-            bodyProducer=bodyProducer)
+            method, url, headers=headers, bodyProducer=bodyProducer)
+        if self._cookiejar is not None:
+            def _add_cookies(resp):
+                _cookie_jars[resp] = self._cookiejar
+                return resp
+
+            d.addCallback(_add_cookies)
 
         timeout = kwargs.get('timeout')
         if timeout:

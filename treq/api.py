@@ -102,17 +102,9 @@ def request(method, url, **kwargs):
 #
 
 def _client(*args, **kwargs):
-    kwargs['pool'] = default_pool(kwargs.get('reactor'),
-                                  kwargs.get('pool'),
-                                  kwargs.get('persistent'))
-
     reactor = default_reactor(kwargs.get('reactor'))
-
-    pool = kwargs.get('pool')
-    if not pool:
-        persistent = kwargs.get('persistent', True)
-        pool = HTTPConnectionPool(reactor, persistent=persistent)
-
+    pool = default_pool(reactor,
+                        kwargs.get('pool'),
+                        kwargs.get('persistent'))
     agent = Agent(reactor, pool=pool)
-
     return HTTPClient(agent)

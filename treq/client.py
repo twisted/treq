@@ -16,9 +16,7 @@ from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer, IResponse
 
 from twisted.web.client import (
-    Agent,
     FileBodyProducer,
-    HTTPConnectionPool,
     RedirectAgent,
     ContentDecoderAgent,
     GzipDecoder
@@ -31,6 +29,9 @@ from treq.auth import add_auth
 from treq import multipart
 from treq.response import _Response
 
+
+def wrap_agent_with_gzip(agent):
+    return ContentDecoderAgent(wrapped_agent, [('gzip', GzipDecoder)])
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
     def __init__(self, original, buffer, finished):
@@ -86,28 +87,6 @@ class _BufferedResponse(proxyForInterface(IResponse)):
 class HTTPClient(object):
     def __init__(self, agent):
         self._agent = agent
-
-    @classmethod
-    def with_config(cls, **kwargs):
-        reactor = default_reactor(kwargs.get('reactor'))
-
-        pool = kwargs.get('pool')
-        if not pool:
-            persistent = kwargs.get('persistent', True)
-            pool = HTTPConnectionPool(reactor, persistent=persistent)
-
-        agent = Agent(reactor, pool=pool)
-
-        if kwargs.get('allow_redirects', True):
-            agent = RedirectAgent(agent)
-
-        agent = ContentDecoderAgent(agent, [('gzip', GzipDecoder)])
-
-        auth = kwargs.get('auth')
-        if auth:
-            agent = add_auth(agent, auth)
-
-        return cls(agent)
 
     def get(self, url, **kwargs):
         return self.request('GET', url, **kwargs)
@@ -182,7 +161,16 @@ class HTTPClient(object):
                 data = urlencode(data, doseq=True)
             bodyProducer = IBodyProducer(data)
 
-        d = self._agent.request(
+        wrapped_agent = self._agent
+
+        if kwargs.get('allow_redirects', True):
+            wrapped_agent = RedirectAgent(wrapped_agent)
+
+        auth = kwargs.get('auth')
+        if auth:
+            wrapped_agent = add_auth(wrapped_agent, auth)
+
+        d = wrapped_agent.request(
             method, url, headers=headers,
             bodyProducer=bodyProducer)
 

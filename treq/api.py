@@ -1,5 +1,7 @@
+from twisted.web.client import HTTPConnectionPool, Agent
+
 from treq.client import HTTPClient
-from treq._utils import default_pool
+from treq._utils import default_pool, default_reactor
 
 
 def head(url, **kwargs):
@@ -100,8 +102,9 @@ def request(method, url, **kwargs):
 #
 
 def _client(*args, **kwargs):
-    kwargs['pool'] = default_pool(kwargs.get('reactor'),
-                                  kwargs.get('pool'),
-                                  kwargs.get('persistent'))
-
-    return HTTPClient.with_config(**kwargs)
+    reactor = default_reactor(kwargs.get('reactor'))
+    pool = default_pool(reactor,
+                        kwargs.get('pool'),
+                        kwargs.get('persistent'))
+    agent = Agent(reactor, pool=pool)
+    return HTTPClient(agent)

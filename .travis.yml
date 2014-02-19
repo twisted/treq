@@ -25,6 +25,6 @@ install:
   - pip install -r requirements-dev.txt
 
 script:
-  - pep8 --exclude=_cookies.py treq
+  - pep8 treq
   - pyflakes treq
   - trial treq

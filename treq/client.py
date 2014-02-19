@@ -35,30 +35,6 @@ from treq.response import _Response
 from cookielib import CookieJar
 from requests.cookies import cookiejar_from_dict
 
-from weakref import WeakKeyDictionary
-
-_cookie_jars = WeakKeyDictionary()
-
-
-def cookies(response):
-    """
-    Returns a dictionary-like CookieJar based on the cookies from the
-    response.
-
-    :param IResponse response: The HTTP response that has some cookies.
-
-    :rtype: a dictionary-like :py:class:`cookielib.CookieJar`
-    """
-    jar = cookiejar_from_dict({})
-
-    resp_jar = _cookie_jars.get(response, None)
-
-    if resp_jar is not None:
-        for cookie in resp_jar:
-            jar.set_cookie(cookie)
-
-    return jar
-
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
     def __init__(self, original, buffer, finished):
@@ -227,12 +203,6 @@ class HTTPClient(object):
 
         d = self._agent.request(
             method, url, headers=headers, bodyProducer=bodyProducer)
-        if self._cookiejar is not None:
-            def _add_cookies(resp):
-                _cookie_jars[resp] = self._cookiejar
-                return resp
-
-            d.addCallback(_add_cookies)
 
         timeout = kwargs.get('timeout')
         if timeout:
@@ -249,7 +219,7 @@ class HTTPClient(object):
         if not kwargs.get('unbuffered', False):
             d.addCallback(_BufferedResponse)
 
-        return d.addCallback(_Response)
+        return d.addCallback(_Response, self._cookiejar)
 
 
 def _convert_params(params):

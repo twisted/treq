@@ -254,7 +254,7 @@ class TreqIntegrationTests(TestCase):
                                   params={'hello': 'there'})
         #self.assertEqual(response.code, 200)
         yield print_response(response)
-        self.assertEqual(treq.cookies(response)['hello'], 'there')
+        self.assertEqual(response.cookies()['hello'], 'there')
 
 
 class HTTPSTreqIntegrationTests(TreqIntegrationTests):

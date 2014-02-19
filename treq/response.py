@@ -1,10 +1,16 @@
 from twisted.python.components import proxyForInterface
 from twisted.web.iweb import IResponse
 
+from requests.cookies import cookiejar_from_dict
+
 from treq.content import content, json_content, text_content
 
 
 class _Response(proxyForInterface(IResponse)):
+    def __init__(self, original, cookiejar):
+        self.original = original
+        self._cookiejar = cookiejar
+
     def content(self):
         return content(self.original)
 
@@ -13,3 +19,12 @@ class _Response(proxyForInterface(IResponse)):
 
     def text(self, *args, **kwargs):
         return text_content(self.original, *args, **kwargs)
+
+    def cookies(self):
+        jar = cookiejar_from_dict({})
+
+        if self._cookiejar is not None:
+            for cookie in self._cookiejar:
+                jar.set_cookie(cookie)
+
+        return jar

@@ -1,4 +1,4 @@
-from twisted.web.client import HTTPConnectionPool, Agent
+from twisted.web.client import Agent
 
 from treq.client import HTTPClient
 from treq._utils import default_pool, default_reactor

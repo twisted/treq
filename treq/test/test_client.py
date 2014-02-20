@@ -2,7 +2,7 @@ from StringIO import StringIO
 
 import mock
 
-from twisted.internet.defer import Deferred, succeed
+from twisted.internet.defer import Deferred, succeed, CancelledError
 from twisted.internet.protocol import Protocol
 
 from twisted.python.failure import Failure
@@ -38,7 +38,7 @@ class HTTPClientTests(TestCase):
         self.client.request('gEt', 'http://example.com/')
         self.agent.request.assert_called_once_with(
             'GET', 'http://example.com/',
-            headers=Headers({}), bodyProducer=None)
+            Headers({'accept-encoding': ['gzip']}), None)
 
     def test_request_query_params(self):
         self.client.request('GET', 'http://example.com/',
@@ -46,7 +46,7 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'GET', 'http://example.com/?foo=bar',
-            headers=Headers({}), bodyProducer=None)
+            Headers({'accept-encoding': ['gzip']}), None)
 
     def test_request_tuple_query_values(self):
         self.client.request('GET', 'http://example.com/',
@@ -54,7 +54,7 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'GET', 'http://example.com/?foo=bar',
-            headers=Headers({}), bodyProducer=None)
+            Headers({'accept-encoding': ['gzip']}), None)
 
     def test_request_merge_query_params(self):
         self.client.request('GET', 'http://example.com/?baz=bax',
@@ -62,7 +62,7 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'GET', 'http://example.com/?baz=bax&foo=bar&foo=baz',
-            headers=Headers({}), bodyProducer=None)
+            Headers({'accept-encoding': ['gzip']}), None)
 
     def test_request_merge_tuple_query_params(self):
         self.client.request('GET', 'http://example.com/?baz=bax',
@@ -70,7 +70,7 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'GET', 'http://example.com/?baz=bax&foo=bar',
-            headers=Headers({}), bodyProducer=None)
+            Headers({'accept-encoding': ['gzip']}), None)
 
     def test_request_dict_single_value_query_params(self):
         self.client.request('GET', 'http://example.com/',
@@ -78,7 +78,7 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'GET', 'http://example.com/?foo=bar',
-            headers=Headers({}), bodyProducer=None)
+            Headers({'accept-encoding': ['gzip']}), None)
 
     def test_request_data_dict(self):
         self.client.request('POST', 'http://example.com/',
@@ -86,9 +86,9 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'POST', 'http://example.com/',
-            headers=Headers(
-                {'Content-Type': ['application/x-www-form-urlencoded']}),
-            bodyProducer=self.FileBodyProducer.return_value)
+            Headers({'Content-Type': ['application/x-www-form-urlencoded'],
+                     'accept-encoding': ['gzip']}),
+            self.FileBodyProducer.return_value)
 
         self.assertBody('foo=bar&foo=baz')
 
@@ -98,9 +98,9 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'POST', 'http://example.com/',
-            headers=Headers(
-                {'Content-Type': ['application/x-www-form-urlencoded']}),
-            bodyProducer=self.FileBodyProducer.return_value)
+            Headers({'Content-Type': ['application/x-www-form-urlencoded'],
+                     'accept-encoding': ['gzip']}),
+            self.FileBodyProducer.return_value)
 
         self.assertBody('foo=bar')
 
@@ -110,9 +110,9 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'POST', 'http://example.com/',
-            headers=Headers(
-                {'Content-Type': ['application/x-www-form-urlencoded']}),
-            bodyProducer=self.FileBodyProducer.return_value)
+            Headers({'Content-Type': ['application/x-www-form-urlencoded'],
+                     'accept-encoding': ['gzip']}),
+            self.FileBodyProducer.return_value)
 
         self.assertBody('foo=bar')
 
@@ -126,8 +126,8 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'POST', 'http://example.com/',
-            headers=Headers({}),
-            bodyProducer=self.FileBodyProducer.return_value)
+            Headers({'accept-encoding': ['gzip']}),
+            self.FileBodyProducer.return_value)
 
         self.assertBody('hello')
 
@@ -139,10 +139,10 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'POST', 'http://example.com/',
-            headers=Headers({
-                    'Content-Type': [
-                        'multipart/form-data; boundary=heyDavid']}),
-            bodyProducer=self.MultiPartProducer.return_value)
+            Headers({
+                'accept-encoding': ['gzip'],
+                'Content-Type': ['multipart/form-data; boundary=heyDavid']}),
+            self.MultiPartProducer.return_value)
 
         FP = self.FileBodyProducer.return_value
         self.assertEqual(
@@ -160,10 +160,10 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'POST', 'http://example.com/',
-            headers=Headers({
-                    'Content-Type': [
-                        'multipart/form-data; boundary=heyDavid']}),
-            bodyProducer=self.MultiPartProducer.return_value)
+            Headers({
+                'accept-encoding': ['gzip'],
+                'Content-Type': ['multipart/form-data; boundary=heyDavid']}),
+            self.MultiPartProducer.return_value)
 
         FP = self.FileBodyProducer.return_value
         self.assertEqual(
@@ -181,10 +181,10 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'POST', 'http://example.com/',
-            headers=Headers({
-                    'Content-Type': [
-                        'multipart/form-data; boundary=heyDavid']}),
-            bodyProducer=self.MultiPartProducer.return_value)
+            Headers({
+                'accept-encoding': ['gzip'],
+                'Content-Type': ['multipart/form-data; boundary=heyDavid']}),
+            self.MultiPartProducer.return_value)
 
         FP = self.FileBodyProducer.return_value
         self.assertEqual(
@@ -210,10 +210,10 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'POST', 'http://example.com/',
-            headers=Headers({
-                    'Content-Type': [
-                        'multipart/form-data; boundary=heyDavid']}),
-            bodyProducer=self.MultiPartProducer.return_value)
+            Headers({
+                'accept-encoding': ['gzip'],
+                'Content-Type': ['multipart/form-data; boundary=heyDavid']}),
+            self.MultiPartProducer.return_value)
 
         FP = self.FileBodyProducer.return_value
         self.assertEqual(
@@ -235,10 +235,10 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'POST', 'http://example.com/',
-            headers=Headers({
-                    'Content-Type': [
-                        'multipart/form-data; boundary=heyDavid']}),
-            bodyProducer=self.MultiPartProducer.return_value)
+            Headers({
+                'accept-encoding': ['gzip'],
+                'Content-Type': ['multipart/form-data; boundary=heyDavid']}),
+            self.MultiPartProducer.return_value)
 
         FP = self.FileBodyProducer.return_value
         self.assertEqual(
@@ -264,9 +264,10 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'GET', 'http://example.com/',
-            headers=Headers({'User-Agent': ['treq/0.1dev'],
-                             'Accept': ['application/json', 'text/plain']}),
-            bodyProducer=None)
+            Headers({'User-Agent': ['treq/0.1dev'],
+                     'accept-encoding': ['gzip'],
+                     'Accept': ['application/json', 'text/plain']}),
+            None)
 
     @with_clock
     def test_request_timeout_fired(self, clock):
@@ -274,14 +275,14 @@ class HTTPClientTests(TestCase):
         Verify the request is cancelled if a response is not received
         within specified timeout period.
         """
+        self.agent.request.return_value = d = Deferred()
         self.client.request('GET', 'http://example.com', timeout=2)
 
         # simulate we haven't gotten a response within timeout seconds
         clock.advance(3)
-        deferred = self.agent.request.return_value
 
         # a deferred should have been cancelled
-        self.assertTrue(deferred.cancel.called)
+        self.failureResultOf(d, CancelledError)
 
     @with_clock
     def test_request_timeout_cancelled(self, clock):
@@ -289,20 +290,21 @@ class HTTPClientTests(TestCase):
         Verify timeout is cancelled if a response is received before
         timeout period elapses.
         """
+        self.agent.request.return_value = d = Deferred()
         self.client.request('GET', 'http://example.com', timeout=2)
 
         # simulate a response
-        deferred = self.agent.request.return_value
-        gotResult = deferred.addBoth.call_args[0][0]
-        gotResult('result')
+        d.callback(mock.Mock(code=200, headers=Headers({})))
 
         # now advance the clock but since we already got a result,
         # a cancellation timer should have been cancelled
         clock.advance(3)
-        self.assertFalse(deferred.cancel.called)
+
+        self.successResultOf(d)
 
     def test_response_is_buffered(self):
-        response = mock.Mock(deliverBody=mock.Mock())
+        response = mock.Mock(deliverBody=mock.Mock(),
+                             headers=Headers({}))
 
         self.agent.request.return_value = succeed(response)
 
@@ -318,7 +320,7 @@ class HTTPClientTests(TestCase):
         self.assertEqual(response.deliverBody.call_count, 1)
 
     def test_response_buffering_is_disabled_with_unbufferred_arg(self):
-        response = mock.Mock()
+        response = mock.Mock(headers=Headers({}))
 
         self.agent.request.return_value = succeed(response)
 

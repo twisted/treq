@@ -58,6 +58,18 @@ class AddAuthTests(TestCase):
             Headers({'authorization': ['Basic dXNlcm5hbWU6cGFzc3dvcmQ=']})
         )
 
+    def test_add_basic_auth_huge(self):
+        agent = mock.Mock()
+        pwd = ('verylongpasswordthatextendsbeyondthepointwheremultiplel'
+               'inesaregenerated')
+        auth = ('Basic dXNlcm5hbWU6dmVyeWxvbmdwYXNzd29yZHRoYXRleHRlbmRz'
+                'YmV5b25kdGhlcG9pbnR3aGVyZW11bHRpcGxlbGluZXNhcmVnZW5lcmF0ZWQ=')
+        add_auth(agent, ('username', pwd))
+
+        self._RequestHeaderSettingAgent.assert_called_once_with(
+            agent,
+            Headers({'authorization': [auth]}))
+
     def test_add_unknown_auth(self):
         agent = mock.Mock()
         self.assertRaises(UnknownAuthConfig, add_auth, agent, mock.Mock())

@@ -139,9 +139,9 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'POST', 'http://example.com/',
-            Headers({'accept-encoding': ['gzip'],
-                     'Content-Type': [
-                        'multipart/form-data; boundary=heyDavid']}),
+            Headers({
+                'accept-encoding': ['gzip'],
+                'Content-Type': ['multipart/form-data; boundary=heyDavid']}),
             self.MultiPartProducer.return_value)
 
         FP = self.FileBodyProducer.return_value
@@ -160,9 +160,9 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'POST', 'http://example.com/',
-            Headers({'accept-encoding': ['gzip'],
-                     'Content-Type': [
-                        'multipart/form-data; boundary=heyDavid']}),
+            Headers({
+                'accept-encoding': ['gzip'],
+                'Content-Type': ['multipart/form-data; boundary=heyDavid']}),
             self.MultiPartProducer.return_value)
 
         FP = self.FileBodyProducer.return_value
@@ -181,9 +181,9 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'POST', 'http://example.com/',
-            Headers({'accept-encoding': ['gzip'],
-                     'Content-Type': [
-                        'multipart/form-data; boundary=heyDavid']}),
+            Headers({
+                'accept-encoding': ['gzip'],
+                'Content-Type': ['multipart/form-data; boundary=heyDavid']}),
             self.MultiPartProducer.return_value)
 
         FP = self.FileBodyProducer.return_value
@@ -210,9 +210,9 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'POST', 'http://example.com/',
-            Headers({'accept-encoding': ['gzip'],
-                     'Content-Type': [
-                        'multipart/form-data; boundary=heyDavid']}),
+            Headers({
+                'accept-encoding': ['gzip'],
+                'Content-Type': ['multipart/form-data; boundary=heyDavid']}),
             self.MultiPartProducer.return_value)
 
         FP = self.FileBodyProducer.return_value
@@ -235,9 +235,9 @@ class HTTPClientTests(TestCase):
 
         self.agent.request.assert_called_once_with(
             'POST', 'http://example.com/',
-            Headers({'accept-encoding': ['gzip'],
-                     'Content-Type': [
-   'multipart/form-data; boundary=heyDavid']}),
+            Headers({
+                'accept-encoding': ['gzip'],
+                'Content-Type': ['multipart/form-data; boundary=heyDavid']}),
             self.MultiPartProducer.return_value)
 
         FP = self.FileBodyProducer.return_value

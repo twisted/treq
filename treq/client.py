@@ -192,7 +192,6 @@ class HTTPClient(object):
         return d.addCallback(_Response)
 
 
-
 def _convert_params(params):
     if hasattr(params, "iteritems"):
         return list(sorted(params.iteritems()))

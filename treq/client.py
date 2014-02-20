@@ -30,9 +30,6 @@ from treq import multipart
 from treq.response import _Response
 
 
-def wrap_agent_with_gzip(agent):
-    return ContentDecoderAgent(wrapped_agent, [('gzip', GzipDecoder)])
-
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
     def __init__(self, original, buffer, finished):
         self.original = original
@@ -165,6 +162,9 @@ class HTTPClient(object):
 
         if kwargs.get('allow_redirects', True):
             wrapped_agent = RedirectAgent(wrapped_agent)
+
+        wrapped_agent = ContentDecoderAgent(wrapped_agent,
+                                            [('gzip', GzipDecoder)])
 
         auth = kwargs.get('auth')
         if auth:

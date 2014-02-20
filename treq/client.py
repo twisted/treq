@@ -189,18 +189,6 @@ class HTTPClient(object):
         if not kwargs.get('unbuffered', False):
             d.addCallback(_BufferedResponse)
 
-
-        def buildHistory(result):
-            history = [result]
-            prev = result.previousResponse
-            while prev:
-                history.append(prev)
-                prev = prev.previousResponse
-            history.reverse()
-            result.history = history
-            return result
-        d.addCallback(buildHistory)
-
         return d.addCallback(_Response)
 
 

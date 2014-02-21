@@ -10,7 +10,7 @@ from treq.response import _Response
 
 skip_history = None
 
-if version < Version("twisted", 13,1,0):
+if version < Version("twisted", 13, 1, 0):
     skip_history = "Response history not supported on Twisted < 13.1.0."
 
 

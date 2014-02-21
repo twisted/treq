@@ -15,6 +15,10 @@ class _Response(proxyForInterface(IResponse)):
         return text_content(self.original, *args, **kwargs)
 
     def history(self):
+        if not hasattr(self, "previousResponse"):
+            raise NotImplementedError(
+                "Twisted < 13.1.0 does not support response history.")
+
         response = self
         history = []
 

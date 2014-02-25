@@ -38,7 +38,6 @@ or a ``list`` of ``str`` values.
 
 Full example: :download:`download_file.py <examples/download_file.py>`
 
-
 Auth
 ----
 
@@ -54,3 +53,34 @@ The ``auth`` argument should be a tuple of the form ``('username', 'password')``
 Full example: :download:`download_file.py <examples/download_file.py>`
 
 .. _RFC 2617: http://www.ietf.org/rfc/rfc2617.txt
+
+Redirects
+---------
+
+treq handles redirects by default.
+
+The following will print a 200 OK response.
+
+.. literalinclude:: examples/redirects.py
+    :linenos:
+    :lines: 7-13
+
+Full example: :download:`redirects.py <examples/redirects.py>`
+
+You can easily disable redirects by simply passing `allow_redirects=False` to
+any of the request methods.
+
+.. literalinclude:: examples/disable_redirects.py
+    :linenos:
+    :lines: 7-13
+
+Full example: :download:`disable_redirects.py <examples/disable_redirects.py>`
+
+You can even access the complete history of treq response objects by calling
+the `history()` method on the the response.
+
+.. literalinclude:: examples/response_history.py
+    :linenos:
+    :lines: 7-15
+
+Full example: :download:`response_history.py <examples/response_history.py>`

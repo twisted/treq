@@ -86,7 +86,7 @@ features is.  Here is a list of `requests`_ features and their status in treq.
 +----------------------------------+----------+------+
 | Digest Authentication            | yes      | no   |
 +----------------------------------+----------+------+
-| Elegant Key/Value Cookies        | yes      | no   |
+| Elegant Key/Value Cookies        | yes      | yes  |
 +----------------------------------+----------+------+
 | Automatic Decompression          | yes      | yes  |
 +----------------------------------+----------+------+

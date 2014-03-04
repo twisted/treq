@@ -19,7 +19,8 @@ from twisted.web.client import (
     FileBodyProducer,
     RedirectAgent,
     ContentDecoderAgent,
-    GzipDecoder
+    GzipDecoder,
+    CookieAgent
 )
 
 from twisted.python.components import registerAdapter
@@ -28,6 +29,9 @@ from treq._utils import default_reactor
 from treq.auth import add_auth
 from treq import multipart
 from treq.response import _Response
+
+from cookielib import CookieJar
+from requests.cookies import cookiejar_from_dict
 
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
@@ -82,8 +86,9 @@ class _BufferedResponse(proxyForInterface(IResponse)):
 
 
 class HTTPClient(object):
-    def __init__(self, agent):
+    def __init__(self, agent, cookiejar=None):
         self._agent = agent
+        self._cookiejar = cookiejar
 
     def get(self, url, **kwargs):
         return self.request('GET', url, **kwargs)
@@ -189,7 +194,7 @@ class HTTPClient(object):
         if not kwargs.get('unbuffered', False):
             d.addCallback(_BufferedResponse)
 
-        return d.addCallback(_Response)
+        return d.addCallback(_Response, self._cookiejar)
 
 
 def _convert_params(params):

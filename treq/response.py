@@ -29,7 +29,8 @@ class _Response(proxyForInterface(IResponse)):
         history = []
 
         while response.previousResponse is not None:
-            history.append(_Response(response.previousResponse))
+            history.append(_Response(response.previousResponse,
+                                     self._cookiejar))
             response = response.previousResponse
 
         history.reverse()

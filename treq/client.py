@@ -31,7 +31,7 @@ from treq import multipart
 from treq.response import _Response
 
 from cookielib import CookieJar
-from requests.cookies import cookiejar_from_dict
+from requests.cookies import cookiejar_from_dict, merge_cookies
 
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
@@ -88,7 +88,7 @@ class _BufferedResponse(proxyForInterface(IResponse)):
 class HTTPClient(object):
     def __init__(self, agent, cookiejar=None):
         self._agent = agent
-        self._cookiejar = cookiejar
+        self._cookiejar = cookiejar or cookiejar_from_dict({})
 
     def get(self, url, **kwargs):
         return self.request('GET', url, **kwargs)
@@ -163,7 +163,14 @@ class HTTPClient(object):
                 data = urlencode(data, doseq=True)
             bodyProducer = IBodyProducer(data)
 
-        wrapped_agent = self._agent
+        cookies = kwargs.get('cookies', {})
+
+        if not isinstance(cookies, CookieJar):
+            cookies = cookiejar_from_dict(cookies)
+
+        cookies = merge_cookies(self._cookiejar, cookies)
+
+        wrapped_agent = CookieAgent(self._agent, cookies)
 
         if kwargs.get('allow_redirects', True):
             wrapped_agent = RedirectAgent(wrapped_agent)
@@ -194,7 +201,7 @@ class HTTPClient(object):
         if not kwargs.get('unbuffered', False):
             d.addCallback(_BufferedResponse)
 
-        return d.addCallback(_Response, self._cookiejar)
+        return d.addCallback(_Response, cookies)
 
 
 def _convert_params(params):

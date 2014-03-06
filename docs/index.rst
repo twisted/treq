@@ -92,7 +92,7 @@ features is.  Here is a list of `requests`_ features and their status in treq.
 +----------------------------------+----------+------+
 | Unicode Response Bodies          | yes      | yes  |
 +----------------------------------+----------+------+
-| Multipart File Uploads           | yes      | no   |
+| Multipart File Uploads           | yes      | yes  |
 +----------------------------------+----------+------+
 | Connection Timeouts              | yes      | yes  |
 +----------------------------------+----------+------+

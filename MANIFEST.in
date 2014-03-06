@@ -2,4 +2,7 @@ include treq/_version
 include README.rst
 include LICENSE
 recursive-include docs *
-prune docs/build
+prune docs/_build
+exclude .travis.yml
+
+global-exclude .DS_Store *.pyc

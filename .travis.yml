@@ -7,12 +7,15 @@ python:
 
 env:
   - TWISTED=svn+svn://svn.twistedmatrix.com/svn/Twisted/trunk PYOPENSSL=PyOpenSSL
+  - TWISTED=https://twistedmatrix.com/Releases/pre/14.0.0pre1/Twisted-14.0.0pre1.tar.bz2 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==13.1.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==13.0.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==12.3.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==12.2.0 PYOPENSSL=PyOpenSSL
   - TWISTED=Twisted==12.1.0 PYOPENSSL=PyOpenSSL
   - TWISTED=svn+svn://svn.twistedmatrix.com/svn/Twisted/trunk PYOPENSSL=
+  - TWISTED=https://twistedmatrix.com/Releases/pre/14.0.0pre1/Twisted-14.0.0pre1.tar.bz2 PYOPENSSL=
+
   - TWISTED=Twisted==13.1.0 PYOPENSSL=
   - TWISTED=Twisted==13.0.0 PYOPENSSL=
   - TWISTED=Twisted==12.3.0 PYOPENSSL=

@@ -1,30 +1,95 @@
-language: python
 
-python:
-    - 2.6
-    - 2.7
-    - pypy
+language: python
+python: 2.7
 
 env:
-  - TWISTED=svn+svn://svn.twistedmatrix.com/svn/Twisted/trunk PYOPENSSL=PyOpenSSL
-  - TWISTED=Twisted==13.1.0 PYOPENSSL=PyOpenSSL
-  - TWISTED=Twisted==13.0.0 PYOPENSSL=PyOpenSSL
-  - TWISTED=Twisted==12.3.0 PYOPENSSL=PyOpenSSL
-  - TWISTED=Twisted==12.2.0 PYOPENSSL=PyOpenSSL
-  - TWISTED=Twisted==12.1.0 PYOPENSSL=PyOpenSSL
-  - TWISTED=svn+svn://svn.twistedmatrix.com/svn/Twisted/trunk PYOPENSSL=
-  - TWISTED=Twisted==13.1.0 PYOPENSSL=
-  - TWISTED=Twisted==13.0.0 PYOPENSSL=
-  - TWISTED=Twisted==12.3.0 PYOPENSSL=
-  - TWISTED=Twisted==12.2.0 PYOPENSSL=
-  - TWISTED=Twisted==12.1.0 PYOPENSSL=
+    - TOX_ENV=pypy-tw121-nopyopenssl
+    - TOX_ENV=pypy-tw121-pyopenssl13
+    - TOX_ENV=pypy-tw121-pyopenssl14
+    - TOX_ENV=pypy-tw121-pyopenssltrunk
+    - TOX_ENV=pypy-tw122-nopyopenssl
+    - TOX_ENV=pypy-tw122-pyopenssl13
+    - TOX_ENV=pypy-tw122-pyopenssl14
+    - TOX_ENV=pypy-tw122-pyopenssltrunk
+    - TOX_ENV=pypy-tw123-nopyopenssl
+    - TOX_ENV=pypy-tw123-pyopenssl13
+    - TOX_ENV=pypy-tw123-pyopenssl14
+    - TOX_ENV=pypy-tw123-pyopenssltrunk
+    - TOX_ENV=pypy-tw130-nopyopenssl
+    - TOX_ENV=pypy-tw130-pyopenssl13
+    - TOX_ENV=pypy-tw130-pyopenssl14
+    - TOX_ENV=pypy-tw130-pyopenssltrunk
+    - TOX_ENV=pypy-tw131-nopyopenssl
+    - TOX_ENV=pypy-tw131-pyopenssl13
+    - TOX_ENV=pypy-tw131-pyopenssl14
+    - TOX_ENV=pypy-tw131-pyopenssltrunk
+    - TOX_ENV=pypy-tw132-nopyopenssl
+    - TOX_ENV=pypy-tw132-pyopenssl13
+    - TOX_ENV=pypy-tw132-pyopenssl14
+    - TOX_ENV=pypy-tw132-pyopenssltrunk
+    - TOX_ENV=pypy-twtrunk-nopyopenssl
+    - TOX_ENV=pypy-twtrunk-pyopenssl13
+    - TOX_ENV=pypy-twtrunk-pyopenssl14
+    - TOX_ENV=pypy-twtrunk-pyopenssltrunk
+    - TOX_ENV=py27-tw121-nopyopenssl
+    - TOX_ENV=py27-tw121-pyopenssl13
+    - TOX_ENV=py27-tw121-pyopenssl14
+    - TOX_ENV=py27-tw121-pyopenssltrunk
+    - TOX_ENV=py27-tw122-nopyopenssl
+    - TOX_ENV=py27-tw122-pyopenssl13
+    - TOX_ENV=py27-tw122-pyopenssl14
+    - TOX_ENV=py27-tw122-pyopenssltrunk
+    - TOX_ENV=py27-tw123-nopyopenssl
+    - TOX_ENV=py27-tw123-pyopenssl13
+    - TOX_ENV=py27-tw123-pyopenssl14
+    - TOX_ENV=py27-tw123-pyopenssltrunk
+    - TOX_ENV=py27-tw130-nopyopenssl
+    - TOX_ENV=py27-tw130-pyopenssl13
+    - TOX_ENV=py27-tw130-pyopenssl14
+    - TOX_ENV=py27-tw130-pyopenssltrunk
+    - TOX_ENV=py27-tw131-nopyopenssl
+    - TOX_ENV=py27-tw131-pyopenssl13
+    - TOX_ENV=py27-tw131-pyopenssl14
+    - TOX_ENV=py27-tw131-pyopenssltrunk
+    - TOX_ENV=py27-tw132-nopyopenssl
+    - TOX_ENV=py27-tw132-pyopenssl13
+    - TOX_ENV=py27-tw132-pyopenssl14
+    - TOX_ENV=py27-tw132-pyopenssltrunk
+    - TOX_ENV=py27-twtrunk-nopyopenssl
+    - TOX_ENV=py27-twtrunk-pyopenssl13
+    - TOX_ENV=py27-twtrunk-pyopenssl14
+    - TOX_ENV=py27-twtrunk-pyopenssltrunk
+    - TOX_ENV=py26-tw121-nopyopenssl
+    - TOX_ENV=py26-tw121-pyopenssl13
+    - TOX_ENV=py26-tw121-pyopenssl14
+    - TOX_ENV=py26-tw121-pyopenssltrunk
+    - TOX_ENV=py26-tw122-nopyopenssl
+    - TOX_ENV=py26-tw122-pyopenssl13
+    - TOX_ENV=py26-tw122-pyopenssl14
+    - TOX_ENV=py26-tw122-pyopenssltrunk
+    - TOX_ENV=py26-tw123-nopyopenssl
+    - TOX_ENV=py26-tw123-pyopenssl13
+    - TOX_ENV=py26-tw123-pyopenssl14
+    - TOX_ENV=py26-tw123-pyopenssltrunk
+    - TOX_ENV=py26-tw130-nopyopenssl
+    - TOX_ENV=py26-tw130-pyopenssl13
+    - TOX_ENV=py26-tw130-pyopenssl14
+    - TOX_ENV=py26-tw130-pyopenssltrunk
+    - TOX_ENV=py26-tw131-nopyopenssl
+    - TOX_ENV=py26-tw131-pyopenssl13
+    - TOX_ENV=py26-tw131-pyopenssl14
+    - TOX_ENV=py26-tw131-pyopenssltrunk
+    - TOX_ENV=py26-tw132-nopyopenssl
+    - TOX_ENV=py26-tw132-pyopenssl13
+    - TOX_ENV=py26-tw132-pyopenssl14
+    - TOX_ENV=py26-tw132-pyopenssltrunk
+    - TOX_ENV=py26-twtrunk-nopyopenssl
+    - TOX_ENV=py26-twtrunk-pyopenssl13
+    - TOX_ENV=py26-twtrunk-pyopenssl14
+    - TOX_ENV=py26-twtrunk-pyopenssltrunk
 
-install:
-  - pip install $TWISTED
-  - 'test -n "$PYOPENSSL" && pip install $PYOPENSSL || true'
-  - pip install -r requirements-dev.txt
 
-script:
-  - pep8 treq
-  - pyflakes treq
-  - trial treq
+script: tox -e $TOX_ENV
+
+notifications:
+    email: false

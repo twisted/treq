@@ -89,6 +89,9 @@ env:
     - TOX_ENV=py26-twtrunk-pyopenssltrunk
 
 
+install:
+    tox
+
 script: tox -e $TOX_ENV
 
 notifications:

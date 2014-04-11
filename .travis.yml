@@ -90,7 +90,7 @@ env:
 
 
 install:
-    tox
+    - pip install tox
 
 script: tox -e $TOX_ENV
 

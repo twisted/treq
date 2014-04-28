@@ -243,8 +243,5 @@ class TreqIntegrationTests(TestCase):
 class HTTPSTreqIntegrationTests(TreqIntegrationTests):
     baseurl = HTTPSBIN_URL
 
-    if is_pypy:
-        todo = "These tests segfault (or hang) on PyPy."
-
     if not has_ssl:
         todo = "These tests require pyOpenSSL."

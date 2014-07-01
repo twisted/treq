@@ -40,7 +40,7 @@ class ResponseTests(TestCase):
         final = FakeResponse(200, Headers({}))
         final.setPreviousResponse(redirect2)
 
-        wrapper = _Response(final)
+        wrapper = _Response(final, None)
 
         history = wrapper.history()
 
@@ -49,7 +49,7 @@ class ResponseTests(TestCase):
         self.assertEqual(history[1].code, 302)
 
     def test_no_history(self):
-        wrapper = _Response(FakeResponse(200, Headers({})))
+        wrapper = _Response(FakeResponse(200, Headers({})), None)
         self.assertEqual(wrapper.history(), [])
 
     if skip_history:
@@ -57,7 +57,7 @@ class ResponseTests(TestCase):
         test_no_history.skip = skip_history
 
     def test_history_notimplemented(self):
-        wrapper = _Response(FakeResponse(200, Headers({})))
+        wrapper = _Response(FakeResponse(200, Headers({})), None)
         self.assertRaises(NotImplementedError, wrapper.history)
 
     if not skip_history:

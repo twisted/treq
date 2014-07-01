@@ -7,6 +7,7 @@ from os import path
 
 from urlparse import urlparse, urlunparse
 from urllib import urlencode
+from cookielib import CookieJar
 
 from twisted.internet.interfaces import IProtocol
 from twisted.internet.defer import Deferred
@@ -18,6 +19,7 @@ from twisted.web.iweb import IBodyProducer, IResponse
 from twisted.web.client import (
     FileBodyProducer,
     RedirectAgent,
+    CookieAgent,
     ContentDecoderAgent,
     GzipDecoder,
     CookieAgent
@@ -171,6 +173,9 @@ class HTTPClient(object):
         cookies = merge_cookies(self._cookiejar, cookies)
 
         wrapped_agent = CookieAgent(self._agent, cookies)
+
+        if kwargs.get('remember_cookies', True):
+            wrapped_agent = CookieAgent(wrapped_agent, CookieJar())
 
         if kwargs.get('allow_redirects', True):
             wrapped_agent = RedirectAgent(wrapped_agent)

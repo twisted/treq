@@ -71,39 +71,41 @@ Feature Parity w/ Requests
 Even though mimicing the `requests`_ API is not a goal, supporting most of it's
 features is.  Here is a list of `requests`_ features and their status in treq.
 
-+----------------------------------+----------+------+
-|                                  | requests | treq |
-+----------------------------------+----------+------+
-| International Domains and URLs   | yes      | no   |
-+----------------------------------+----------+------+
-| Keep-Alive & Connection Pooling  | yes      | yes  |
-+----------------------------------+----------+------+
-| Sessions with Cookie Persistence | yes      | no   |
-+----------------------------------+----------+------+
-| Browser-style SSL Verification   | yes      | no   |
-+----------------------------------+----------+------+
-| Basic Authentication             | yes      | yes  |
-+----------------------------------+----------+------+
-| Digest Authentication            | yes      | no   |
-+----------------------------------+----------+------+
-| Elegant Key/Value Cookies        | yes      | yes  |
-+----------------------------------+----------+------+
-| Automatic Decompression          | yes      | yes  |
-+----------------------------------+----------+------+
-| Unicode Response Bodies          | yes      | yes  |
-+----------------------------------+----------+------+
-| Multipart File Uploads           | yes      | yes  |
-+----------------------------------+----------+------+
-| Connection Timeouts              | yes      | yes  |
-+----------------------------------+----------+------+
-| .netrc support                   | yes      | no   |
-+----------------------------------+----------+------+
-| Python 2.6                       | yes      | yes  |
-+----------------------------------+----------+------+
-| Python 2.7                       | yes      | yes  |
-+----------------------------------+----------+------+
-| Python 3.x                       | yes      | no   |
-+----------------------------------+----------+------+
++----------------------------------+----------+----------+
+|                                  | requests |   treq   |
++----------------------------------+----------+----------+
+| International Domains and URLs   | yes      | no       |
++----------------------------------+----------+----------+
+| Keep-Alive & Connection Pooling  | yes      | yes      |
++----------------------------------+----------+----------+
+| Sessions with Cookie Persistence | yes      | yes      |
++----------------------------------+----------+----------+
+| Browser-style SSL Verification   | yes      | yes [#]_ |
++----------------------------------+----------+----------+
+| Basic Authentication             | yes      | yes      |
++----------------------------------+----------+----------+
+| Digest Authentication            | yes      | no       |
++----------------------------------+----------+----------+
+| Elegant Key/Value Cookies        | yes      | yes      |
++----------------------------------+----------+----------+
+| Automatic Decompression          | yes      | yes      |
++----------------------------------+----------+----------+
+| Unicode Response Bodies          | yes      | yes      |
++----------------------------------+----------+----------+
+| Multipart File Uploads           | yes      | yes      |
++----------------------------------+----------+----------+
+| Connection Timeouts              | yes      | yes      |
++----------------------------------+----------+----------+
+| .netrc support                   | yes      | no       |
++----------------------------------+----------+----------+
+| Python 2.6                       | yes      | yes      |
++----------------------------------+----------+----------+
+| Python 2.7                       | yes      | yes      |
++----------------------------------+----------+----------+
+| Python 3.x                       | yes      | no       |
++----------------------------------+----------+----------+
+
+.. [#] Requires ``Twisted>=14.0`` and ``service_identity``.
 
 Howto
 -----

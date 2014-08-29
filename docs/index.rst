@@ -6,8 +6,6 @@
 treq: High-level Twisted HTTP Client API
 ========================================
 
-Release v\ |release|.
-
 treq depends on ``Twisted>=12.1.0`` and optionally pyOpenSSL.
 
 All example code depends on ``Twisted>=12.3.0``.

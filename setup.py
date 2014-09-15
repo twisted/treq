@@ -18,6 +18,9 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
+with open('README.rst') as f:
+    readme = f.read()
+
 
 setup(
     name="treq",
@@ -31,5 +34,5 @@ setup(
     description="A requests-like API built on top of twisted.web's Agent",
     license="MIT/X",
     url="http://github.com/dreid/treq",
-    long_description=file('README.rst').read()
+    long_description=readme
 )

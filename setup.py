@@ -26,7 +26,7 @@ setup(
     name="treq",
     version=__version__,
     packages=find_packages(),
-    install_requires=["Twisted >= 12.1.0", "requests"],
+    install_requires=["Twisted >= 12.1.0", "requests", "service_identity"],
     package_data={"treq": ["_version"]},
     author="David Reid",
     author_email="dreid@dreid.org",

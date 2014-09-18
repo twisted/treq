@@ -16,13 +16,6 @@ DEBUG = os.getenv("TREQ_DEBUG", False) == "true"
 is_pypy = platform.python_implementation() == 'PyPy'
 
 
-try:
-    import OpenSSL
-    has_ssl = OpenSSL is not None
-except ImportError:
-    has_ssl = False
-
-
 if twisted.version < Version('twisted', 13, 1, 0):
     class TestCase(TestCase):
         def successResultOf(self, d):

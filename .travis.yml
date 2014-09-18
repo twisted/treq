@@ -2,13 +2,6 @@ language: python
 python: 2.7
 
 env:
-    - TOX_ENV=pypy-no_pyopenssl-twisted_12.1.0
-    - TOX_ENV=pypy-no_pyopenssl-twisted_12.2.0
-    - TOX_ENV=pypy-no_pyopenssl-twisted_13.0.0
-    - TOX_ENV=pypy-no_pyopenssl-twisted_13.1.0
-    - TOX_ENV=pypy-no_pyopenssl-twisted_13.2.0
-    - TOX_ENV=pypy-no_pyopenssl-twisted_14.0.0
-    - TOX_ENV=pypy-no_pyopenssl-twisted_trunk
     - TOX_ENV=pypy-pyopenssl_0.13-twisted_12.1.0
     - TOX_ENV=pypy-pyopenssl_0.13-twisted_12.2.0
     - TOX_ENV=pypy-pyopenssl_0.13-twisted_13.0.0
@@ -30,13 +23,6 @@ env:
     - TOX_ENV=pypy-pyopenssl_trunk-twisted_13.2.0
     - TOX_ENV=pypy-pyopenssl_trunk-twisted_14.0.0
     - TOX_ENV=pypy-pyopenssl_trunk-twisted_trunk
-    - TOX_ENV=py26-no_pyopenssl-twisted_12.1.0
-    - TOX_ENV=py26-no_pyopenssl-twisted_12.2.0
-    - TOX_ENV=py26-no_pyopenssl-twisted_13.0.0
-    - TOX_ENV=py26-no_pyopenssl-twisted_13.1.0
-    - TOX_ENV=py26-no_pyopenssl-twisted_13.2.0
-    - TOX_ENV=py26-no_pyopenssl-twisted_14.0.0
-    - TOX_ENV=py26-no_pyopenssl-twisted_trunk
     - TOX_ENV=py26-pyopenssl_0.13-twisted_12.1.0
     - TOX_ENV=py26-pyopenssl_0.13-twisted_12.2.0
     - TOX_ENV=py26-pyopenssl_0.13-twisted_13.0.0
@@ -58,13 +44,6 @@ env:
     - TOX_ENV=py26-pyopenssl_trunk-twisted_13.2.0
     - TOX_ENV=py26-pyopenssl_trunk-twisted_14.0.0
     - TOX_ENV=py26-pyopenssl_trunk-twisted_trunk
-    - TOX_ENV=py27-no_pyopenssl-twisted_12.1.0
-    - TOX_ENV=py27-no_pyopenssl-twisted_12.2.0
-    - TOX_ENV=py27-no_pyopenssl-twisted_13.0.0
-    - TOX_ENV=py27-no_pyopenssl-twisted_13.1.0
-    - TOX_ENV=py27-no_pyopenssl-twisted_13.2.0
-    - TOX_ENV=py27-no_pyopenssl-twisted_14.0.0
-    - TOX_ENV=py27-no_pyopenssl-twisted_trunk
     - TOX_ENV=py27-pyopenssl_0.13-twisted_12.1.0
     - TOX_ENV=py27-pyopenssl_0.13-twisted_12.2.0
     - TOX_ENV=py27-pyopenssl_0.13-twisted_13.0.0

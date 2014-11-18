@@ -96,6 +96,9 @@ def request(method, url, **kwargs):
         received within this timeframe, a connection is aborted with
         ``CancelledError``.
 
+    :param proxy: If specified, send the request through a proxy.
+    :type proxy: tuple of ``('host', port)``.
+
     :rtype: Deferred that fires with an IResponse provider.
 
     """
@@ -111,8 +114,9 @@ def _client(*args, **kwargs):
     pool = default_pool(reactor,
                         kwargs.get('pool'),
                         kwargs.get('persistent'))
-    if 'proxy' in kwargs.keys():
-        address, port = kwargs.get('proxy')
+    proxy = kwargs.get('proxy')
+    if proxy is not None:
+        (address, port) = proxy
         endpoint = TCP4ClientEndpoint(reactor, address, port)
         agent = ProxyAgent(endpoint)
     else:

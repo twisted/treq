@@ -13,8 +13,7 @@ deps = {
         'git+git://github.com/twisted/twisted#egg=Twisted'
     ],
     'pyopenssl': [
-        None, '0.13', '0.14',
-        'git+git://github.com/pyca/pyopenssl.git#egg=pyopenssl'
+        '0.13', '0.14', 'git+git://github.com/pyca/pyopenssl.git#egg=pyopenssl'
     ]
 }
 

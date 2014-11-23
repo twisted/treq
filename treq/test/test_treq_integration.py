@@ -11,7 +11,7 @@ from twisted.python.versions import Version
 
 from twisted.web.client import HTTPConnectionPool, ResponseFailed
 
-from treq.test.util import DEBUG, is_pypy, has_ssl
+from treq.test.util import DEBUG, is_pypy
 
 import treq
 
@@ -259,6 +259,3 @@ class TreqIntegrationTests(TestCase):
 
 class HTTPSTreqIntegrationTests(TreqIntegrationTests):
     baseurl = HTTPSBIN_URL
-
-    if not has_ssl:
-        todo = "These tests require pyOpenSSL."

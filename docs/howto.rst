@@ -93,7 +93,7 @@ Cookies can be set by passing a ``dict`` or ``cookielib.CookieJar`` instance
 via the ``cookies`` keyword argument.  Later cookies set by the server can be
 retrieved using the :py:func:`treq.cookies` function.
 
-The the object returned by :py:func:`treq.cookies` supports the same key/value
+The object returned by :py:func:`treq.cookies` supports the same key/value
 access as `requests cookies <http://requests.readthedocs.org/en/latest/user/quickstart/#cookies>`_
 
 .. literalinclude:: examples/using_cookies.py
@@ -101,3 +101,18 @@ access as `requests cookies <http://requests.readthedocs.org/en/latest/user/quic
     :lines: 7-20
 
 Full example: :download:`using_cookies.py <examples/using_cookies.py>`
+
+
+Certificates
+------------
+
+SSL certificates can be set by passing an instance of any class which
+implements ``twisted.web.iweb.IPolicyForHTTPS``, e.g.,
+``twisted.web.client.BrowserLikePolicyForHTTPS``, via the ``policy`` keyword
+argument.
+
+.. literalinclude:: examples/using_certs.py
+    :linenos:
+    :lines: 7-20
+
+Full example: :download:`using_certs.py <examples/using_certs.py>`

@@ -1,11 +1,17 @@
-from twisted.internet.task import react
-from _utils import print_response
+from OpenSSL import SSL
+
+from twisted.internet import endpoints, reactor, ssl, task
+from twisted.python import filepath
+from twisted.web import client
 
 import treq
 
 
 def main(reactor, *args):
-    d = treq.get('http://httpbin.org/cookies/set?hello=world')
+    pemFile = filepath.FilePath('your-trust-root.pem').getContent()
+    certificate = ssl.Certificate.loadPEM(pemFile)
+    customPolicy = client.BrowserLikePolicyForHTTPS(certificate)
+    d = treq.get('https://httpbin.org/get', policy=customPolicy)
 
     def _get_jar(resp):
         jar = resp.cookies()
@@ -19,4 +25,6 @@ def main(reactor, *args):
 
     return d
 
-react(main, [])
+
+if __name__ == '__main__':
+    task.react(main, [])

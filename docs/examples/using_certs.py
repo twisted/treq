@@ -1,30 +1,36 @@
 from OpenSSL import SSL
 
-from twisted.internet import endpoints, reactor, ssl, task
-from twisted.python import filepath
+from twisted.internet import defer, endpoints, reactor, ssl, task
+from twisted.python import filepath, log
 from twisted.web import client
+
+import sys
+sys.path.append('.')
 
 import treq
 
 
+@defer.inlineCallbacks
 def main(reactor, *args):
-    pemFile = filepath.FilePath('your-trust-root.pem').getContent()
+    pemFile = filepath.FilePath('cert.pem').getContent()
     certificate = ssl.Certificate.loadPEM(pemFile)
     customPolicy = client.BrowserLikePolicyForHTTPS(certificate)
-    d = treq.get('https://httpbin.org/get', policy=customPolicy)
+    response = yield treq.get('https://127.0.0.1:8443/', policy=customPolicy)
+    print response.code
+    defer.returnValue(None)
 
-    def _get_jar(resp):
-        jar = resp.cookies()
 
-        print 'The server set our hello cookie to: {0}'.format(jar['hello'])
-
-        return treq.get('http://httpbin.org/cookies', cookies=jar)
-
-    d.addCallback(_get_jar)
-    d.addCallback(print_response)
-
-    return d
+def _error(failure):
+    log.msg(str(failure), system='epicFail')
+    if hasattr(failure.value, 'reasons'):
+        reasons = failure.value.reasons
+        response = failure.value.response
+        log.msg(str(response), system='epicFail')
+        for reason in reasons:
+            log.msg(reason.getErrorMessage(), system='epicFail')
 
 
 if __name__ == '__main__':
-    task.react(main, [])
+    log.startLogging(sys.stdout)
+    d = task.react(main, [])
+    d.addErrback(_error)

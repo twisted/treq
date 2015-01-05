@@ -91,6 +91,9 @@ def request(method, url, **kwargs):
         tasty kind.
     :type cookies: ``dict`` or ``cookielib.CookieJar``
 
+    :param policy: Optional SSL certificate policy.
+    :type policy: ``twisted.web.iweb.IPolicyForHTTPS``.  Default: ``twisted.web.client.BrowserLikePolicyForHTTPS``
+
     :param int timeout: Request timeout seconds. If a response is not
         received within this timeframe, a connection is aborted with
         ``CancelledError``.

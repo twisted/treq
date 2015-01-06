@@ -113,6 +113,6 @@ argument.
 
 .. literalinclude:: examples/using_certs.py
     :linenos:
-    :lines: 7-20
+    :lines: 10-17
 
 Full example: :download:`using_certs.py <examples/using_certs.py>`

@@ -4,7 +4,7 @@ from twisted.web.client import Agent
 from twisted.web.http_headers import Headers
 
 from treq.test.util import TestCase
-from treq.auth import _RequestHeaderSettingAgent, add_auth, UnknownAuthConfig
+from treq.auth import _RequestHeaderSettingAgent, add_auth, UnknownAuthConfig, HTTPDigestAuth, add_digest_auth
 
 
 class RequestHeaderSettingAgentTests(TestCase):
@@ -45,8 +45,11 @@ class RequestHeaderSettingAgentTests(TestCase):
 class AddAuthTests(TestCase):
     def setUp(self):
         self.rhsa_patcher = mock.patch('treq.auth._RequestHeaderSettingAgent')
+        self.rdaa_patcher = mock.patch('treq.auth._RequestDigestAuthenticationAgent')
+        self._RequestDigestAuthenticationAgent = self.rdaa_patcher.start()
         self._RequestHeaderSettingAgent = self.rhsa_patcher.start()
         self.addCleanup(self.rhsa_patcher.stop)
+        self.addCleanup(self.rdaa_patcher.stop)
 
     def test_add_basic_auth(self):
         agent = mock.Mock()
@@ -69,6 +72,17 @@ class AddAuthTests(TestCase):
         self._RequestHeaderSettingAgent.assert_called_once_with(
             agent,
             Headers({'authorization': [auth]}))
+
+    def test_add_digest_auth(self):
+        agent = mock.Mock()
+        username = 'spam'
+        password = 'eggs'
+
+        add_digest_auth(agent, HTTPDigestAuth(username, password))
+
+        self._RequestDigestAuthenticationAgent.assert_called_once_with(
+            agent, username, password
+        )
 
     def test_add_unknown_auth(self):
         agent = mock.Mock()

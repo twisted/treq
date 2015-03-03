@@ -4,7 +4,8 @@ from twisted.web.client import Agent
 from twisted.web.http_headers import Headers
 
 from treq.test.util import TestCase
-from treq.auth import _RequestHeaderSettingAgent, add_auth, UnknownAuthConfig, HTTPDigestAuth, add_digest_auth
+from treq.auth import _RequestHeaderSettingAgent, add_auth, \
+    UnknownAuthConfig, HTTPDigestAuth, add_digest_auth
 
 
 class RequestHeaderSettingAgentTests(TestCase):
@@ -45,7 +46,9 @@ class RequestHeaderSettingAgentTests(TestCase):
 class AddAuthTests(TestCase):
     def setUp(self):
         self.rhsa_patcher = mock.patch('treq.auth._RequestHeaderSettingAgent')
-        self.rdaa_patcher = mock.patch('treq.auth._RequestDigestAuthenticationAgent')
+        self.rdaa_patcher = mock.patch(
+            'treq.auth._RequestDigestAuthenticationAgent'
+        )
         self._RequestDigestAuthenticationAgent = self.rdaa_patcher.start()
         self._RequestHeaderSettingAgent = self.rhsa_patcher.start()
         self.addCleanup(self.rhsa_patcher.stop)

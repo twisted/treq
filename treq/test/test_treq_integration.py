@@ -260,7 +260,7 @@ class TreqIntegrationTests(TestCase):
         json2 = yield treq.json_content(response2)
         self.assertTrue(json1['authenticated'])
         self.assertEqual(json1['user'], 'treq-digest-auth-multiple')
-        self.assertDictEqual(json1, json2)
+        self.assertEqual(json1, json2)
 
     @inlineCallbacks
     def test_failed_digest_auth(self):

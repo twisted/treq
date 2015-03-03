@@ -32,6 +32,21 @@ def _sha1_utf_digest(x):
 
 
 def build_digest_authentication_header(agent, **kwargs):
+    """
+    Build the authorization header for credentials got from the server
+    :param agent: _RequestDigestAuthenticationAgent instance
+    :param kwargs: - algorithm - algorithm to be used for authentication, defaults to MD5, supported values are
+                         "MD5", "MD5-SESS" and "SHA"
+                   - realm - HTTP Digest authentication realm
+                   - nonce - "nonce" HTTP Digest authentication param
+                   - qop - Quality Of Protection HTTP Digest authentication param
+                   - opaque - "opaque" HTTP Digest authentication param (should be sent back to server unchanged)
+                   - cached - Identifies that authentication already have been performed for URI/method,
+                         and new request should use the same params as first authenticated request
+                   - path - the URI path where we are authenticating
+                   - method - HTTP method to be used when requesting
+    :return: HTTP Digest authentication string
+    """
     algo = kwargs.get('algorithm', 'MD5').upper()
     original_algo = kwargs.get('algorithm')
     qop = kwargs.get('qop', None)
@@ -100,6 +115,9 @@ def build_digest_authentication_header(agent, **kwargs):
 
 
 class HTTPDigestAuth(object):
+    """
+    The container for HTTP Digest authentication credentials
+    """
 
     def __init__(self, username, password):
         self.username = username
@@ -154,6 +172,16 @@ class _RequestDigestAuthenticationAgent(object):
         self.password = password
 
     def _on_401_response(self, www_authenticate_response, method, uri, headers, bodyProducer):
+        """
+        Handle the server`s 401 response, that is capable with authentication headers, build the Authorization header
+        for
+        :param www_authenticate_response: t.w.client.Response object
+        :param method: HTTP method to be used to perform the request
+        :param uri: URI to be used
+        :param headers: Additional headers to be sent with the request, instead of "Authorization" header
+        :param bodyProducer: IBodyProducer implementer instance that would be used to fetch the response body
+        :return:
+        """
         assert www_authenticate_response.code == 401, """Got invalid pre-authentication response code, probably URL
                                                         does not support Digest auth
                                                       """
@@ -178,6 +206,15 @@ class _RequestDigestAuthenticationAgent(object):
         )
 
     def _perform_request(self, digest_authentication_header, method, uri, headers, bodyProducer):
+        """
+        Add Authorization header and perform the request with actual credentials
+        :param digest_authentication_header: HTTP Digest Authorization header string
+        :param method: HTTP method to be used to perform the request
+        :param uri: URI to be used
+        :param headers: Headers to be sent with the request
+        :param bodyProducer: IBodyProducer implementer instance that would be used to fetch the response body
+        :return: t.i.defer.Deferred (holding the result of the request)
+        """
         if not headers:
             headers = Headers({'Authorization': digest_authentication_header})
         else:
@@ -187,11 +224,20 @@ class _RequestDigestAuthenticationAgent(object):
         )
 
     def request(self, method, uri, headers=None, bodyProducer=None):
+        """
+        Wrap the agent with HTTP Digest authentication.
+        :param method: HTTP method to be used to perform the request
+        :param uri: URI to be used
+        :param headers: Headers to be sent with the request
+        :param bodyProducer: IBodyProducer implementer instance that would be used to fetch the response body
+        :return: t.i.defer.Deferred (holding the result of the request)
+        """
         if self.digest_auth_cache.get((method, uri), None) is None:
             # Perform first request for getting the realm; the client awaits for 401 response code here
             d = self._agent.request(method, uri, headers=headers, bodyProducer=None)
             d.addCallback(self._on_401_response, method, uri, headers, bodyProducer)
         else:
+            # We have performed authentication on that URI already
             digest_params_from_cache = self.digest_auth_cache.get((method, uri))['p']
             digest_params_from_cache['cached'] = True
             digest_authentication_header = build_digest_authentication_header(self, **digest_params_from_cache)

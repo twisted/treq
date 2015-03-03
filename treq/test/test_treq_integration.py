@@ -291,7 +291,7 @@ class TreqIntegrationTests(TestCase):
         response = yield self.get('/cookies/set',
                                   allow_redirects=False,
                                   params={'hello': 'there'})
-        #self.assertEqual(response.code, 200)
+        # self.assertEqual(response.code, 200)
         yield print_response(response)
         self.assertEqual(response.cookies()['hello'], 'there')
 

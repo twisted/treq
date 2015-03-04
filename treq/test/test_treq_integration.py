@@ -320,7 +320,7 @@ class TreqProxyIntegrationTests(TreqIntegrationTests):
         yield super(TreqProxyIntegrationTests, self).test_timeout()
 
     @inlineCallbacks
-    def test_failing_proxy_auth(self):
+    def test_failed_proxy_auth(self):
         credentials = ('treq', 'treq')
         bad_credentials = ('not-treq', 'not-treq')
         yield self._set_up_proxy_with_authentication(credentials)

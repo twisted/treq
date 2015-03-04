@@ -118,7 +118,7 @@ def _client(*args, **kwargs):
     pool = default_pool(reactor,
                         kwargs.get('pool'),
                         kwargs.get('persistent'))
-    if 'proxy' in kwargs.keys():
+    if 'proxy' in kwargs:
         address, port = kwargs.get('proxy')
         endpoint = TCP4ClientEndpoint(reactor, address, port)
         agent = ProxyAgent(endpoint, pool=pool)

@@ -53,12 +53,14 @@ The ``auth`` argument should be a tuple of the form ``('username', 'password')``
 Full example: :download:`basic_auth.py <examples/basic_auth.py>`
 
 HTTP Digest authentication is supported by passing an instance of
-:py:class:`treq.auth.HTTPDigestAuth` class with ``auth`` keyword argument to any of
-the request functions. We support only "auth" QoP as defined at `RFC 2617`_
-or simple `RFC 2069`_ without QoP at the moment. Treq takes care about
-HTTP digest credentials caching - after authorization on any URL/method pair,
-the library will use the first time received HTTP digest credentials on that endpoint
-for further requests, and will not perform any redundant requests for obtaining the creds.
+:py:class:`treq.auth.HTTPDigestAuth` class with ``auth`` keyword argument
+to any of the request functions.
+We support only "auth" QoP as defined at `RFC 2617`_ or simple `RFC 2069`_
+without QoP at the moment. treq takes care about HTTP digest credentials
+caching - after authorization on any URL/method pair, the library will use
+the first time received HTTP digest credentials on that endpoint
+for further requests, and will not perform
+any redundant requests for obtaining the creds.
 
 :py:class:`treq.auth.HTTPDigestAuth` class accepts ``username`` and ``password``
 as constructor arguments.
@@ -103,6 +105,25 @@ the `history()` method on the the response.
 
 Full example: :download:`response_history.py <examples/response_history.py>`
 
+Proxies
+-------
+
+treq supports only pure HTTP proxies at the moment.
+Proxy to be used when performing a request can be specified by passing
+a ``proxy`` keyword to any of the request functions. treq also supports
+Basic proxy authentication - you can pass ``proxy_auth`` keyword arguments
+to the request function in the same form as HTTP Basic authentication works with
+treq.
+
+The following will use the proxy running at the localhost port 8123,
+which configured to authenticate clients
+with username 'treq' and password 'treq'
+
+.. literalinclude:: examples/proxy_with_authentication.py
+    :linenos:
+    :lines: 7-14
+
+Full example: :download:`proxy_with_authentication.py <examples/proxy_with_authentication.py>`
 
 Cookies
 -------

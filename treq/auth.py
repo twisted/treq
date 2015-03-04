@@ -1,5 +1,4 @@
 import re
-
 import time
 import base64
 import hashlib
@@ -299,5 +298,24 @@ def add_digest_auth(agent, http_digest_auth):
 def add_auth(agent, auth_config):
     if isinstance(auth_config, tuple):
         return add_basic_auth(agent, auth_config[0], auth_config[1])
+    elif isinstance(auth_config, HTTPDigestAuth):
+        return add_digest_auth(agent, auth_config)
 
     raise UnknownAuthConfig(auth_config)
+
+
+def add_basic_proxy_auth(agent, username, password):
+    creds = base64.b64encode('{0}:{1}'.format(username, password))
+    return _RequestHeaderSettingAgent(
+        agent,
+        Headers({'Proxy-Authorization': ['Basic {0}'.format(creds)]})
+    )
+
+
+def add_proxy_auth(agent, proxy_auth_config):
+    if isinstance(proxy_auth_config, tuple):
+        return add_basic_proxy_auth(
+            agent, proxy_auth_config[0], proxy_auth_config[1]
+        )
+
+    raise UnknownAuthConfig(proxy_auth_config)

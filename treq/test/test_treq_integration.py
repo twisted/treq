@@ -9,8 +9,9 @@ from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.web.client import ResponseFailed
 
 from treq.auth import _RequestDigestAuthenticationAgent
-from treq.test.util import IntegrationTestCase, TestProxyFactory,\
-    TestProxyFactoryWithAuthentication, DEBUG, with_baseurl_and_proxy, is_pypy
+from treq.test.util import IntegrationTestCase, DEBUG
+from treq.test._proxyutil import TestProxyFactory,\
+    TestProxyFactoryWithAuthentication, with_baseurl_and_proxy
 
 import treq
 from treq.auth import HTTPDigestAuth

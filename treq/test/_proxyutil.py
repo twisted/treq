@@ -23,7 +23,14 @@ class TestProxyRequestFactory(ProxyRequest):
         parsed = urlparse.urlparse(self.uri)
         protocol = parsed[0]
         host = parsed[1]
-        port = self.ports[protocol]
+        try:
+            port = self.ports[protocol]
+        except KeyError, e:
+            self.transport.write(
+                "bHTTP/1.1 400 Bad Request\r\n\r\n"
+            )
+            self.transport.loseConnection()
+            return
         if ':' in host:
             host, port = host.split(':')
             port = int(port)

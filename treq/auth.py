@@ -35,7 +35,12 @@ def _sha1_utf_digest(x):
 
 def build_digest_authentication_header(agent, **kwargs):
     """
-    Build the authorization header for credentials got from the server
+    Build the authorization header for credentials got from the server.
+    Algorithm is accurately ported from http://python-requests.org
+        with small adjustments.
+    See
+    https://github.com/kennethreitz/requests/blob/v2.5.1/requests/auth.py#L72
+        for details.
     :param agent: _RequestDigestAuthenticationAgent instance
     :param kwargs: - algorithm - algorithm to be used for authentication,
                         defaults to MD5, supported values are
@@ -299,5 +304,7 @@ def add_digest_auth(agent, http_digest_auth):
 def add_auth(agent, auth_config):
     if isinstance(auth_config, tuple):
         return add_basic_auth(agent, auth_config[0], auth_config[1])
+    elif isinstance(auth_config, HTTPDigestAuth):
+        return add_digest_auth(agent, auth_config)
 
     raise UnknownAuthConfig(auth_config)

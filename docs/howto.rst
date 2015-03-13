@@ -53,9 +53,9 @@ The ``auth`` argument should be a tuple of the form ``('username', 'password')``
 Full example: :download:`basic_auth.py <examples/basic_auth.py>`
 
 HTTP Digest authentication is supported by passing an instance of
-:py:class:`treq.auth.HTTPDigestAuth` class with ``auth`` keyword argument to any of
-the request functions. We support only "auth" QoP as defined at `RFC 2617`_
-or simple `RFC 2069`_ without QoP at the moment. Treq takes care about
+:py:class:`treq.auth.HTTPDigestAuth` to any of the request functions by using the `auth` keyword argument.
+We support only "auth" QoP as defined at `RFC 2617`_
+or simple `RFC 2069`_ without QoP at the moment. Treq takes care of
 HTTP digest credentials caching - after authorization on any URL/method pair,
 the library will use the first time received HTTP digest credentials on that endpoint
 for further requests, and will not perform any redundant requests for obtaining the creds.

@@ -29,7 +29,7 @@ from twisted.web.client import (
 from twisted.python.components import registerAdapter
 
 from treq._utils import default_reactor
-from treq.auth import HTTPDigestAuth, add_auth, add_digest_auth
+from treq.auth import add_auth
 from treq import multipart
 from treq.response import _Response
 from requests.cookies import cookiejar_from_dict, merge_cookies
@@ -212,9 +212,7 @@ class HTTPClient(object):
                                             [(b'gzip', GzipDecoder)])
 
         auth = kwargs.get('auth')
-        if isinstance(auth, HTTPDigestAuth):
-            wrapped_agent = add_digest_auth(wrapped_agent, auth)
-        elif auth:
+        if auth:
             wrapped_agent = add_auth(wrapped_agent, auth)
 
         d = wrapped_agent.request(

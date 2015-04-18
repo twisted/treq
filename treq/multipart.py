@@ -291,7 +291,7 @@ class _LengthConsumer(object):
 
         if value is UNKNOWN_LENGTH:
             self.length = value
-        elif isinstance(value, int):
+        elif isinstance(value, (int, long)):
             self.length += value
         else:
             self.length += len(value)

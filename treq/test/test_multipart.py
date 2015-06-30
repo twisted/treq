@@ -12,7 +12,7 @@ from twisted.internet import task
 from twisted.web.client import FileBodyProducer
 from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
 
-from treq.multipart import MultiPartProducer,_LengthConsumer
+from treq.multipart import MultiPartProducer
 
 
 class MultiPartProducerTestCase(unittest.TestCase):
@@ -638,15 +638,3 @@ my lovely bytes
         self.assertEqual(set(['my lovely bytes2']), set(form['efield']))
         self.assertEqual(set(['my lovely bytes219']), set(form['xfield']))
         self.assertEqual(set(['my lovely bytes22']), set(form['afield']))
-        
-    def test_LengthConsumerUnderstandsLongs(self):
-        """
-        _LengthConsumer accepts longs
-        """
-        consumer = _LengthConsumer()
-        self.assertEqual(consumer.length,0)
-        consumer.write(1L)
-        self.assertEqual(consumer.length,1)
-        consumer.write(2147483647)
-        self.assertEqual(consumer.length,2147483648L)
-        

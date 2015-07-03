@@ -57,7 +57,6 @@ class StubbingTests(TestCase):
         verbs = ('GET', 'PUT', 'HEAD', 'PATCH', 'DELETE', 'POST')
         urls = (
             'http://supports-http.com',
-            'invalidscheme://what.com',
             'http://this/has/a/path/and/invalid/domain/name'
         )
         params = (None, {}, {'page': [1]})
@@ -83,5 +82,5 @@ class StubbingTests(TestCase):
                 self.assertEqual(418, resp.code)
                 self.assertEqual(['teapot!'],
                                  resp.headers.getRawHeaders('x-teapot'))
-                self.assertEqual("I'm a teapot",
+                self.assertEqual("" if verb == "HEAD" else "I'm a teapot",
                                  self.successResultOf(stub.content(resp)))

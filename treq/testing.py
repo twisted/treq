@@ -1,6 +1,7 @@
 """
 In-memory version of treq for testing.
 """
+from functools import wraps
 
 from zope.interface import implementer
 
@@ -15,6 +16,9 @@ from twisted.web.server import Site
 from twisted.web.iweb import IBodyProducer
 
 from twisted.python.failure import Failure
+
+import treq
+from treq.client import HTTPClient
 
 
 class AbortableStringTransport(StringTransport):
@@ -36,16 +40,13 @@ class RequestTraversalAgent(object):
     going out to a real network socket.
     """
 
-    def __init__(self, testCase, rootResource):
+    def __init__(self, rootResource):
         """
-        :param testCase: A trial synchronous test case to perform assertions
-            with.
         :param rootResource: The twisted IResource at the root of the resource
             tree.
         """
         self._memoryReactor = MemoryReactor()
         self._realAgent = Agent(reactor=self._memoryReactor)
-        self._testCase = testCase
         self._rootResource = rootResource
 
     def request(self, method, uri, headers=None, bodyProducer=None):
@@ -60,7 +61,7 @@ class RequestTraversalAgent(object):
         # connectTCP method, and MemoryReactor will place Agent's factory into
         # the tcpClients list.  We'll extract that.
         host, port, factory, timeout, bindAddress = (
-            self._memoryReactor.tcpClients[0])
+            self._memoryReactor.tcpClients[-1])
 
         # Then we need to convince that factory it's connected to something and
         # it will give us a protocol for that connection.
@@ -105,6 +106,14 @@ class RequestTraversalAgent(object):
         # system under test's problem.
         return response
 
+try:
+    # Prior to Twisted 13.1.0, there was no formally specified Agent interface
+    from twisted.web.iweb import IAgent
+except ImportError:
+    pass
+else:
+    RequestTraversalAgent = implementer(IAgent)(RequestTraversalAgent)
+
 
 @implementer(IBodyProducer)
 class SynchronousProducer(object):
@@ -130,3 +139,35 @@ class SynchronousProducer(object):
         """
         No-op.
         """
+
+
+def _reject_files(f):
+    """
+    Decorator that rejects the 'files' keyword argument to the request
+    functions, because that is not handled by this yet.
+    """
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if 'files' in kwargs:
+            raise AssertionError("StubTreq cannot handle files.")
+        return f(*args, **kwargs)
+    return wrapper
+
+
+class StubTreq(object):
+    """
+    A fake version of the treq module that can be used for testing that
+    provides all the function calls exposed in treq.__all__.
+
+    :ivar resource: A :obj:`Resource` object that provides the fake responses
+    """
+    def __init__(self, resource):
+        self._client = HTTPClient(RequestTraversalAgent(resource))
+        for function_name in treq.__all__:
+            function = getattr(self._client, function_name, None)
+            if function is None:
+                function = getattr(treq, function_name)
+            else:
+                function = _reject_files(function)
+
+            setattr(self, function_name, function)

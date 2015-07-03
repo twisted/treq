@@ -162,7 +162,8 @@ class StubTreq(object):
     :ivar resource: A :obj:`Resource` object that provides the fake responses
     """
     def __init__(self, resource):
-        self._client = HTTPClient(RequestTraversalAgent(resource))
+        self._client = HTTPClient(agent=RequestTraversalAgent(resource),
+                                  bodyproducer=SynchronousProducer)
         for function_name in treq.__all__:
             function = getattr(self._client, function_name, None)
             if function is None:

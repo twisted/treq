@@ -87,3 +87,13 @@ class StubbingTests(TestCase):
                                  resp.headers.getRawHeaders('x-teapot'))
                 self.assertEqual("" if verb == "HEAD" else "I'm a teapot",
                                  self.successResultOf(stub.content(resp)))
+
+    def test_files_are_rejected(self):
+        """
+        StubTreq does not handle files yet - it should reject requests which
+        attempt to pass files.
+        """
+        stub = StubTreq(_StaticTestResource())
+        self.assertRaises(
+            AssertionError, stub.request,
+            'method', 'http://url', files='some file')

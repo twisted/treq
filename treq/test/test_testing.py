@@ -57,7 +57,10 @@ class StubbingTests(TestCase):
         verbs = ('GET', 'PUT', 'HEAD', 'PATCH', 'DELETE', 'POST')
         urls = (
             'http://supports-http.com',
+            'https://supports-https.com',
             'http://this/has/a/path/and/invalid/domain/name'
+            'https://supports-https.com:8080',
+            'http://supports-http.com:8080',
         )
         params = (None, {}, {'page': [1]})
         headers = (None, {}, {'x-random-header': ['value', 'value2']})

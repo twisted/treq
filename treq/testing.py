@@ -11,6 +11,8 @@ from twisted.internet.address import IPv4Address
 from twisted.internet.error import ConnectionDone
 from twisted.internet.defer import succeed
 
+from twisted.python.urlpath import URLPath
+
 from twisted.web.client import Agent
 from twisted.web.server import Site
 from twisted.web.iweb import IBodyProducer
@@ -59,9 +61,16 @@ class RequestTraversalAgent(object):
 
         # That will try to establish an HTTP connection with the reactor's
         # connectTCP method, and MemoryReactor will place Agent's factory into
-        # the tcpClients list.  We'll extract that.
-        host, port, factory, timeout, bindAddress = (
-            self._memoryReactor.tcpClients[-1])
+        # the tcpClients list.  Alternately, it will try to establish an HTTPS
+        # connection with the reactor's connectSSL method, and MemoryReactor
+        # will place it into the sslClients list.  We'll extract that.
+        scheme = URLPath.fromString(uri).scheme
+        if scheme == "https":
+            host, port, factory, context_factory, timeout, bindAddress = (
+                self._memoryReactor.sslClients[-1])
+        else:
+            host, port, factory, timeout, bindAddress = (
+                self._memoryReactor.tcpClients[-1])
 
         # Then we need to convince that factory it's connected to something and
         # it will give us a protocol for that connection.

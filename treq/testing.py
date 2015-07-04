@@ -14,6 +14,7 @@ from twisted.internet.defer import succeed
 from twisted.python.urlpath import URLPath
 
 from twisted.web.client import Agent
+from twisted.web.resource import Resource
 from twisted.web.server import Site
 from twisted.web.iweb import IBodyProducer
 
@@ -185,3 +186,63 @@ class StubTreq(object):
                 function = _reject_files(function)
 
             setattr(self, function_name, function)
+
+
+class IStringResponseStubs(Interface):
+    """
+    An interface that :class:`StringStubbingResource` expects to provide it
+    with a response based on what the
+    """
+    def get_response_for(method, url, params, headers, data):
+        """
+        :param bytes method: An HTTP method
+        :param bytes url: The full URL of the request
+        :param dict params: A dictionary of query parameters mapping query keys
+            lists of values (sorted alphabetically)
+        :param dict headers: A dictionary of headers mapping header keys to
+            a list of header values (sorted alphabetically)
+        :param str data: The request body.
+
+        :return: a ``tuple`` of (code, headers, body) where the code is
+            the HTTP status code, the headers is a dictionary of bytes
+            (unlike the `headers` parameter, which is a dictionary of lists),
+            and body is a string that will be returned as the response body.
+        """
+
+
+class StringStubbingResource(Resource):
+    """
+    A resource that takes a :obj:`IStringResponseStubs` provider and returns
+    a real response as a result.
+    """
+    isLeaf = True
+
+    def __init__(self, istubs):
+        """
+        :param istubs: a :obj:`IStringResponseStubs` provider.
+        """
+        Resource.__init__(self)
+        self._istubs = istubs
+
+    def render(self, request):
+        """
+        Produce a response according to the stubs provided.
+        """
+        params = request.args
+        headers = defaultdict(list)
+        for k, v in request.requestHeaders.getAllRawHeaders():
+            headers[k].append(v)
+
+        for dictionary in (params, headers):
+            for k in dictionary:
+                dictionary[k] = sorted(dictionary[k])
+
+        status_code, headers, body = self._istubs.get_response_for(
+            request.method, request.uri, params, headers,
+            request.content.read())
+
+        request.setResponseCode(status_code)
+        for k, v in headers.items():
+            request.setHeader(k, v)
+
+        return body

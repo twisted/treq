@@ -5,10 +5,16 @@ from inspect import getmembers, isfunction
 
 from twisted.web.resource import Resource
 
+from zope.interface import implementer
+
 import treq
 
 from treq.test.util import TestCase
-from treq.testing import StubTreq
+from treq.testing import (
+    IStringResponseStubs,
+    StringStubbingResource,
+    StubTreq
+)
 
 
 class _StaticTestResource(Resource):
@@ -97,3 +103,41 @@ class StubbingTests(TestCase):
         self.assertRaises(
             AssertionError, stub.request,
             'method', 'http://url', files='some file')
+
+
+class StringStubbingTests(TestCase):
+    """
+    Tests for :obj:`StringStubbingResource`.
+    """
+    def _get_response_stub(self, expected_args, response):
+        """
+        Make a :obj:`IStringResponseStubs` that checks the expected args and
+        returns the given response.
+        """
+        @implementer(IStringResponseStubs)
+        class Stubber(object):
+            def get_response_for(_, *args):
+                self.assertEqual(expected_args, args)
+                return response
+        return Stubber()
+
+    def test_interacts_successfully_with_istub(self):
+        """
+        The :obj:`IStringResponseStubs` is passed the correct parameters with
+        which to evaluate the response, and the response is returned.
+        """
+        resource = StringStubbingResource(self._get_response_stub(
+            ('delete', 'http://what/a/thing', {'page': '1'},
+             {'x-header': ['eh']}, 'datastr'),
+            (418, {'x-response': 'responseheader'}, 'response body')))
+
+        stub = StubTreq(resource)
+
+        d = stub.delete('http://what/a/thing', headers={'x-header': 'eh'},
+                        params={'page': ['1']}, data='datastr')
+        resp = self.successResultOf(d)
+        self.assertEqual(418, resp.code)
+        self.assertEqual(['responseheader'],
+                         resp.headers.getHeader('x-response'))
+        self.assertEqual('response body',
+                         self.successResultOf(treq.content(resp)))

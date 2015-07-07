@@ -1,7 +1,8 @@
-from twisted.web.client import Agent
+from twisted.web.client import Agent, ProxyAgent
 
 from treq.client import HTTPClient
 from treq._utils import default_pool, default_reactor
+from twisted.internet.endpoints import TCP4ClientEndpoint
 
 
 def head(url, **kwargs):
@@ -110,5 +111,10 @@ def _client(*args, **kwargs):
     pool = default_pool(reactor,
                         kwargs.get('pool'),
                         kwargs.get('persistent'))
-    agent = Agent(reactor, pool=pool)
+    if 'proxy' in kwargs.keys():
+        address, port = kwargs.get('proxy')
+        endpoint = TCP4ClientEndpoint(reactor, address, port)
+        agent = ProxyAgent(endpoint)
+    else:
+        agent = Agent(reactor, pool=pool)
     return HTTPClient(agent)

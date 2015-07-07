@@ -6,13 +6,14 @@ from functools import wraps
 
 from six import binary_type, string_types
 
-from zope.interface import Interface, implementer
+from zope.interface import Interface, directlyProvides, implementer
 
 from twisted.test.proto_helpers import StringTransport, MemoryReactor
 
 from twisted.internet.address import IPv4Address
 from twisted.internet.error import ConnectionDone
 from twisted.internet.defer import succeed
+from twisted.internet.interfaces import ISSLTransport
 
 from twisted.python.urlpath import URLPath
 
@@ -31,7 +32,6 @@ class AbortableStringTransport(StringTransport):
     """
     A :obj:`StringTransport` that supports ``abortConnection``.
     """
-
     def abortConnection(self):
         """
         Since all connection cessation is immediate in this in-memory
@@ -83,6 +83,8 @@ class RequestTraversalAgent(object):
         # We want to capture the output of that connection so we'll make an
         # in-memory transport.
         clientTransport = AbortableStringTransport()
+        if scheme == "https":
+            directlyProvides(clientTransport, ISSLTransport)
 
         # When the protocol is connected to a transport, it ought to send the
         # whole request because callers of this should not use an asynchronous
@@ -98,8 +100,10 @@ class RequestTraversalAgent(object):
 
         # Connect the channel to another in-memory transport so we can collect
         # the response.
-        serverTransport = StringTransport()
-        serverTransport.hostAddr = IPv4Address('TCP', '127.0.0.1', 80)
+        serverTransport = AbortableStringTransport()
+        if scheme == "https":
+            directlyProvides(serverTransport, ISSLTransport)
+        serverTransport.hostAddr = IPv4Address('TCP', '127.0.0.1', port)
         channel.makeConnection(serverTransport)
 
         # Feed it the data that the Agent synthesized.

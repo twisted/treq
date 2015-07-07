@@ -193,42 +193,54 @@ class SequenceStringStubsTests(TestCase):
         `None` is used as a sentinel value to mean "anything for this value is
         valid".
         """
-        stub = StubTreq(StringStubbingResource(SequenceStringStubs(
-            [(('get', None, None, None, None), (418, {}, 'body'))])))
+        sequence = SequenceStringStubs(
+            [(('get', None, None, None, None), (418, {}, 'body'))])
+        stub = StubTreq(StringStubbingResource(sequence))
         d = stub.get('https://anything', data='what', headers={'1': '1'})
         resp = self.successResultOf(d)
+        self.assertEqual((), sequence.failures)
         self.assertEqual(418, resp.code)
         self.assertEqual('body', self.successResultOf(stub.content(resp)))
 
-        stub = StubTreq(StringStubbingResource(SequenceStringStubs(
-            [(('get', None, None, None, None), (418, {}, 'body'))])))
+        sequence = SequenceStringStubs(
+            [(('get', None, None, None, None), (418, {}, 'body'))])
+        stub = StubTreq(StringStubbingResource(sequence))
         d = stub.delete('https://anything', data='what', headers={'1': '1'})
-        self.failureResultOf(d, AssertionError)
+        resp = self.successResultOf(d)
+        self.assertNotEqual((), sequence.failures)
+        self.assertEqual(500, resp.code)
 
     def test_unexpected_next_request_causes_failure(self):
         """
         If a request is made that is not expected as the next request,
         causes a failure.
         """
-        stub = StubTreq(StringStubbingResource(SequenceStringStubs(
+        sequence = SequenceStringStubs(
             [(('get', 'https://anything', {}, {'1': ['1']}, 'what'),
               (418, {}, 'body')),
-             (('delete', 'https://anything', {}, {'1': ['1']}, 'what'),
-              (202, {}, 'deleted'))])))
+             (('get', 'http://anything', {}, {'2': ['1']}, 'what'),
+              (202, {}, 'deleted'))])
+        stub = StubTreq(StringStubbingResource(sequence))
 
         d = stub.get('https://anything', data='what', headers={'1': '1'})
         resp = self.successResultOf(d)
+        self.assertEqual((), sequence.failures)
         self.assertEqual(418, resp.code)
         self.assertEqual('body', self.successResultOf(stub.content(resp)))
 
         d = stub.get('https://anything', data='what', headers={'1': '1'})
-        self.failureResultOf(d, AssertionError)
+        resp = self.successResultOf(d)
+        self.assertNotEqual((), sequence.failures)
+        self.assertEqual(500, resp.code)
 
     def test_no_more_expected_requests_causes_failure(self):
         """
         If there are no more expected requests, making a request causes a
         failure.
         """
-        stub = StubTreq(StringStubbingResource(SequenceStringStubs([])))
+        sequence = SequenceStringStubs([])
+        stub = StubTreq(StringStubbingResource(sequence))
         d = stub.get('https://anything', data='what', headers={'1': '1'})
-        self.failureResultOf(d, AssertionError)
+        resp = self.successResultOf(d)
+        self.assertNotEqual((), sequence.failures)
+        self.assertEqual(500, resp.code)

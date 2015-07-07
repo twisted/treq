@@ -1,12 +1,9 @@
 """
 In-memory version of treq for testing.
 """
-from collections import defaultdict
 from functools import wraps
 
-from six import binary_type, string_types
-
-from zope.interface import Interface, directlyProvides, implementer
+from zope.interface import Attribute, Interface, directlyProvides, implementer
 
 from twisted.test.proto_helpers import StringTransport, MemoryReactor
 
@@ -200,6 +197,12 @@ class IStringResponseStubs(Interface):
     An interface that :class:`StringStubbingResource` expects to provide it
     with a response based on what the
     """
+    failures = Attribute(
+        "An iterable of failures that may have occurred when getting testing "
+        "making requests - failures must be stored here, because any "
+        "exception raised by :meth:`get_response_for` will be eaten by "
+        ":obj:`Resource` and a 500 response returned instead.")
+
     def get_response_for(method, url, params, headers, data):
         """
         :param bytes method: An HTTP method
@@ -214,6 +217,11 @@ class IStringResponseStubs(Interface):
             the HTTP status code, the headers is a dictionary of bytes
             (unlike the `headers` parameter, which is a dictionary of lists),
             and body is a string that will be returned as the response body.
+
+        If there is a stubbing error, the return value is undefined (if an
+        exception is raised, :obj:`Resource` will just eat it and return 500
+        in its place).  But the stubbing error should definitely be recorded
+        in the failures attribute.
         """
 
 
@@ -312,28 +320,58 @@ class SequenceStringStubs(object):
 
     If any of the parameters passed is `None` (as opposed to an empty list or
     dictionary for params or)
+
+    :ivar list sequence: The sequence of expected request arguments mapped to
+        stubbed responses
+    :ivar list failures: A mutable list containing request failures and
+        mismatches.  Failures have to be stored here, because any attempt to
+        raise an exception will just be eaten by :obj:`Resource` and returned
+        as a 500 error instead.
     """
     def __init__(self, sequence):
-        self.sequence = sequence
+        self._sequence = sequence
+        self._failures = []
+
+    @property
+    def sequence(self):
+        return tuple(self._sequence)
+
+    @property
+    def failures(self):
+        return tuple(self._failures)
 
     def get_response_for(self, method, url, params, headers, data):
         """
         :return: the next response in the sequence, provided that the
             parameters match the next in the sequence.
         :see: :obj:`IStringResponseStubs.get_response_for`
-        :raises: :obj:`AssertionError`
         """
         if len(self.sequence) == 0:
-            raise AssertionError("No more reuqests expected.")
+            self._failures.append("No more requests expected.")
+            return (500, {}, "StubbingError")
 
         expected, response = self.sequence[0]
         e_method, e_url, e_params, e_headers, e_data = expected
-        if ((e_method is not None and e_method.lower() != method.lower()) or
-                (e_url is not None and e_url != url) or
-                (e_params is not None and e_params != params) or
-                (e_headers is not None and HasHeaders(e_headers) != headers) or
-                (e_data is not None and e_data != data)):
-            raise AssertionError("Expected {0!r}, got {1!r}".format(
-                expected, (method, url, params, headers, data)))
+
+        checks = [
+            (e_method is None or e_method.lower() == method.lower(), "method"),
+            (e_url is None or
+             # URLPath does not have an __eq__ function
+             str(URLPath.fromString(e_url)) == str(URLPath.fromString(url)),
+             "url"),
+            (e_params is None or e_params == params, 'parameters'),
+            (e_headers is None or HasHeaders(e_headers) == headers, "headers"),
+            (e_data is None or e_data == data, "data")
+        ]
+
+        mismatches = [param for success, param in checks if not success]
+        if mismatches:
+            self._failures.append(
+                "\nExpected: {0!r}\n     Got: {1!r}\nMismatches: {2!r}"
+                .format(expected, (method, url, params, headers, data),
+                        mismatches))
+            return (500, {}, "StubbingError")
+
+        self._sequence = self._sequence[1:]
 
         return response

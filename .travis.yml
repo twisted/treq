@@ -75,3 +75,32 @@ script:
 notifications:
     email: false
 
+matrix:
+    allow_failures:
+      - env: TOX_ENV=pypy-pyopenssl_0.13-twisted_trunk
+      - env: TOX_ENV=pypy-pyopenssl_0.14-twisted_trunk
+      - env: TOX_ENV=pypy-pyopenssl_trunk-twisted_12.1.0
+      - env: TOX_ENV=pypy-pyopenssl_trunk-twisted_12.2.0
+      - env: TOX_ENV=pypy-pyopenssl_trunk-twisted_13.0.0
+      - env: TOX_ENV=pypy-pyopenssl_trunk-twisted_13.1.0
+      - env: TOX_ENV=pypy-pyopenssl_trunk-twisted_13.2.0
+      - env: TOX_ENV=pypy-pyopenssl_trunk-twisted_14.0.0
+      - env: TOX_ENV=pypy-pyopenssl_trunk-twisted_trunk
+      - env: TOX_ENV=py26-pyopenssl_0.13-twisted_trunk
+      - env: TOX_ENV=py26-pyopenssl_0.14-twisted_trunk
+      - env: TOX_ENV=py26-pyopenssl_trunk-twisted_12.1.0
+      - env: TOX_ENV=py26-pyopenssl_trunk-twisted_12.2.0
+      - env: TOX_ENV=py26-pyopenssl_trunk-twisted_13.0.0
+      - env: TOX_ENV=py26-pyopenssl_trunk-twisted_13.1.0
+      - env: TOX_ENV=py26-pyopenssl_trunk-twisted_13.2.0
+      - env: TOX_ENV=py26-pyopenssl_trunk-twisted_14.0.0
+      - env: TOX_ENV=py26-pyopenssl_trunk-twisted_trunk
+      - env: TOX_ENV=py27-pyopenssl_0.13-twisted_trunk
+      - env: TOX_ENV=py27-pyopenssl_0.14-twisted_trunk
+      - env: TOX_ENV=py27-pyopenssl_trunk-twisted_12.1.0
+      - env: TOX_ENV=py27-pyopenssl_trunk-twisted_12.2.0
+      - env: TOX_ENV=py27-pyopenssl_trunk-twisted_13.0.0
+      - env: TOX_ENV=py27-pyopenssl_trunk-twisted_13.1.0
+      - env: TOX_ENV=py27-pyopenssl_trunk-twisted_13.2.0
+      - env: TOX_ENV=py27-pyopenssl_trunk-twisted_14.0.0
+      - env: TOX_ENV=py27-pyopenssl_trunk-twisted_trunk

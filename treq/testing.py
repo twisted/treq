@@ -1,9 +1,12 @@
 """
 In-memory version of treq for testing.
 """
+from collections import defaultdict
 from functools import wraps
 
-from zope.interface import implementer
+from six import binary_type, string_types
+
+from zope.interface import Interface, implementer
 
 from twisted.test.proto_helpers import StringTransport, MemoryReactor
 
@@ -289,3 +292,44 @@ class HasHeaders(object):
 
     def __ne__(self, other_headers):
         return not self.__eq__(other_headers)
+
+
+@implementer(IStringResponseStubs)
+class SequenceStringStubs(object):
+    """
+    Takes a sequence of::
+
+        [((method, url, params, headers, data), (code, headers, body)),
+         ...]
+
+    Expects the requests to arrive in sequence order.  If there are no more
+    responses, or the request's paramters do not match the next item's expected
+    request paramters, raises :obj:`AssertionError`.
+
+    If any of the parameters passed is `None` (as opposed to an empty list or
+    dictionary for params or)
+    """
+    def __init__(self, sequence):
+        self.sequence = sequence
+
+    def get_response_for(self, method, url, params, headers, data):
+        """
+        :return: the next response in the sequence, provided that the
+            parameters match the next in the sequence.
+        :see: :obj:`IStringResponseStubs.get_response_for`
+        :raises: :obj:`AssertionError`
+        """
+        if len(self.sequence) == 0:
+            raise AssertionError("No more reuqests expected.")
+
+        expected, response = self.sequence[0]
+        e_method, e_url, e_params, e_headers, e_data = expected
+        if ((e_method is not None and e_method.lower() != method.lower()) or
+                (e_url is not None and e_url != url) or
+                (e_params is not None and e_params != params) or
+                (e_headers is not None and HasHeaders(e_headers) != headers) or
+                (e_data is not None and e_data != data)):
+            raise AssertionError("Expected {0!r}, got {1!r}".format(
+                expected, (method, url, params, headers, data)))
+
+        return response

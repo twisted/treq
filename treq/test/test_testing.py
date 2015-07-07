@@ -13,6 +13,7 @@ from treq.test.util import TestCase
 from treq.testing import (
     HasHeaders,
     IStringResponseStubs,
+    SequenceStringStubs,
     StringStubbingResource,
     StubTreq
 )
@@ -181,3 +182,53 @@ class StringStubbingTests(TestCase):
                          resp.headers.getRawHeaders('x-response'))
         self.assertEqual('response body',
                          self.successResultOf(stub.content(resp)))
+
+
+class SequenceStringStubsTests(TestCase):
+    """
+    Tests for :obj:`SequenceStringStubs`.
+    """
+    def test_only_check_args_that_are_not_None(self):
+        """
+        `None` is used as a sentinel value to mean "anything for this value is
+        valid".
+        """
+        stub = StubTreq(StringStubbingResource(SequenceStringStubs(
+            [(('get', None, None, None, None), (418, {}, 'body'))])))
+        d = stub.get('https://anything', data='what', headers={'1': '1'})
+        resp = self.successResultOf(d)
+        self.assertEqual(418, resp.code)
+        self.assertEqual('body', self.successResultOf(stub.content(resp)))
+
+        stub = StubTreq(StringStubbingResource(SequenceStringStubs(
+            [(('get', None, None, None, None), (418, {}, 'body'))])))
+        d = stub.delete('https://anything', data='what', headers={'1': '1'})
+        self.failureResultOf(d, AssertionError)
+
+    def test_unexpected_next_request_causes_failure(self):
+        """
+        If a request is made that is not expected as the next request,
+        causes a failure.
+        """
+        stub = StubTreq(StringStubbingResource(SequenceStringStubs(
+            [(('get', 'https://anything', {}, {'1': ['1']}, 'what'),
+              (418, {}, 'body')),
+             (('delete', 'https://anything', {}, {'1': ['1']}, 'what'),
+              (202, {}, 'deleted'))])))
+
+        d = stub.get('https://anything', data='what', headers={'1': '1'})
+        resp = self.successResultOf(d)
+        self.assertEqual(418, resp.code)
+        self.assertEqual('body', self.successResultOf(stub.content(resp)))
+
+        d = stub.get('https://anything', data='what', headers={'1': '1'})
+        self.failureResultOf(d, AssertionError)
+
+    def test_no_more_expected_requests_causes_failure(self):
+        """
+        If there are no more expected requests, making a request causes a
+        failure.
+        """
+        stub = StubTreq(StringStubbingResource(SequenceStringStubs([])))
+        d = stub.get('https://anything', data='what', headers={'1': '1'})
+        self.failureResultOf(d, AssertionError)

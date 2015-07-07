@@ -214,6 +214,11 @@ class StringStubbingResource(Resource):
     """
     A resource that takes a :obj:`IStringResponseStubs` provider and returns
     a real response as a result.
+
+    Note that if the :obj:`IStringResponseStubs` raises an Exception, Twisted
+    will catch it and return a 500 instead.  So the
+    implementation of :obj:`IStringResponseStubs` may want to do its own error
+    reporting.
     """
     isLeaf = True
 
@@ -229,16 +234,28 @@ class StringStubbingResource(Resource):
         Produce a response according to the stubs provided.
         """
         params = request.args
-        headers = defaultdict(list)
+        headers = {}
         for k, v in request.requestHeaders.getAllRawHeaders():
-            headers[k].append(v)
+            headers[k] = v
 
         for dictionary in (params, headers):
             for k in dictionary:
                 dictionary[k] = sorted(dictionary[k])
 
+        # The incoming request does not have the absoluteURI property, because
+        # an incoming request is a IRequest, not an IClientRequest, so it
+        # the absolute URI needs to be synthesized.
+
+        # But request.URLPath() only returns the scheme and hostname, because
+        # that is the URL for this resource (because this resource handles
+        # everything from the root on down).
+
+        # So we need to add the request.path (not request.uri, which includes
+        # the query parameters)
+        absoluteURI = str(request.URLPath().click(request.path))
+
         status_code, headers, body = self._istubs.get_response_for(
-            request.method, request.uri, params, headers,
+            request.method, absoluteURI, params, headers,
             request.content.read())
 
         request.setResponseCode(status_code)
@@ -246,3 +263,29 @@ class StringStubbingResource(Resource):
             request.setHeader(k, v)
 
         return body
+
+
+class HasHeaders(object):
+    """
+    Since Twisted adds headers to a request, such as the host and the content
+    length, it's necessary to test whether request headers CONTAIN the expected
+    headers (the ones that are not automatically added by Twisted).
+
+    This wraps a set of headers, and can be used in an equality test against
+    a superset if the provided headers.
+    """
+    def __init__(self, headers):
+        self._headers = dict([(k.lower(), v) for k, v in headers.items()])
+
+    def __repr__(self):
+        return "HasHeaders({0})".format(repr(self._headers))
+
+    def __eq__(self, other_headers):
+        compare_to = dict([(k.lower(), v) for k, v in other_headers.items()])
+
+        return (set(self._headers.keys()).issubset(set(compare_to.keys())) and
+                all([set(v).issubset(set(compare_to[k]))
+                     for k, v in self._headers.items()]))
+
+    def __ne__(self, other_headers):
+        return not self.__eq__(other_headers)

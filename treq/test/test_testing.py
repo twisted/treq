@@ -11,6 +11,7 @@ import treq
 
 from treq.test.util import TestCase
 from treq.testing import (
+    HasHeaders,
     IStringResponseStubs,
     StringStubbingResource,
     StubTreq
@@ -105,6 +106,40 @@ class StubbingTests(TestCase):
             'method', 'http://url', files='some file')
 
 
+class HasHeadersTests(TestCase):
+    """
+    Tests for :obj:`HasHeaders`.
+    """
+    def test_equality_and_strict_subsets_succeed(self):
+        """
+        The :obj:`HasHeaders` returns True if both sets of headers are
+        equivalent, or the first is a strict subset of the second.
+        """
+        self.assertEqual(HasHeaders({'one': ['two', 'three']}),
+                         {'one': ['two', 'three']},
+                         "Equivalent headers do not match.")
+        self.assertEqual(HasHeaders({'one': ['two', 'three']}),
+                         {'one': ['two', 'three', 'four'],
+                          'ten': ['six']},
+                         "Strict subset headers do not match")
+
+    def test_partial_or_zero_intersection_subsets_fail(self):
+        """
+        The :obj:`HasHeaders` returns False if both sets of headers overlap
+        but the first is not a strict subset of the second.  It also returns
+        False if there is no overlap.
+        """
+        self.assertNotEqual(HasHeaders({'one': ['two', 'three']}),
+                            {'one': ['three', 'four']},
+                            "Partial value overlap matches")
+        self.assertNotEqual(HasHeaders({'one': ['two', 'three']}),
+                            {'one': ['two']},
+                            "Missing value matches")
+        self.assertNotEqual(HasHeaders({'one': ['two', 'three']}),
+                            {'ten': ['six']},
+                            "Complete inequality matches")
+
+
 class StringStubbingTests(TestCase):
     """
     Tests for :obj:`StringStubbingResource`.
@@ -114,11 +149,16 @@ class StringStubbingTests(TestCase):
         Make a :obj:`IStringResponseStubs` that checks the expected args and
         returns the given response.
         """
+        method, url, params, headers, data = expected_args
+
         @implementer(IStringResponseStubs)
         class Stubber(object):
-            def get_response_for(_, *args):
-                self.assertEqual(expected_args, args)
+            def get_response_for(_, _method, _url, _params, _headers, _data):
+                self.assertEqual((method, url, params, data),
+                                 (_method, _url, _params, _data))
+                self.assertEqual(HasHeaders(headers), _headers)
                 return response
+
         return Stubber()
 
     def test_interacts_successfully_with_istub(self):
@@ -127,17 +167,17 @@ class StringStubbingTests(TestCase):
         which to evaluate the response, and the response is returned.
         """
         resource = StringStubbingResource(self._get_response_stub(
-            ('delete', 'http://what/a/thing', {'page': '1'},
+            ('DELETE', 'http://what/a/thing', {'page': ['1']},
              {'x-header': ['eh']}, 'datastr'),
             (418, {'x-response': 'responseheader'}, 'response body')))
 
         stub = StubTreq(resource)
 
         d = stub.delete('http://what/a/thing', headers={'x-header': 'eh'},
-                        params={'page': ['1']}, data='datastr')
+                        params={'page': '1'}, data='datastr')
         resp = self.successResultOf(d)
         self.assertEqual(418, resp.code)
         self.assertEqual(['responseheader'],
-                         resp.headers.getHeader('x-response'))
+                         resp.headers.getRawHeaders('x-response'))
         self.assertEqual('response body',
-                         self.successResultOf(treq.content(resp)))
+                         self.successResultOf(stub.content(resp)))

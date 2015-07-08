@@ -17,7 +17,7 @@ from twisted.python.urlpath import URLPath
 from twisted.web.client import Agent
 from twisted.web.resource import Resource
 from twisted.web.server import Site
-from twisted.web.iweb import IBodyProducer
+from twisted.web.iweb import IAgent, IBodyProducer
 
 from twisted.python.failure import Failure
 
@@ -37,6 +37,7 @@ class AbortableStringTransport(StringTransport):
         self.loseConnection()
 
 
+@implementer(IAgent)
 class RequestTraversalAgent(object):
     """
     :obj:`IAgent` implementation that issues an in-memory request rather than
@@ -119,14 +120,6 @@ class RequestTraversalAgent(object):
         # IResponse).  This should be synchronously fired, and if not, it's the
         # system under test's problem.
         return response
-
-try:
-    # Prior to Twisted 13.1.0, there was no formally specified Agent interface
-    from twisted.web.iweb import IAgent
-except ImportError:
-    pass
-else:
-    RequestTraversalAgent = implementer(IAgent)(RequestTraversalAgent)
 
 
 @implementer(IBodyProducer)

@@ -73,7 +73,7 @@ Build docs:
 .. |build| image:: https://secure.travis-ci.org/twisted/treq.png?branch=master
 .. _build: http://travis-ci.org/twisted/treq
 
-.. |coverage| image:: https://codecov.io/github/hynek/attrs?branch=master
+.. |coverage| image:: https://codecov.io/github/twisted/treq/coverage.svg?branch=master
 .. _coverage: https://codecov.io/github/twisted/treq
 
 .. |pypi| image:: http://img.shields.io/pypi/v/treq.png

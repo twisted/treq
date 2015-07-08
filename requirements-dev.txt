@@ -4,3 +4,4 @@ pep8
 sphinx
 mock
 requests>=2.1.0
+six

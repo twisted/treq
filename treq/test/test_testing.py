@@ -3,7 +3,10 @@ In-memory treq returns stubbed responses.
 """
 from inspect import getmembers, isfunction
 
+from six import text_type, binary_type
+
 from twisted.web.resource import Resource
+from twisted.web.server import NOT_DONE_YET
 
 from zope.interface import implementer
 from zope.interface.verify import verifyObject
@@ -28,6 +31,14 @@ class _StaticTestResource(Resource):
         request.setResponseCode(418)
         request.setHeader("x-teapot", "teapot!")
         return "I'm a teapot"
+
+
+class _NonResponsiveTestResource(Resource):
+    """Resource that returns NOT_DONE_YET and never finishes the request"""
+    isLeaf = True
+
+    def render(self, request):
+        return NOT_DONE_YET
 
 
 class StubbingTests(TestCase):
@@ -67,7 +78,6 @@ class StubbingTests(TestCase):
             self.assertIs(
                 getattr(stub, name, None), obj,
                 "StubTreq.{0} should just expose treq.{0}".format(name))
-
 
     def test_providing_resource_to_stub_treq(self):
         """
@@ -117,6 +127,22 @@ class StubbingTests(TestCase):
         self.assertRaises(
             AssertionError, stub.request,
             'method', 'http://url', files='some file')
+
+    def test_passing_in_strange_data_is_rejected(self):
+        """
+        StubTreq rejects data that isn't list/dictionary/tuple/bytes/unicode.
+        """
+        stub = StubTreq(_StaticTestResource())
+        self.assertRaises(
+            AssertionError, stub.request, 'method', 'http://url',
+            data=object())
+        self.successResultOf(stub.request('method', 'http://url', data={}))
+        self.successResultOf(stub.request('method', 'http://url', data=[]))
+        self.successResultOf(stub.request('method', 'http://url', data=()))
+        self.successResultOf(
+            stub.request('method', 'http://url', data=binary_type("")))
+        self.successResultOf(
+            stub.request('method', 'http://url', data=text_type("")))
 
 
 class HasHeadersTests(TestCase):

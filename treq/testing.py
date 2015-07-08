@@ -3,7 +3,7 @@ In-memory version of treq for testing.
 """
 from functools import wraps
 
-from zope.interface import Attribute, Interface, directlyProvides, implementer
+from six import string_types
 
 from twisted.test.proto_helpers import StringTransport, MemoryReactor
 
@@ -20,6 +20,8 @@ from twisted.web.server import Site
 from twisted.web.iweb import IAgent, IBodyProducer
 
 from twisted.python.failure import Failure
+
+from zope.interface import Attribute, Interface, directlyProvides, implementer
 
 import treq
 from treq.client import HTTPClient
@@ -123,9 +125,18 @@ class RequestTraversalAgent(object):
 
 
 @implementer(IBodyProducer)
-class SynchronousProducer(object):
+class _SynchronousProducer(object):
     """
-    An IBodyProducer which produces its entire payload immediately.
+    A partial implementation of an :obj:`IBodyProducer` which produces its
+    entire payload immediately.  There is no way to access to an instance of
+    this object from :obj:`RequestTraversalAgent` or :obj:`StubTreq`, or even a
+    :obj:`Resource: passed to :obj:`StubTreq`.
+
+    This does not implement the :func:`IBodyProducer.stopProducing` method,
+    because that is very difficult to trigger.  (The request from
+    RequestTraversalAgent would have to be canceled while it is still in the
+    transmitting state), and the intent is to use RequestTraversalAgent to
+    make synchronous requests.
     """
 
     def __init__(self, body):
@@ -133,6 +144,9 @@ class SynchronousProducer(object):
         Create a synchronous producer with some bytes.
         """
         self.body = body
+        msg = ("StubTreq currently only supports url-encodable types, bytes, "
+               "or unicode as data.")
+        assert isinstance(body, string_types), msg
         self.length = len(body)
 
     def startProducing(self, consumer):
@@ -141,11 +155,6 @@ class SynchronousProducer(object):
         """
         consumer.write(self.body)
         return succeed(None)
-
-    def stopProducing(self):
-        """
-        No-op.
-        """
 
 
 def _reject_files(f):
@@ -173,10 +182,10 @@ class StubTreq(object):
         Construct a client, and pass through client methods and/or
         treq.content functions.
         """
-        self._client = HTTPClient(agent=RequestTraversalAgent(resource),
-                                  data_to_body_producer=SynchronousProducer)
+        _client = HTTPClient(agent=RequestTraversalAgent(resource),
+                             data_to_body_producer=_SynchronousProducer)
         for function_name in treq.__all__:
-            function = getattr(self._client, function_name, None)
+            function = getattr(_client, function_name, None)
             if function is None:
                 function = getattr(treq, function_name)
             else:
@@ -196,7 +205,8 @@ class IStringResponseStubs(Interface):
         "exception raised by :meth:`get_response_for` will be eaten by "
         ":obj:`Resource` and a 500 response returned instead.")
 
-    def get_response_for(method, url, params, headers, data):
+    def get_response_for(method, url, params, headers,
+                         data):  # pragma: no cover
         """
         :param bytes method: An HTTP method
         :param bytes url: The full URL of the request

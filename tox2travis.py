@@ -34,8 +34,8 @@ notifications:
 # Don't fail on trunk versions.
 matrix:
   allow_failures:
-    - env: pypy-twisted_trunk-pyopenssl_trunk
-    - env: py27-twisted_trunk-pyopenssl_trunk
+    - env: TOX_ENV=pypy-twisted_trunk-pyopenssl_trunk
+    - env: TOX_ENV=py27-twisted_trunk-pyopenssl_trunk
 
 branches:
   only:

@@ -6,6 +6,7 @@ from inspect import getmembers, isfunction
 from twisted.web.resource import Resource
 
 from zope.interface import implementer
+from zope.interface.verify import verifyObject
 
 import treq
 
@@ -210,6 +211,12 @@ class SequenceStringStubsTests(TestCase):
     """
     Tests for :obj:`SequenceStringStubs`.
     """
+    def test_implements_interface(self):
+        """
+        :obj:`SequenceStringStubs` implements :obj:`IStringResponseStubs`.
+        """
+        verifyObject(IStringResponseStubs, SequenceStringStubs([]))
+
     def test_only_check_args_that_are_not_None(self):
         """
         `None` is used as a sentinel value to mean "anything for this value is

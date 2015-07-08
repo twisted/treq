@@ -140,6 +140,28 @@ class HasHeadersTests(TestCase):
                             {'ten': ['six']},
                             "Complete inequality matches")
 
+    def test_case_insensitive_keys(self):
+        """
+        The :obj:`HasHeaders` equality function ignores the case of the header
+        keys.
+        """
+        self.assertEqual(HasHeaders({'A': ['1'], 'b': ['2']}),
+                         {'a': ['1'], 'B': ['2']})
+
+    def test_case_sensitive_values(self):
+        """
+        The :obj:`HasHeaders` equality function does care about the case of
+        the header value.
+        """
+        self.assertNotEqual(HasHeaders({'a': ['a']}), {'a': ['A']})
+
+    def test_repr(self):
+        """
+        :obj:`HasHeaders` returns a nice string repr.
+        """
+        self.assertEqual("HasHeaders({'a': ['b']})",
+                         repr(HasHeaders({'A': ['b']})))
+
 
 class StringStubbingTests(TestCase):
     """

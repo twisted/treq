@@ -1,6 +1,4 @@
-include treq/_version
-include README.rst
-include LICENSE
+include treq/_version README.rst LICENSE tox.ini tox2travis.py requirements-dev.txt
 recursive-include docs *
 prune docs/_build
 exclude .travis.yml

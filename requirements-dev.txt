@@ -3,4 +3,4 @@ pyflakes
 pep8
 sphinx
 mock
-requests
+requests>=2.1.0

@@ -1,4 +1,4 @@
-Twisted>=12.1.0
+Twisted>=13.2.0
 pyflakes
 pep8
 sphinx

@@ -181,7 +181,7 @@ class StubTreq(object):
         treq.content functions.
         """
         self._client = HTTPClient(agent=RequestTraversalAgent(resource),
-                                  bodyproducer=SynchronousProducer)
+                                  data_to_body_producer=SynchronousProducer)
         for function_name in treq.__all__:
             function = getattr(self._client, function_name, None)
             if function is None:

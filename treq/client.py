@@ -86,10 +86,11 @@ class _BufferedResponse(proxyForInterface(IResponse)):
 
 
 class HTTPClient(object):
-    def __init__(self, agent, cookiejar=None, bodyproducer=IBodyProducer):
+    def __init__(self, agent, cookiejar=None,
+                 data_to_body_producer=IBodyProducer):
         self._agent = agent
         self._cookiejar = cookiejar or cookiejar_from_dict({})
-        self._bodyproducer = bodyproducer
+        self._data_to_body_producer = data_to_body_producer
 
     def get(self, url, **kwargs):
         return self.request('GET', url, **kwargs)
@@ -162,7 +163,7 @@ class HTTPClient(object):
                 headers.setRawHeaders(
                     'content-type', ['application/x-www-form-urlencoded'])
                 data = urlencode(data, doseq=True)
-            bodyProducer = self._bodyproducer(data)
+            bodyProducer = self._data_to_body_producer(data)
 
         cookies = kwargs.get('cookies', {})
 

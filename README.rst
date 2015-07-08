@@ -1,9 +1,9 @@
 treq
 ====
 
+|pypi|_
 |build|_
 |coverage|_
-|pypi|_
 
 ``treq`` is an HTTP library inspired by
 `requests <http://www.python-requests.org>`_ but written on top of
@@ -70,11 +70,11 @@ Build docs:
 
     cd docs; make html
 
-.. |build| image:: https://secure.travis-ci.org/twisted/treq.png?branch=master
+.. |build| image:: https://secure.travis-ci.org/twisted/treq.svg?branch=master
 .. _build: http://travis-ci.org/twisted/treq
 
 .. |coverage| image:: https://codecov.io/github/twisted/treq/coverage.svg?branch=master
 .. _coverage: https://codecov.io/github/twisted/treq
 
-.. |pypi| image:: http://img.shields.io/pypi/v/treq.png
+.. |pypi| image:: http://img.shields.io/pypi/v/treq.svg
 .. _pypi: https://pypi.python.org/pypi/treq

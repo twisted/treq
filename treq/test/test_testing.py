@@ -43,20 +43,31 @@ class StubbingTests(TestCase):
                        if name in treq.__all__]
         stub = StubTreq(_StaticTestResource())
 
-        for name, obj in treq_things:
-            stub_thing = getattr(stub, name, None)
-            self.assertTrue(  # sanity check
-                isfunction(obj),
-                "treq.{0} is not a function - StubTreq should be updated.")
-            if obj.__module__ == "treq.api":
-                self.assertTrue(
-                    isfunction(stub_thing),
-                    "StubTreq.{0} should be a function.".format(name))
-            elif obj.__module__ == "treq.content":
-                self.assertEqual(
-                    stub_thing, obj,
-                    "StubTreq.{0} should just expose treq.{0}".format(
-                        name))
+        api_things = [(name, obj) for name, obj in treq_things
+                      if obj.__module__ == "treq.api"]
+        content_things = [(name, obj) for name, obj in treq_things
+                          if obj.__module__ == "treq.content"]
+
+        # sanity checks - this test should fail if treq exposes a new API
+        # without changes being made to StubTreq and this test.
+        msg = ("At the time this test was written, StubTreq only knew about "
+               "treq exposing functions from treq.api and treq.content.  If "
+               "this has changed, StubTreq will need to be updated, as will "
+               "this test.")
+        self.assertTrue(all(isfunction(obj) for name, obj in treq_things), msg)
+        self.assertEqual(set(treq_things), set(api_things + content_things),
+                         msg)
+
+        for name, obj in api_things:
+            self.assertTrue(
+                isfunction(getattr(stub, name, None)),
+                "StubTreq.{0} should be a function.".format(name))
+
+        for name, obj in content_things:
+            self.assertIs(
+                getattr(stub, name, None), obj,
+                "StubTreq.{0} should just expose treq.{0}".format(name))
+
 
     def test_providing_resource_to_stub_treq(self):
         """

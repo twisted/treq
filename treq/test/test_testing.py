@@ -51,7 +51,7 @@ class StubbingTests(TestCase):
                 self.assertTrue(
                     isfunction(stub_thing),
                     "StubTreq.{0} should be a function.".format(name))
-            elif obj.__module__ == "treq.collect":
+            elif obj.__module__ == "treq.content":
                 self.assertEqual(
                     stub_thing, obj,
                     "StubTreq.{0} should just expose treq.{0}".format(

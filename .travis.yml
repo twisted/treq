@@ -1,3 +1,4 @@
+sudo: false
 language: python
 python: 2.7
 
@@ -104,3 +105,7 @@ matrix:
       - env: TOX_ENV=py27-pyopenssl_trunk-twisted_13.2.0
       - env: TOX_ENV=py27-pyopenssl_trunk-twisted_14.0.0
       - env: TOX_ENV=py27-pyopenssl_trunk-twisted_trunk
+
+branches:
+  only:
+    - master

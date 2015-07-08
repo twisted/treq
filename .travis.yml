@@ -68,10 +68,13 @@ env:
     - TOX_ENV=py27-pyopenssl_trunk-twisted_trunk
 
 install:
-    - pip install tox
+    - pip install tox codecov
 
 script:
     - tox -e $TOX_ENV
+
+after_success:
+  - codecov
 
 notifications:
     email: false

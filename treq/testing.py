@@ -109,19 +109,21 @@ class RequestTraversalAgent(object):
         # Feed it the data that the Agent synthesized.
         channel.dataReceived(requestData)
 
-        # Tell it that the connection is now complete so it can clean up.
-        channel.connectionLost(Failure(ConnectionDone()))
-
         # Now we have the response data, let's give it back to the Agent.
         protocol.dataReceived(serverTransport.io.getvalue())
 
-        # By now the Agent should have all it needs to parse a response.
-        protocol.connectionLost(Failure(ConnectionDone()))
+        def finish(r):
+            # By now the Agent should have all it needs to parse a response.
+            protocol.connectionLost(Failure(ConnectionDone()))
+            # Tell it that the connection is now complete so it can clean up.
+            channel.connectionLost(Failure(ConnectionDone()))
+            # Propogate the response.
+            return r
 
         # Return the response in the accepted format (Deferred firing
         # IResponse).  This should be synchronously fired, and if not, it's the
         # system under test's problem.
-        return response
+        return response.addBoth(finish)
 
 
 @implementer(IBodyProducer)

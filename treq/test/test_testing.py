@@ -5,6 +5,7 @@ from inspect import getmembers, isfunction
 
 from six import text_type, binary_type
 
+from twisted.web.client import ResponseFailed
 from twisted.web.resource import Resource
 from twisted.web.server import NOT_DONE_YET
 
@@ -143,6 +144,16 @@ class StubbingTests(TestCase):
             stub.request('method', 'http://url', data=binary_type("")))
         self.successResultOf(
             stub.request('method', 'http://url', data=text_type("")))
+
+    def test_handles_asynchronous_requests(self):
+        """
+        Handle a resource returning NOT_DONE_YET.
+        """
+        stub = StubTreq(_NonResponsiveTestResource())
+        d = stub.request('method', 'http://url', data="1234")
+        self.assertNoResult(d)
+        d.cancel()
+        self.failureResultOf(d, ResponseFailed)
 
 
 class HasHeadersTests(TestCase):

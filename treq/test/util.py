@@ -2,14 +2,18 @@ import os
 import platform
 
 import mock
-
 import twisted
 
 from twisted.internet import reactor
-from twisted.internet.task import Clock
+from twisted.internet.tcp import Client
+from twisted.internet.task import Clock, deferLater
+
+from twisted.web.client import HTTPConnectionPool
 from twisted.trial.unittest import TestCase
 from twisted.python.failure import Failure
 from twisted.python.versions import Version
+
+import treq
 
 DEBUG = os.getenv("TREQ_DEBUG", False) == "true"
 
@@ -45,3 +49,36 @@ def with_clock(fn):
         with mock.patch.object(reactor, 'callLater', clock.callLater):
             return fn(*(args + (clock,)), **kwargs)
     return wrapper
+
+
+def with_baseurl(method):
+    def _request(self, url, *args, **kwargs):
+        return method(self.baseurl + url, *args, pool=self.pool, **kwargs)
+
+    return _request
+
+
+class IntegrationTestCase(TestCase):
+
+    get = with_baseurl(treq.get)
+    head = with_baseurl(treq.head)
+    post = with_baseurl(treq.post)
+    put = with_baseurl(treq.put)
+    patch = with_baseurl(treq.patch)
+    delete = with_baseurl(treq.delete)
+
+    def setUp(self):
+        self.pool = HTTPConnectionPool(reactor, False)
+
+    def tearDown(self):
+        def _check_fds(_):
+            # This appears to only be necessary for HTTPS tests.
+            # For the normal HTTP tests then closeCachedConnections is
+            # sufficient.
+            fds = set(reactor.getReaders() + reactor.getReaders())
+            if not [fd for fd in fds if isinstance(fd, Client)]:
+                return
+
+            return deferLater(reactor, 0, _check_fds, None)
+
+        return self.pool.closeCachedConnections().addBoth(_check_fds)

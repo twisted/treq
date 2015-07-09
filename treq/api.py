@@ -1,4 +1,5 @@
-from twisted.web.client import Agent
+from twisted.internet.endpoints import TCP4ClientEndpoint
+from twisted.web.client import Agent, ProxyAgent
 
 from treq.client import HTTPClient
 from treq._utils import default_pool, default_reactor
@@ -84,12 +85,19 @@ def request(method, url, **kwargs):
     :param bool persistent: Use persistent HTTP connections.  Default: ``True``
     :param bool allow_redirects: Follow HTTP redirects.  Default: ``True``
 
-    :param auth: HTTP Basic Authentication information.
-    :type auth: tuple of ``('username', 'password')``.
+    :param auth: HTTP Authentication information (Basic or Digest).
+    :type auth: tuple of ``('username', 'password')`` or instance of
+        ``treq.auth.HTTPDigestAuth`` class
 
     :param cookies: Cookies to send with this request.  The HTTP kind, not the
         tasty kind.
     :type cookies: ``dict`` or ``cookielib.CookieJar``
+
+    :param proxy: Specifies HTTP proxy to use.
+    :type proxy: typle of ``(`host`, `port`)``
+
+    :param proxy_auth: Specifies Basic Proxy Authentication information
+    :type proxy_auth: tuple of ``('username', 'password')``
 
     :param int timeout: Request timeout seconds. If a response is not
         received within this timeframe, a connection is aborted with
@@ -110,5 +118,10 @@ def _client(*args, **kwargs):
     pool = default_pool(reactor,
                         kwargs.get('pool'),
                         kwargs.get('persistent'))
-    agent = Agent(reactor, pool=pool)
+    if 'proxy' in kwargs:
+        address, port = kwargs.get('proxy')
+        endpoint = TCP4ClientEndpoint(reactor, address, port)
+        agent = ProxyAgent(endpoint, pool=pool)
+    else:
+        agent = Agent(reactor, pool=pool)
     return HTTPClient(agent)

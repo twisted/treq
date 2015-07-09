@@ -1,19 +1,20 @@
 from StringIO import StringIO
 
-from twisted.trial.unittest import TestCase
-from twisted.internet.defer import CancelledError, inlineCallbacks
-from twisted.internet.task import deferLater
-from twisted.internet import reactor
-from twisted.internet.tcp import Client
+from twisted.internet.defer import inlineCallbacks, CancelledError
 
 from twisted import version as current_version
 from twisted.python.versions import Version
+from twisted.internet import reactor
+from twisted.internet.endpoints import TCP4ServerEndpoint
+from twisted.web.client import ResponseFailed
 
-from twisted.web.client import HTTPConnectionPool, ResponseFailed
-
-from treq.test.util import DEBUG, is_pypy
+from treq.auth import _RequestDigestAuthenticationAgent
+from treq.test.util import IntegrationTestCase, DEBUG
+from treq.test._proxyutil import TestProxyFactory,\
+    TestProxyFactoryWithAuthentication, with_baseurl_and_proxy
 
 import treq
+from treq.auth import HTTPDigestAuth
 
 HTTPBIN_URL = "http://httpbin.org"
 HTTPSBIN_URL = "https://httpbin.org"
@@ -41,37 +42,9 @@ def print_response(response):
         print '---'
 
 
-def with_baseurl(method):
-    def _request(self, url, *args, **kwargs):
-        return method(self.baseurl + url, *args, pool=self.pool, **kwargs)
+class TreqIntegrationTests(IntegrationTestCase):
 
-    return _request
-
-
-class TreqIntegrationTests(TestCase):
     baseurl = HTTPBIN_URL
-    get = with_baseurl(treq.get)
-    head = with_baseurl(treq.head)
-    post = with_baseurl(treq.post)
-    put = with_baseurl(treq.put)
-    patch = with_baseurl(treq.patch)
-    delete = with_baseurl(treq.delete)
-
-    def setUp(self):
-        self.pool = HTTPConnectionPool(reactor, False)
-
-    def tearDown(self):
-        def _check_fds(_):
-            # This appears to only be necessary for HTTPS tests.
-            # For the normal HTTP tests then closeCachedConnections is
-            # sufficient.
-            fds = set(reactor.getReaders() + reactor.getReaders())
-            if not [fd for fd in fds if isinstance(fd, Client)]:
-                return
-
-            return deferLater(reactor, 0, _check_fds, None)
-
-        return self.pool.closeCachedConnections().addBoth(_check_fds)
 
     @inlineCallbacks
     def assert_data(self, response, expected_data):
@@ -231,6 +204,44 @@ class TreqIntegrationTests(TestCase):
         yield print_response(response)
 
     @inlineCallbacks
+    def test_digest_auth(self):
+        response = yield self.get('/digest-auth/auth/treq/treq',
+                                  auth=HTTPDigestAuth('treq', 'treq'))
+        self.assertEqual(response.code, 200)
+        yield print_response(response)
+        json = yield treq.json_content(response)
+        self.assertTrue(json['authenticated'])
+        self.assertEqual(json['user'], 'treq')
+
+    @inlineCallbacks
+    def test_digest_auth_multiple_calls(self):
+        response1 = yield self.get(
+            '/digest-auth/auth/treq-digest-auth-multiple/treq',
+            auth=HTTPDigestAuth('treq-digest-auth-multiple', 'treq')
+        )
+        self.assertEqual(response1.code, 200)
+        yield print_response(response1)
+        json1 = yield treq.json_content(response1)
+        response2 = yield self.get(
+            '/digest-auth/auth/treq-digest-auth-multiple/treq',
+            auth=HTTPDigestAuth('treq-digest-auth-multiple', 'treq'),
+            cookies=response1.cookies()
+        )
+        self.assertEqual(response2.code, 200)
+        yield print_response(response2)
+        json2 = yield treq.json_content(response2)
+        self.assertTrue(json1['authenticated'])
+        self.assertEqual(json1['user'], 'treq-digest-auth-multiple')
+        self.assertEqual(json1, json2)
+
+    @inlineCallbacks
+    def test_failed_digest_auth(self):
+        response = yield self.get('/digest-auth/auth/treq/treq',
+                                  auth=HTTPDigestAuth('not-treq', 'not-treq'))
+        self.assertEqual(response.code, 401)
+        yield print_response(response)
+
+    @inlineCallbacks
     def test_timeout(self):
         """
         Verify a timeout fires if a request takes too long.
@@ -252,10 +263,76 @@ class TreqIntegrationTests(TestCase):
         response = yield self.get('/cookies/set',
                                   allow_redirects=False,
                                   params={'hello': 'there'})
-        #self.assertEqual(response.code, 200)
+        # self.assertEqual(response.code, 200)
         yield print_response(response)
         self.assertEqual(response.cookies()['hello'], 'there')
 
 
 class HTTPSTreqIntegrationTests(TreqIntegrationTests):
     baseurl = HTTPSBIN_URL
+
+
+class TreqProxyIntegrationTests(TreqIntegrationTests):
+
+    baseurl = HTTPBIN_URL
+    get = with_baseurl_and_proxy(treq.get)
+    head = with_baseurl_and_proxy(treq.head)
+    post = with_baseurl_and_proxy(treq.post)
+    put = with_baseurl_and_proxy(treq.put)
+    patch = with_baseurl_and_proxy(treq.patch)
+    delete = with_baseurl_and_proxy(treq.delete)
+
+    @property
+    def proxy_params(self):
+        return 'localhost', self.proxy_port._realPortNumber
+
+    @inlineCallbacks
+    def _set_up_proxy_with_authentication(self, credentials):
+        yield self.proxy_port.stopListening()
+        self.proxy_factory_with_authentication = \
+            TestProxyFactoryWithAuthentication(credentials)
+        self.proxy_endpoint_with_authentication = TCP4ServerEndpoint(reactor, 0)
+        self.proxy_port = yield self.proxy_endpoint_with_authentication.listen(
+            self.proxy_factory_with_authentication
+        )
+
+    @inlineCallbacks
+    def setUp(self):
+        # Resetting digest auth cache since httbin need cookies (that left
+        # unsaved) to authenticate request with same nonces
+        # That allow us to test digest authentication with same credentials
+        _RequestDigestAuthenticationAgent.digest_auth_cache.clear()
+
+        self.proxy_factory = TestProxyFactory()
+        self.proxy_endpoint = TCP4ServerEndpoint(reactor, 0)
+        self.proxy_port = yield self.proxy_endpoint.listen(self.proxy_factory)
+        super(TreqProxyIntegrationTests, self).setUp()
+
+    @inlineCallbacks
+    def tearDown(self):
+        yield self.proxy_port.stopListening()
+        yield super(TreqProxyIntegrationTests, self).tearDown()
+
+    @inlineCallbacks
+    def test_timeout(self):
+        """
+        Verify a timeout fires if a request takes too long.
+        """
+        yield super(TreqProxyIntegrationTests, self).test_timeout()
+
+    @inlineCallbacks
+    def test_failed_proxy_auth(self):
+        credentials = ('treq', 'treq')
+        bad_credentials = ('not-treq', 'not-treq')
+        yield self._set_up_proxy_with_authentication(credentials)
+        response = yield self.get('/get', proxy_auth=bad_credentials)
+        yield print_response(response)
+        self.assertEqual(response.code, 407)
+
+    @inlineCallbacks
+    def test_proxy_auth(self):
+        credentials = ('treq', 'treq')
+        yield self._set_up_proxy_with_authentication(credentials)
+        response = yield self.get('/get', proxy_auth=credentials)
+        self.assertEqual(response.code, 200)
+        yield print_response(response)

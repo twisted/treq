@@ -16,6 +16,7 @@ from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer, IResponse
 
 from twisted.web.client import (
+    ProxyAgent,
     FileBodyProducer,
     RedirectAgent,
     ContentDecoderAgent,
@@ -26,7 +27,7 @@ from twisted.web.client import (
 from twisted.python.components import registerAdapter
 
 from treq._utils import default_reactor
-from treq.auth import add_auth
+from treq.auth import add_auth, add_proxy_auth
 from treq import multipart
 from treq.response import _Response
 
@@ -177,6 +178,11 @@ class HTTPClient(object):
 
         wrapped_agent = ContentDecoderAgent(wrapped_agent,
                                             [('gzip', GzipDecoder)])
+
+        if isinstance(self._agent, ProxyAgent) and 'proxy_auth' in kwargs:
+            wrapped_agent = add_proxy_auth(
+                wrapped_agent, kwargs['proxy_auth']
+            )
 
         auth = kwargs.get('auth')
         if auth:

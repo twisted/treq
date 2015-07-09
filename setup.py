@@ -27,7 +27,10 @@ setup(
     version=__version__,
     packages=find_packages(),
     install_requires=[
-        "Twisted >= 13.2.0", "requests >= 2.1.0", "service_identity", "pyOpenSSL >= 0.11"
+        "Twisted >= 13.2.0",
+        "pyOpenSSL",
+        "requests >= 2.1.0",
+        "service_identity",
     ],
     package_data={"treq": ["_version"]},
     author="David Reid",

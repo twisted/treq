@@ -12,3 +12,4 @@ coverage
 htmlcov
 _trial_temp
 .tox
+_trial_temp.lock

@@ -1,7 +1,5 @@
-Twisted>=13.2.0
+-e .
 pyflakes
 pep8
 sphinx
 mock
-requests>=2.1.0
-six

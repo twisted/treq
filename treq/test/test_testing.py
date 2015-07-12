@@ -6,6 +6,7 @@ from inspect import getmembers, isfunction
 from six import text_type, binary_type
 
 from twisted.web.client import ResponseFailed
+from twisted.web.error import SchemeNotSupported
 from twisted.web.resource import Resource
 from twisted.web.server import NOT_DONE_YET
 
@@ -73,7 +74,7 @@ class StubbingTests(TestCase):
 
     def test_providing_resource_to_stub_treq(self):
         """
-        The resource provided to StubTreq is responds to every request no
+        The resource provided to StubTreq responds to every request no
         matter what the URI or parameters or data.
         """
         verbs = ('GET', 'PUT', 'HEAD', 'PATCH', 'DELETE', 'POST')
@@ -109,6 +110,16 @@ class StubbingTests(TestCase):
                                  resp.headers.getRawHeaders('x-teapot'))
                 self.assertEqual("" if verb == "HEAD" else "I'm a teapot",
                                  self.successResultOf(stub.content(resp)))
+
+    def test_handles_invalid_schemes(self):
+        """
+        Invalid URLs errback with a :obj:`SchemeNotSupported` failure, and does
+        so even after a successful request.
+        """
+        stub = StubTreq(_StaticTestResource())
+        self.failureResultOf(stub.get(""), SchemeNotSupported)
+        self.successResultOf(stub.get("http://url.com"))
+        self.failureResultOf(stub.get(""), SchemeNotSupported)
 
     def test_files_are_rejected(self):
         """

@@ -62,6 +62,18 @@ class RequestTraversalAgent(object):
         # make a request against our in-memory reactor.
         response = self._realAgent.request(method, uri, headers, bodyProducer)
 
+        # If the request has already finished, just propagate the result.  In
+        # reality this would only happen in failure, but if the agent ever adds
+        # a local cache this might be a success.
+        already_called = []
+
+        def check_already_called(r):
+            already_called.append(r)
+            return r
+        response.addBoth(check_already_called)
+        if already_called:
+            return response
+
         # That will try to establish an HTTP connection with the reactor's
         # connectTCP method, and MemoryReactor will place Agent's factory into
         # the tcpClients list.  Alternately, it will try to establish an HTTPS

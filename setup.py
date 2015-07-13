@@ -31,6 +31,7 @@ setup(
         "pyOpenSSL",
         "requests >= 2.1.0",
         "service_identity",
+        "six"
     ],
     package_data={"treq": ["_version"]},
     author="David Reid",

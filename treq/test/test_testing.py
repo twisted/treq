@@ -266,6 +266,21 @@ class StringStubbingTests(TestCase):
                          self.successResultOf(stub.content(resp)))
 
 
+class _FakeTestCase(object):
+    def __init__(self):
+        self.cleanups = []
+
+    def addCleanup(self, f, *args, **kwargs):
+        self.cleanups.append((f, args, kwargs))
+
+    def fail(self, msg=None):
+        raise AssertionError(msg)
+
+    def cleanUp(self):
+        for f, args, kwargs in self.cleanups:
+            f(*args, **kwargs)
+
+
 class SequenceStringStubsTests(TestCase):
     """
     Tests for :obj:`SequenceStringStubs`.
@@ -274,61 +289,69 @@ class SequenceStringStubsTests(TestCase):
         """
         :obj:`SequenceStringStubs` implements :obj:`IStringResponseStubs`.
         """
-        verifyObject(IStringResponseStubs, SequenceStringStubs([]))
+        verifyObject(IStringResponseStubs,
+                     SequenceStringStubs([], _FakeTestCase()))
 
     def test_only_check_args_that_are_not_None(self):
         """
         `None` is used as a sentinel value to mean "anything for this value is
         valid".
         """
+        testcase = _FakeTestCase()
         sequence = SequenceStringStubs(
-            [(('get', None, None, None, None), (418, {}, 'body'))])
+            [(('get', None, None, None, None), (418, {}, 'body'))],
+            testcase)
         stub = StubTreq(StringStubbingResource(sequence))
         d = stub.get('https://anything', data='what', headers={'1': '1'})
         resp = self.successResultOf(d)
-        self.assertEqual((), sequence.failures)
         self.assertEqual(418, resp.code)
         self.assertEqual('body', self.successResultOf(stub.content(resp)))
+        testcase.cleanUp()
 
+        testcase = _FakeTestCase()
         sequence = SequenceStringStubs(
-            [(('get', None, None, None, None), (418, {}, 'body'))])
+            [(('get', None, None, None, None), (418, {}, 'body'))],
+            testcase)
         stub = StubTreq(StringStubbingResource(sequence))
         d = stub.delete('https://anything', data='what', headers={'1': '1'})
         resp = self.successResultOf(d)
-        self.assertNotEqual((), sequence.failures)
         self.assertEqual(500, resp.code)
+        self.assertRaises(AssertionError, testcase.cleanUp)
 
     def test_unexpected_next_request_causes_failure(self):
         """
         If a request is made that is not expected as the next request,
         causes a failure.
         """
+        testcase = _FakeTestCase()
         sequence = SequenceStringStubs(
             [(('get', 'https://anything', {}, {'1': ['1']}, 'what'),
               (418, {}, 'body')),
              (('get', 'http://anything', {}, {'2': ['1']}, 'what'),
-              (202, {}, 'deleted'))])
+              (202, {}, 'deleted'))],
+            testcase)
         stub = StubTreq(StringStubbingResource(sequence))
 
         d = stub.get('https://anything', data='what', headers={'1': '1'})
         resp = self.successResultOf(d)
-        self.assertEqual((), sequence.failures)
         self.assertEqual(418, resp.code)
         self.assertEqual('body', self.successResultOf(stub.content(resp)))
+        testcase.cleanUp()
 
         d = stub.get('https://anything', data='what', headers={'1': '1'})
         resp = self.successResultOf(d)
-        self.assertNotEqual((), sequence.failures)
         self.assertEqual(500, resp.code)
+        self.assertRaises(AssertionError, testcase.cleanUp)
 
     def test_no_more_expected_requests_causes_failure(self):
         """
         If there are no more expected requests, making a request causes a
         failure.
         """
-        sequence = SequenceStringStubs([])
+        testcase = _FakeTestCase()
+        sequence = SequenceStringStubs([], testcase)
         stub = StubTreq(StringStubbingResource(sequence))
         d = stub.get('https://anything', data='what', headers={'1': '1'})
         resp = self.successResultOf(d)
-        self.assertNotEqual((), sequence.failures)
         self.assertEqual(500, resp.code)
+        self.assertRaises(AssertionError, testcase.cleanUp)

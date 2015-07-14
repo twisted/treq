@@ -2,7 +2,7 @@
 Interfaces.
 """
 
-from zope.interface import Attribute, Interface
+from zope.interface import Interface
 
 
 class IStringResponseStubs(Interface):
@@ -10,12 +10,6 @@ class IStringResponseStubs(Interface):
     An interface that :class:`StringStubbingResource` expects to provide it
     with a response based on what the
     """
-    failures = Attribute(
-        "An iterable of failures that may have occurred when getting testing "
-        "making requests - failures must be stored here, because any "
-        "exception raised by :meth:`get_response_for` will be eaten by "
-        ":obj:`Resource` and a 500 response returned instead.")
-
     def get_response_for(method, url, params, headers, data):
         """
         :param bytes method: An HTTP method

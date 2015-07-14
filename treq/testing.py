@@ -307,14 +307,14 @@ class SequenceStringStubs(object):
 
     :ivar list sequence: The sequence of expected request arguments mapped to
         stubbed responses
-    :ivar list failures: A mutable list containing request failures and
-        mismatches.  Failures have to be stored here, because any attempt to
-        raise an exception will just be eaten by :obj:`Resource` and returned
-        as a 500 error instead.
+    :ivar testcase: A :obj:`TestCase` that can be used to report failures in
+        matching requests against expected requests.  Raising exceptions does
+        not work, because :obj:`Resource.render` will just convert that into
+        a 500 response.
     """
-    def __init__(self, sequence):
+    def __init__(self, sequence, testcase):
         self._sequence = sequence
-        self._failures = []
+        self._testcase = testcase
 
     @property
     def sequence(self):
@@ -331,7 +331,10 @@ class SequenceStringStubs(object):
         :see: :obj:`IStringResponseStubs.get_response_for`
         """
         if len(self.sequence) == 0:
-            self._failures.append("No more requests expected.")
+            self._testcase.addCleanup(
+                self._testcase.fail,
+                "No more requests expected, but request {0!r} made.".format(
+                    (method, url, params, headers, data)))
             return (500, {}, "StubbingError")
 
         expected, response = self.sequence[0]
@@ -350,8 +353,11 @@ class SequenceStringStubs(object):
 
         mismatches = [param for success, param in checks if not success]
         if mismatches:
-            self._failures.append(
-                "\nExpected: {0!r}\n     Got: {1!r}\nMismatches: {2!r}"
+            self._testcase.addCleanup(
+                self._testcase.fail,
+                "\nExpected the next request to be: {0!r}"
+                "\nGot request                    : {1!r}\n"
+                "\nMismatches: {2!r}"
                 .format(expected, (method, url, params, headers, data),
                         mismatches))
             return (500, {}, "StubbingError")

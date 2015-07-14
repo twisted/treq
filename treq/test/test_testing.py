@@ -257,7 +257,7 @@ class AnyTests(TestCase):
         """
         :obj:`ANY` has a repr
         """
-        self.assertEqual("ANYTHING", ANY)
+        self.assertEqual("ANYTHING", repr(ANY))
 
 
 class StringStubbingTests(TestCase):

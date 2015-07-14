@@ -290,6 +290,22 @@ class HasHeaders(object):
         return not self.__eq__(other_headers)
 
 
+class _any(object):
+    """
+    An object is equivalent to any other object.
+    """
+    def __repr__(self):
+        return "ANYTHING"
+
+    def __eq__(self, _):
+        return True
+
+    def __ne__(self, _):
+        return False
+
+ANY = _any()
+
+
 @implementer(IStringResponseStubs)
 class SequenceStringStubs(object):
     """
@@ -301,9 +317,6 @@ class SequenceStringStubs(object):
     Expects the requests to arrive in sequence order.  If there are no more
     responses, or the request's paramters do not match the next item's expected
     request paramters, raises :obj:`AssertionError`.
-
-    If any of the parameters passed is `None` (as opposed to an empty list or
-    dictionary for params or)
 
     :ivar list sequence: The sequence of expected request arguments mapped to
         stubbed responses
@@ -341,14 +354,14 @@ class SequenceStringStubs(object):
         e_method, e_url, e_params, e_headers, e_data = expected
 
         checks = [
-            (e_method is None or e_method.lower() == method.lower(), "method"),
-            (e_url is None or
+            (e_method is ANY or e_method.lower() == method.lower(), "method"),
+            (e_url is ANY or
              # URLPath does not have an __eq__ function
              str(URLPath.fromString(e_url)) == str(URLPath.fromString(url)),
              "url"),
-            (e_params is None or e_params == params, 'parameters'),
-            (e_headers is None or HasHeaders(e_headers) == headers, "headers"),
-            (e_data is None or e_data == data, "data")
+            (e_params == params, 'parameters'),
+            (e_headers is ANY or HasHeaders(e_headers) == headers, "headers"),
+            (e_data == data, "data")
         ]
 
         mismatches = [param for success, param in checks if not success]

@@ -15,10 +15,11 @@ from zope.interface.verify import verifyObject
 
 import treq
 
+from treq.interfaces import IStringResponseStubs
 from treq.test.util import TestCase
 from treq.testing import (
+    ANY,
     HasHeaders,
-    IStringResponseStubs,
     SequenceStringStubs,
     StringStubbingResource,
     StubTreq
@@ -223,6 +224,42 @@ class HasHeadersTests(TestCase):
                          repr(HasHeaders({'A': ['b']})))
 
 
+class AnyTests(TestCase):
+    """
+    :obj:`ANY` matches equality-wise against any object.
+    """
+    def test_equality(self):
+        """
+        :obj:`ANY` is equivalent to anything
+        """
+        for anything in (ANY, 1, False, object(), "string", {}, [], (), None,
+                         lambda: None):
+            self.assertEqual(ANY, anything)
+
+    def test_inequality(self):
+        """
+        :obj:`ANY` is not not-equal to anything.
+        """
+        for anything in (ANY, 1, False, object(), "string", {}, [], (), None,
+                         lambda: None):
+            self.assertFalse(ANY != anything)
+
+    def test_is(self):
+        """
+        :obj:`ANY` is only itself, not something else
+        """
+        for anything in (1, False, object(), "string", {}, [], (), None,
+                         lambda: None):
+            self.assertIsNot(ANY, anything)
+        self.assertIs(ANY, ANY)
+
+    def test_repr(self):
+        """
+        :obj:`ANY` has a repr
+        """
+        self.assertEqual("ANYTHING", ANY)
+
+
 class StringStubbingTests(TestCase):
     """
     Tests for :obj:`StringStubbingResource`.
@@ -292,32 +329,6 @@ class SequenceStringStubsTests(TestCase):
         verifyObject(IStringResponseStubs,
                      SequenceStringStubs([], _FakeTestCase()))
 
-    def test_only_check_args_that_are_not_None(self):
-        """
-        `None` is used as a sentinel value to mean "anything for this value is
-        valid".
-        """
-        testcase = _FakeTestCase()
-        sequence = SequenceStringStubs(
-            [(('get', None, None, None, None), (418, {}, 'body'))],
-            testcase)
-        stub = StubTreq(StringStubbingResource(sequence))
-        d = stub.get('https://anything', data='what', headers={'1': '1'})
-        resp = self.successResultOf(d)
-        self.assertEqual(418, resp.code)
-        self.assertEqual('body', self.successResultOf(stub.content(resp)))
-        testcase.cleanUp()
-
-        testcase = _FakeTestCase()
-        sequence = SequenceStringStubs(
-            [(('get', None, None, None, None), (418, {}, 'body'))],
-            testcase)
-        stub = StubTreq(StringStubbingResource(sequence))
-        d = stub.delete('https://anything', data='what', headers={'1': '1'})
-        resp = self.successResultOf(d)
-        self.assertEqual(500, resp.code)
-        self.assertRaises(AssertionError, testcase.cleanUp)
-
     def test_unexpected_next_request_causes_failure(self):
         """
         If a request is made that is not expected as the next request,
@@ -355,3 +366,18 @@ class SequenceStringStubsTests(TestCase):
         resp = self.successResultOf(d)
         self.assertEqual(500, resp.code)
         self.assertRaises(AssertionError, testcase.cleanUp)
+
+    def test_works_with_any(self):
+        """
+        `ANY` can be used with the request parameters.
+        """
+        testcase = _FakeTestCase()
+        sequence = SequenceStringStubs(
+            [((ANY, ANY, ANY, ANY, ANY), (418, {}, 'body'))],
+            testcase)
+        stub = StubTreq(StringStubbingResource(sequence))
+        d = stub.get('https://anything', data='what', headers={'1': '1'})
+        resp = self.successResultOf(d)
+        self.assertEqual(418, resp.code)
+        self.assertEqual('body', self.successResultOf(stub.content(resp)))
+        testcase.cleanUp()

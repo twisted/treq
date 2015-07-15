@@ -91,6 +91,9 @@ def request(method, url, **kwargs):
         tasty kind.
     :type cookies: ``dict`` or ``cookielib.CookieJar``
 
+    :param policy: Optional SSL certificate policy.
+    :type policy: ``twisted.web.iweb.IPolicyForHTTPS``.  Default: ``twisted.web.client.BrowserLikePolicyForHTTPS``
+
     :param int timeout: Request timeout seconds. If a response is not
         received within this timeframe, a connection is aborted with
         ``CancelledError``.
@@ -106,9 +109,13 @@ def request(method, url, **kwargs):
 #
 
 def _client(*args, **kwargs):
+    policy = kwargs.get('policy', None)
     reactor = default_reactor(kwargs.get('reactor'))
     pool = default_pool(reactor,
                         kwargs.get('pool'),
                         kwargs.get('persistent'))
-    agent = Agent(reactor, pool=pool)
+    if policy is not None:
+        agent = Agent(reactor, contextFactory=policy, pool=pool)
+    else:
+        agent = Agent(reactor, pool=pool)
     return HTTPClient(agent)

@@ -106,13 +106,18 @@ Full example: :download:`using_cookies.py <examples/using_cookies.py>`
 Certificates
 ------------
 
-SSL certificates can be set by passing an instance of any class which
+SSL trusted roots can be set by passing an instance of any class which
 implements ``twisted.web.iweb.IPolicyForHTTPS``, e.g.,
 ``twisted.web.client.BrowserLikePolicyForHTTPS``, via the ``policy`` keyword
 argument.
+
+This feature is useful when you are dealing with a self-signed certificates.
 
 .. literalinclude:: examples/using_certs.py
     :linenos:
     :lines: 10-17
 
 Full example: :download:`using_certs.py <examples/using_certs.py>`
+
+NOTE: This example requires a certificate file, in PEM format.  To generate a
+certificate file suitable for running the example, please see `here <https://gist.github.com/exarkun/2d0fa72bec36447dd28d>`_

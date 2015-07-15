@@ -1,4 +1,4 @@
-from twisted.web.client import Agent, BrowserLikePolicyForHTTPS
+from twisted.web.client import Agent
 
 from treq.client import HTTPClient
 from treq._utils import default_pool, default_reactor
@@ -109,10 +109,13 @@ def request(method, url, **kwargs):
 #
 
 def _client(*args, **kwargs):
-    policy = kwargs.get('policy', BrowserLikePolicyForHTTPS())
+    policy = kwargs.get('policy', None)
     reactor = default_reactor(kwargs.get('reactor'))
     pool = default_pool(reactor,
                         kwargs.get('pool'),
                         kwargs.get('persistent'))
-    agent = Agent(reactor, contextFactory=policy, pool=pool)
+    if policy is not None:
+        agent = Agent(reactor, contextFactory=policy, pool=pool)
+    else:
+        agent = Agent(reactor, pool=pool)
     return HTTPClient(agent)

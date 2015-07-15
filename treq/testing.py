@@ -333,10 +333,6 @@ class SequenceStringStubs(object):
     def sequence(self):
         return tuple(self._sequence)
 
-    @property
-    def failures(self):
-        return tuple(self._failures)
-
     def get_response_for(self, method, url, params, headers, data):
         """
         :return: the next response in the sequence, provided that the

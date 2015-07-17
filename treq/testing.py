@@ -25,7 +25,6 @@ from zope.interface import directlyProvides, implementer
 
 import treq
 from treq.client import HTTPClient
-from treq.interfaces import IStringResponseStubs
 
 
 class AbortableStringTransport(StringTransport):
@@ -211,22 +210,38 @@ class StubTreq(object):
 
 class StringStubbingResource(Resource):
     """
-    A resource that takes a :obj:`IStringResponseStubs` provider and returns
-    a real response as a result.
+    A resource that takes a callable with 5 parameters
+    ``(method, url, params, headers, data) -> (code, headers, body)``
+    and uses the callable to return a real response as a result of a request.
 
-    Note that if the :obj:`IStringResponseStubs` raises an Exception, Twisted
-    will catch it and return a 500 instead.  So the
-    implementation of :obj:`IStringResponseStubs` may want to do its own error
-    reporting.
+    The parameters for the callable are::
+
+        :param bytes method: An HTTP method
+        :param bytes url: The full URL of the request
+        :param dict params: A dictionary of query parameters mapping query keys
+            lists of values (sorted alphabetically)
+        :param dict headers: A dictionary of headers mapping header keys to
+            a list of header values (sorted alphabetically)
+        :param str data: The request body.
+        :return: a ``tuple`` of (code, headers, body) where the code is
+            the HTTP status code, the headers is a dictionary of bytes
+            (unlike the `headers` parameter, which is a dictionary of lists),
+            and body is a string that will be returned as the response body.
+
+    If there is a stubbing error, the return value is undefined (if an
+    exception is raised, :obj:`Resource` will just eat it and return 500
+    in its place).  The callable, or whomever creates the callable, should
+    have a way to handle error reporting.
     """
     isLeaf = True
 
-    def __init__(self, istubs):
+    def __init__(self, get_response_for):
         """
-        :param istubs: a :obj:`IStringResponseStubs` provider.
+        :param get_response_for: A callable that takes 5 parameters:
+        ``(method, url, params, headers, data) -> (code, headers, body)``
         """
         Resource.__init__(self)
-        self._istubs = istubs
+        self._get_response_for = get_response_for
 
     def render(self, request):
         """
@@ -253,7 +268,7 @@ class StringStubbingResource(Resource):
         # the query parameters)
         absoluteURI = str(request.URLPath().click(request.path))
 
-        status_code, headers, body = self._istubs.get_response_for(
+        status_code, headers, body = self._get_response_for(
             request.method, absoluteURI, params, headers,
             request.content.read())
 
@@ -306,7 +321,6 @@ class _any(object):
 ANY = _any()
 
 
-@implementer(IStringResponseStubs)
 class SequenceStringStubs(object):
     """
     Takes a sequence of::
@@ -329,24 +343,19 @@ class SequenceStringStubs(object):
         self._sequence = sequence
         self._testcase = testcase
 
-    @property
-    def sequence(self):
-        return tuple(self._sequence)
-
     def get_response_for(self, method, url, params, headers, data):
         """
         :return: the next response in the sequence, provided that the
             parameters match the next in the sequence.
-        :see: :obj:`IStringResponseStubs.get_response_for`
         """
-        if len(self.sequence) == 0:
+        if len(self._sequence) == 0:
             self._testcase.addCleanup(
                 self._testcase.fail,
                 "No more requests expected, but request {0!r} made.".format(
                     (method, url, params, headers, data)))
             return (500, {}, "StubbingError")
 
-        expected, response = self.sequence[0]
+        expected, response = self._sequence[0]
         e_method, e_url, e_params, e_headers, e_data = expected
 
         checks = [

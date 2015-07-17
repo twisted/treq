@@ -10,12 +10,8 @@ from twisted.web.error import SchemeNotSupported
 from twisted.web.resource import Resource
 from twisted.web.server import NOT_DONE_YET
 
-from zope.interface import implementer
-from zope.interface.verify import verifyObject
-
 import treq
 
-from treq.interfaces import IStringResponseStubs
 from treq.test.util import TestCase
 from treq.testing import (
     ANY,
@@ -233,7 +229,7 @@ class AnyTests(TestCase):
         :obj:`ANY` is equivalent to anything
         """
         for anything in (ANY, 1, False, object(), "string", {}, [], (), None,
-                         lambda: None):
+                         str):
             self.assertEqual(ANY, anything)
 
     def test_inequality(self):
@@ -241,15 +237,14 @@ class AnyTests(TestCase):
         :obj:`ANY` is not not-equal to anything.
         """
         for anything in (ANY, 1, False, object(), "string", {}, [], (), None,
-                         lambda: None):
+                         str):
             self.assertFalse(ANY != anything)
 
     def test_is(self):
         """
         :obj:`ANY` is only itself, not something else
         """
-        for anything in (1, False, object(), "string", {}, [], (), None,
-                         lambda: None):
+        for anything in (1, False, object(), "string", {}, [], (), None, str):
             self.assertIsNot(ANY, anything)
         self.assertIs(ANY, ANY)
 
@@ -264,29 +259,27 @@ class StringStubbingTests(TestCase):
     """
     Tests for :obj:`StringStubbingResource`.
     """
-    def _get_response_stub(self, expected_args, response):
+    def _get_response_for(self, expected_args, response):
         """
         Make a :obj:`IStringResponseStubs` that checks the expected args and
         returns the given response.
         """
         method, url, params, headers, data = expected_args
 
-        @implementer(IStringResponseStubs)
-        class Stubber(object):
-            def get_response_for(_, _method, _url, _params, _headers, _data):
-                self.assertEqual((method, url, params, data),
-                                 (_method, _url, _params, _data))
-                self.assertEqual(HasHeaders(headers), _headers)
-                return response
+        def get_response_for(_method, _url, _params, _headers, _data):
+            self.assertEqual((method, url, params, data),
+                             (_method, _url, _params, _data))
+            self.assertEqual(HasHeaders(headers), _headers)
+            return response
 
-        return Stubber()
+        return get_response_for
 
     def test_interacts_successfully_with_istub(self):
         """
         The :obj:`IStringResponseStubs` is passed the correct parameters with
         which to evaluate the response, and the response is returned.
         """
-        resource = StringStubbingResource(self._get_response_stub(
+        resource = StringStubbingResource(self._get_response_for(
             ('DELETE', 'http://what/a/thing', {'page': ['1']},
              {'x-header': ['eh']}, 'datastr'),
             (418, {'x-response': 'responseheader'}, 'response body')))
@@ -322,13 +315,6 @@ class SequenceStringStubsTests(TestCase):
     """
     Tests for :obj:`SequenceStringStubs`.
     """
-    def test_implements_interface(self):
-        """
-        :obj:`SequenceStringStubs` implements :obj:`IStringResponseStubs`.
-        """
-        verifyObject(IStringResponseStubs,
-                     SequenceStringStubs([], _FakeTestCase()))
-
     def test_unexpected_next_request_causes_failure(self):
         """
         If a request is made that is not expected as the next request,
@@ -341,7 +327,7 @@ class SequenceStringStubsTests(TestCase):
              (('get', 'http://anything', {}, {'2': ['1']}, 'what'),
               (202, {}, 'deleted'))],
             testcase)
-        stub = StubTreq(StringStubbingResource(sequence))
+        stub = StubTreq(StringStubbingResource(sequence.get_response_for))
 
         d = stub.get('https://anything', data='what', headers={'1': '1'})
         resp = self.successResultOf(d)
@@ -361,7 +347,7 @@ class SequenceStringStubsTests(TestCase):
         """
         testcase = _FakeTestCase()
         sequence = SequenceStringStubs([], testcase)
-        stub = StubTreq(StringStubbingResource(sequence))
+        stub = StubTreq(StringStubbingResource(sequence.get_response_for))
         d = stub.get('https://anything', data='what', headers={'1': '1'})
         resp = self.successResultOf(d)
         self.assertEqual(500, resp.code)
@@ -375,7 +361,7 @@ class SequenceStringStubsTests(TestCase):
         sequence = SequenceStringStubs(
             [((ANY, ANY, ANY, ANY, ANY), (418, {}, 'body'))],
             testcase)
-        stub = StubTreq(StringStubbingResource(sequence))
+        stub = StubTreq(StringStubbingResource(sequence.get_response_for))
         d = stub.get('https://anything', data='what', headers={'1': '1'})
         resp = self.successResultOf(d)
         self.assertEqual(418, resp.code)

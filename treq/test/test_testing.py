@@ -340,6 +340,9 @@ class SequenceStringStubsTests(TestCase):
         self.assertEqual(500, resp.code)
         self.assertRaises(AssertionError, testcase.cleanUp)
 
+        # the expected requests have not all been made
+        self.assertFalse(sequence.consumed())
+
     def test_no_more_expected_requests_causes_failure(self):
         """
         If there are no more expected requests, making a request causes a
@@ -352,6 +355,9 @@ class SequenceStringStubsTests(TestCase):
         resp = self.successResultOf(d)
         self.assertEqual(500, resp.code)
         self.assertRaises(AssertionError, testcase.cleanUp)
+
+        # the expected requests have all been made
+        self.assertTrue(sequence.consumed())
 
     def test_works_with_any(self):
         """
@@ -367,3 +373,6 @@ class SequenceStringStubsTests(TestCase):
         self.assertEqual(418, resp.code)
         self.assertEqual('body', self.successResultOf(stub.content(resp)))
         testcase.cleanUp()
+
+        # the expected requests have all been made
+        self.assertTrue(sequence.consumed())

@@ -343,6 +343,14 @@ class SequenceStringStubs(object):
         self._sequence = sequence
         self._testcase = testcase
 
+    def consumed(self):
+        """
+        :return: `bool` representing whether the entire sequence has been
+            consumed.  This is useful in tests to assert that the expected
+            requests have all been made.
+        """
+        return len(self._sequence) == 0
+
     def get_response_for(self, method, url, params, headers, data):
         """
         :return: the next response in the sequence, provided that the

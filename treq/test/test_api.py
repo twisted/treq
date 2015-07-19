@@ -22,6 +22,14 @@ class TreqAPITests(TestCase):
         self.HTTPConnectionPool = pool_patcher.start()
         self.addCleanup(pool_patcher.stop)
 
+        proxy_agent_patcher = mock.patch('treq.api.ProxyAgent')
+        self.ProxyAgent = proxy_agent_patcher.start()
+        self.addCleanup(proxy_agent_patcher.stop)
+
+        tcp_endpoint = mock.patch('treq.api.TCP4ClientEndpoint')
+        self.TCPEndpoint = tcp_endpoint.start()
+        self.addCleanup(tcp_endpoint.stop)
+
         self.client = self.HTTPClient.return_value
 
     def test_default_pool(self):
@@ -30,6 +38,23 @@ class TreqAPITests(TestCase):
         self.Agent.assert_called_once_with(
             mock.ANY,
             pool=self.HTTPConnectionPool.return_value
+        )
+
+        self.assertEqual(self.client.get.return_value, resp)
+
+    def test_proxy(self):
+        resp = treq.get('http://test.com', proxy=('proxy', 8080))
+
+        self.TCPEndpoint.assert_called_once_with(
+            mock.ANY,
+            'proxy',
+            8080
+        )
+
+        endpoint = self.TCPEndpoint.return_value
+
+        self.ProxyAgent.assert_called_once_with(
+            endpoint
         )
 
         self.assertEqual(self.client.get.return_value, resp)

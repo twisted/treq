@@ -1,7 +1,8 @@
-from twisted.web.client import Agent
+from twisted.web.client import Agent, ProxyAgent
 
 from treq.client import HTTPClient
 from treq._utils import default_pool, default_reactor
+from twisted.internet.endpoints import TCP4ClientEndpoint
 
 
 def head(url, **kwargs):
@@ -95,6 +96,9 @@ def request(method, url, **kwargs):
         received within this timeframe, a connection is aborted with
         ``CancelledError``.
 
+    :param proxy: If specified, send the request through a proxy.
+    :type proxy: tuple of ``('host', port)``.
+
     :rtype: Deferred that fires with an IResponse provider.
 
     """
@@ -110,5 +114,11 @@ def _client(*args, **kwargs):
     pool = default_pool(reactor,
                         kwargs.get('pool'),
                         kwargs.get('persistent'))
-    agent = Agent(reactor, pool=pool)
+    proxy = kwargs.get('proxy')
+    if proxy is not None:
+        (address, port) = proxy
+        endpoint = TCP4ClientEndpoint(reactor, address, port)
+        agent = ProxyAgent(endpoint)
+    else:
+        agent = Agent(reactor, pool=pool)
     return HTTPClient(agent)

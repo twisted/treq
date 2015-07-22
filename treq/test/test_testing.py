@@ -368,11 +368,13 @@ class SequenceStringStubsTests(TestCase):
             [((ANY, ANY, ANY, ANY, ANY), (418, {}, 'body'))],
             testcase)
         stub = StubTreq(StringStubbingResource(sequence.get_response_for))
-        d = stub.get('https://anything', data='what', headers={'1': '1'})
-        resp = self.successResultOf(d)
-        self.assertEqual(418, resp.code)
-        self.assertEqual('body', self.successResultOf(stub.content(resp)))
-        testcase.cleanUp()
+
+        with sequence.consume():
+            d = stub.get('https://anything', data='what', headers={'1': '1'})
+            resp = self.successResultOf(d)
+            self.assertEqual(418, resp.code)
+            self.assertEqual('body', self.successResultOf(stub.content(resp)))
+            testcase.cleanUp()
 
         # the expected requests have all been made
         self.assertTrue(sequence.consumed())
@@ -388,17 +390,24 @@ class SequenceStringStubsTests(TestCase):
             testcase)
         stub = StubTreq(StringStubbingResource(sequence.get_response_for))
 
-        with self.assertRaises(AssertionError) as cm:
+        # Twisted < 15.0 does not support assertRaises* as a context manager
+        # Python 2.6 also does not have asssertRaisesRegexp
+        # We need to test the message of the AssertionError because we want
+        # to ensure the error is due to the expected requests not being
+        # consumed, as opposed to a mismatch.
+        try:
             with sequence.consume():
                 self.successResultOf(stub.get('https://anything', data='what',
                                               headers={'1': '1'}))
                 testcase.cleanUp()
-
-        # to make sure it's not some other failure
-        self.assertIn(
-            "Not all expected requests were made.  Still expecting:",
-            repr(cm.exception))
-        self.assertIn(
-            "ANYTHING(url=ANYTHING, params=ANYTHING, headers=ANYTHING, "
-            "data=ANYTHING)",
-            repr(cm.exception))
+        except AssertionError as e:
+            self.assertIn(
+                "Not all expected requests were made.  Still expecting:",
+                repr(e))
+            self.assertIn(
+                "ANYTHING(url=ANYTHING, params=ANYTHING, headers=ANYTHING, "
+                "data=ANYTHING)",
+                repr(e))
+        else:
+            self.fail("An assertion error should have been raised because "
+                      "not all expected requests were made.")

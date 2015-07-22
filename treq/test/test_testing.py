@@ -1,6 +1,7 @@
 """
 In-memory treq returns stubbed responses.
 """
+from functools import partial
 from inspect import getmembers, isfunction
 
 from six import text_type, binary_type
@@ -315,7 +316,7 @@ class SequenceStringStubsTests(TestCase):
     """
     Tests for :obj:`SequenceStringStubs`.
     """
-    def test_unexpected_next_request_causes_failure(self):
+    def test_mismatched_request_causes_failure(self):
         """
         If a request is made that is not expected as the next request,
         causes a failure.
@@ -328,22 +329,21 @@ class SequenceStringStubsTests(TestCase):
               (202, {}, 'deleted'))],
             testcase)
         stub = StubTreq(StringStubbingResource(sequence.get_response_for))
+        get = partial(stub.get, 'https://anything', data='what',
+                      headers={'1': '1'})
 
-        d = stub.get('https://anything', data='what', headers={'1': '1'})
-        resp = self.successResultOf(d)
+        resp = self.successResultOf(get())
         self.assertEqual(418, resp.code)
         self.assertEqual('body', self.successResultOf(stub.content(resp)))
         testcase.cleanUp()
 
-        d = stub.get('https://anything', data='what', headers={'1': '1'})
-        resp = self.successResultOf(d)
+        resp = self.successResultOf(get())
         self.assertEqual(500, resp.code)
         self.assertRaises(AssertionError, testcase.cleanUp)
 
-        # the expected requests have not all been made
         self.assertFalse(sequence.consumed())
 
-    def test_no_more_expected_requests_causes_failure(self):
+    def test_unexpected_number_of_request_causes_failure(self):
         """
         If there are no more expected requests, making a request causes a
         failure.
@@ -376,3 +376,23 @@ class SequenceStringStubsTests(TestCase):
 
         # the expected requests have all been made
         self.assertTrue(sequence.consumed())
+
+    def test_consume_context_manager_fails_on_remaining_requests(self):
+        """
+        If the `consume` context manager is used, if there are any remaining
+        expecting requests, the test case will be failed.
+        """
+        testcase = _FakeTestCase()
+        sequence = SequenceStringStubs(
+            [((ANY, ANY, ANY, ANY, ANY), (418, {}, 'body'))] * 2,
+            testcase)
+        stub = StubTreq(StringStubbingResource(sequence.get_response_for))
+        expected_failstring = (
+            "Not all expected requests were made.  Still expecting:\n"
+            "- ANYTHING\(url=ANYTHING, params=ANYTHING, headers=ANYTHING, "
+            "data=ANYTHING\)")
+        with self.assertRaisesRegexp(AssertionError, expected_failstring):
+            with sequence.consume():
+                self.successResultOf(stub.get('https://anything', data='what',
+                                              headers={'1': '1'}))
+                testcase.cleanUp()

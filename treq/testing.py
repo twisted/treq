@@ -1,6 +1,7 @@
 """
 In-memory version of treq for testing.
 """
+from contextlib import contextmanager
 from functools import wraps
 
 from six import string_types
@@ -350,6 +351,30 @@ class SequenceStringStubs(object):
             requests have all been made.
         """
         return len(self._sequence) == 0
+
+    @contextmanager
+    def consume(self):
+        """
+        Usage::
+
+            stub_treq = StubTreq(StringStubbingResource(
+                sequence_stubs.get_response_for))
+            with sequence_stubs.consume():
+                stub_treq.get('http://fakeurl.com')
+                stub_treq.get('http://another-fake-url.com')
+
+        If there are still remaining expected requests to be made in the
+        sequence, fails the provided test case.
+
+        :return: a context manager that can be used to ensure all expected
+            requests have been made.
+        """
+        yield
+        if not self.consumed():
+            self._testcase.fail("\n".join(
+                ["Not all expected requests were made.  Still expecting:"] +
+                ["- {0}(url={1}, params={2}, headers={3}, data={4})".format(
+                    *expected) for expected, _ in self._sequence]))
 
     def get_response_for(self, method, url, params, headers, data):
         """

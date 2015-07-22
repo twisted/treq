@@ -387,12 +387,18 @@ class SequenceStringStubsTests(TestCase):
             [((ANY, ANY, ANY, ANY, ANY), (418, {}, 'body'))] * 2,
             testcase)
         stub = StubTreq(StringStubbingResource(sequence.get_response_for))
-        expected_failstring = (
-            "Not all expected requests were made.  Still expecting:\n"
-            "- ANYTHING\(url=ANYTHING, params=ANYTHING, headers=ANYTHING, "
-            "data=ANYTHING\)")
-        with self.assertRaisesRegexp(AssertionError, expected_failstring):
+
+        with self.assertRaises(AssertionError) as cm:
             with sequence.consume():
                 self.successResultOf(stub.get('https://anything', data='what',
                                               headers={'1': '1'}))
                 testcase.cleanUp()
+
+        # to make sure it's not some other failure
+        self.assertIn(
+            "Not all expected requests were made.  Still expecting:",
+            repr(cm.exception))
+        self.assertIn(
+            "ANYTHING(url=ANYTHING, params=ANYTHING, headers=ANYTHING, "
+            "data=ANYTHING)",
+            repr(cm.exception))

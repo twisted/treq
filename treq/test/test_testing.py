@@ -390,24 +390,17 @@ class SequenceStringStubsTests(TestCase):
             testcase)
         stub = StubTreq(StringStubbingResource(sequence.get_response_for))
 
-        # Twisted < 15.0 does not support assertRaises* as a context manager
-        # Python 2.6 also does not have asssertRaisesRegexp
-        # We need to test the message of the AssertionError because we want
-        # to ensure the error is due to the expected requests not being
-        # consumed, as opposed to a mismatch.
-        try:
+        def use_consume():
             with sequence.consume():
                 self.successResultOf(stub.get('https://anything', data='what',
                                               headers={'1': '1'}))
                 testcase.cleanUp()
-        except AssertionError as e:
-            self.assertIn(
-                "Not all expected requests were made.  Still expecting:",
-                repr(e))
-            self.assertIn(
-                "ANYTHING(url=ANYTHING, params=ANYTHING, headers=ANYTHING, "
-                "data=ANYTHING)",
-                repr(e))
-        else:
-            self.fail("An assertion error should have been raised because "
-                      "not all expected requests were made.")
+
+        exception = self.assertRaises(AssertionError, use_consume)
+        self.assertIn(
+            "Not all expected requests were made.  Still expecting:",
+            repr(exception))
+        self.assertIn(
+            "ANYTHING(url=ANYTHING, params=ANYTHING, headers=ANYTHING, "
+            "data=ANYTHING)",
+            repr(exception))

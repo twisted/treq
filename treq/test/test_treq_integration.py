@@ -95,7 +95,7 @@ class TreqIntegrationTests(TestCase):
     def test_get_headers(self):
         response = yield self.get('/get', {'X-Blah': ['Foo', 'Bar']})
         self.assertEqual(response.code, 200)
-        yield self.assert_sent_header(response, 'X-Blah', 'Foo, Bar')
+        yield self.assert_sent_header(response, 'X-Blah', 'Foo,Bar')
         yield print_response(response)
 
     @inlineCallbacks

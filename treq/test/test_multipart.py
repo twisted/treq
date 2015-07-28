@@ -12,11 +12,10 @@ from twisted.internet import task
 from twisted.web.client import FileBodyProducer
 from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
 
-from treq.multipart import MultiPartProducer
+from treq.multipart import MultiPartProducer, _LengthConsumer
 
 
 class MultiPartProducerTestCase(unittest.TestCase):
-
     """
     Tests for the L{MultiPartProducer} which gets dictionary like object
     with post parameters, converts them to mutltipart/form-data format
@@ -638,3 +637,32 @@ my lovely bytes
         self.assertEqual(set(['my lovely bytes2']), set(form['efield']))
         self.assertEqual(set(['my lovely bytes219']), set(form['xfield']))
         self.assertEqual(set(['my lovely bytes22']), set(form['afield']))
+
+
+class LengthConsumerTestCase(unittest.TestCase):
+    """
+    Tests for the _LengthConsumer, an L{IConsumer} which is used to compute
+    the length of a produced content.
+    """
+
+    def test_scalarsUpdateCounter(self):
+        """
+        When a long or an int are written, _LengthConsumer updates its internal counter.
+        """
+        consumer = _LengthConsumer()
+        self.assertEqual(consumer.length, 0)
+        consumer.write(1L)
+        self.assertEqual(consumer.length, 1)
+        consumer.write(2147483647)
+        self.assertEqual(consumer.length, 2147483648L)
+
+    def test_stringUpdatesCounter(self):
+        """
+        Use the written string length to update the internal counter
+        """
+        a = "Cantami, o Diva, del Pelide Achille\n l'ira funesta che infiniti addusse\n lutti agli Achei"
+
+        consumer = _LengthConsumer()
+        self.assertEqual(consumer.length, 0)
+        consumer.write(a)
+        self.assertEqual(consumer.length, 89)

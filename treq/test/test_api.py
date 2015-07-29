@@ -45,7 +45,9 @@ class TreqAPITests(TestCase):
         self.Agent.assert_called_with(mock.ANY, pool=pool)
 
     def test_custom_agent(self):
+        """
+        A custom Agent is used if specified.
+        """
         custom_agent = mock.Mock()
         treq.get('https://www.example.org/', agent=custom_agent)
         self.HTTPClient.assertCalledWith(custom_agent)
-

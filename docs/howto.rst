@@ -105,13 +105,13 @@ Full example: :download:`using_cookies.py <examples/using_cookies.py>`
 Agent Customization
 -------------------
 
-`treq` creates its own `twisted.web.client.Agent` with reasonable defaults, but
-you may want to provide your own custom agent.  A custom agent can be passed
-to the various `treq` request methods using the ``agent`` keyword argument.
+treq creates its own `twisted.web.client.Agent
+<https://twistedmatrix.com/documents/current/api/twisted.web.client.Agent.html>`_
+with reasonable defaults, but you may want to provide your own custom agent.
+A custom agent can be passed to the various treq request methods using the
+``agent`` keyword argument.
 
 .. code-block:: python
 
-    custom_agent = create_custom_agent(trusted_certs, timeout)
+    custom_agent = Agent(reactor, connectTimeout=42)
     treq.get(url, agent=custom_agent)
-
-

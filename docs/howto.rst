@@ -22,7 +22,7 @@ Full example: :download:`download_file.py <examples/download_file.py>`
 Query Parameters
 ----------------
 
-:py:func:`treq.request` supports a ``params`` keyword argument which will
+:py:func:`treq.HTTPClient.request` supports a ``params`` keyword argument which will
 be urlencoded and added to the ``url`` argument in addition to any query
 parameters that may already exist.
 
@@ -91,9 +91,10 @@ Cookies
 
 Cookies can be set by passing a ``dict`` or ``cookielib.CookieJar`` instance
 via the ``cookies`` keyword argument.  Later cookies set by the server can be
-retrieved using the :py:func:`treq.cookies` function.
+retrieved using the :py:meth:`~treq.response.Response.cookies` method of the 
+response.
 
-The the object returned by :py:func:`treq.cookies` supports the same key/value
+The the object returned by :py:meth:`~treq.Response.cookies` supports the same key/value
 access as `requests cookies <http://requests.readthedocs.org/en/latest/user/quickstart/#cookies>`_
 
 .. literalinclude:: examples/using_cookies.py
@@ -101,3 +102,23 @@ access as `requests cookies <http://requests.readthedocs.org/en/latest/user/quic
     :lines: 7-20
 
 Full example: :download:`using_cookies.py <examples/using_cookies.py>`
+
+Customizing the Twisted Agent
+-----------------------------
+
+The main :py:mod:`treq` module has helper functions that automatically instantiate
+an instance of :py:class:`treq.client.HTTPClient`.  You can create an instance
+of :py:class:`~treq.client.HTTPClient` directly in order to customize the 
+paramaters used to initialize it.
+Internally, the :py:class:`~treq.client.HTTPClient` wraps an instance of 
+:py:class:`twisted.web.client.Agent`.  When you create an instance of 
+:py:class:`~treq.client.HTTPClient`, you must initialize it with an instance of
+:py:class:`~twisted.web.client.Agent`.  This allows you to customize its
+behavior.
+
+.. literalinclude:: examples/custom_agent.py
+    :linenos:
+    :lines: 6-19
+
+Full example: :download:`custom_agent.py <examples/custom_agent.py>`
+

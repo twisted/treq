@@ -5,14 +5,15 @@ import treq
 
 
 def main(reactor, *args):
-    d = treq.get('http://httpbin.org/cookies/set?hello=world')
+    http_client = treq
+    d = http_client.get('http://httpbin.org/cookies/set?hello=world')
 
     def _get_jar(resp):
         jar = resp.cookies()
 
         print 'The server set our hello cookie to: {0}'.format(jar['hello'])
 
-        return treq.get('http://httpbin.org/cookies', cookies=jar)
+        return http_client.get('http://httpbin.org/cookies', cookies=jar)
 
     d.addCallback(_get_jar)
     d.addCallback(print_response)

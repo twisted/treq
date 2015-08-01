@@ -5,8 +5,7 @@ import treq
 
 
 def main(reactor, *args):
-    http_client = treq
-    d = http_client.get(
+    d = treq.get(
         'http://httpbin.org/basic-auth/treq/treq',
         auth=('treq', 'treq')
     )

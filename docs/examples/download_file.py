@@ -5,8 +5,7 @@ import treq
 
 def download_file(reactor, url, destination_filename):
     destination = file(destination_filename, 'w')
-    http_client = treq
-    d = http_client.get(url)
+    d = treq.get(url)
     d.addCallback(treq.collect, destination.write)
     d.addBoth(lambda _: destination.close())
     return d

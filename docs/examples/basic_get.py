@@ -5,8 +5,7 @@ import treq
 
 
 def main(reactor, *args):
-    http_client = treq
-    d = http_client.get('http://httpbin.org/get')
+    d = treq.get('http://httpbin.org/get')
     d.addCallback(print_response)
     return d
 

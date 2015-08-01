@@ -121,4 +121,3 @@ behavior.
     :lines: 6-19
 
 Full example: :download:`custom_agent.py <examples/custom_agent.py>`
-

@@ -106,10 +106,8 @@ def request(method, url, **kwargs):
 #
 
 def _client(*args, **kwargs):
-    agent = kwargs.get('agent', None)
-    if agent is not None:
-        del kwargs['agent']
-    else:
+    agent = kwargs.get('agent')
+    if agent is None:
         reactor = default_reactor(kwargs.get('reactor'))
         pool = default_pool(reactor,
                             kwargs.get('pool'),

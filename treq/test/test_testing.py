@@ -263,38 +263,29 @@ class StringStubbingTests(TestCase):
                          self.successResultOf(stub.content(resp)))
 
 
-class _FakeTestCase(object):
-    def __init__(self):
-        self.cleanups = []
-
-    def addCleanup(self, f, *args, **kwargs):
-        self.cleanups.append((f, args, kwargs))
-
-    def fail(self, msg=None):
-        raise AssertionError(msg)
-
-    def cleanUp(self):
-        for f, args, kwargs in self.cleanups:
-            f(*args, **kwargs)
-
-
 class RequestSequenceTests(TestCase):
     """
     Tests for :obj:`RequestSequence`.
     """
+    def setUp(self):
+        """
+        Set up a way to report failures asynchronously.
+        """
+        self.async_failures = []
+
     def test_mismatched_request_causes_failure(self):
         """
         If a request is made that is not expected as the next request,
         causes a failure.
         """
-        testcase = _FakeTestCase()
         sequence = RequestSequence(
             [(('get', 'https://anything/', {'1': ['2']},
                HasHeaders({'1': ['1']}), 'what'),
               (418, {}, 'body')),
              (('get', 'http://anything', {}, HasHeaders({'2': ['1']}), 'what'),
               (202, {}, 'deleted'))],
-            testcase)
+            async_failure_reporter=self.async_failures.append)
+
         stub = StubTreq(StringStubbingResource(sequence))
         get = partial(stub.get, 'https://anything?1=2', data='what',
                       headers={'1': '1'})
@@ -302,11 +293,13 @@ class RequestSequenceTests(TestCase):
         resp = self.successResultOf(get())
         self.assertEqual(418, resp.code)
         self.assertEqual('body', self.successResultOf(stub.content(resp)))
-        testcase.cleanUp()
+        self.assertEqual([], self.async_failures)
 
         resp = self.successResultOf(get())
         self.assertEqual(500, resp.code)
-        self.assertRaises(AssertionError, testcase.cleanUp)
+        self.assertEqual(1, len(self.async_failures))
+        self.assertIn("Expected the next request to be",
+                      self.async_failures[0])
 
         self.assertFalse(sequence.consumed())
 
@@ -315,13 +308,16 @@ class RequestSequenceTests(TestCase):
         If there are no more expected requests, making a request causes a
         failure.
         """
-        testcase = _FakeTestCase()
-        sequence = RequestSequence([], testcase)
+        sequence = RequestSequence(
+            [],
+            async_failure_reporter=self.async_failures.append)
         stub = StubTreq(StringStubbingResource(sequence))
         d = stub.get('https://anything', data='what', headers={'1': '1'})
         resp = self.successResultOf(d)
         self.assertEqual(500, resp.code)
-        self.assertRaises(AssertionError, testcase.cleanUp)
+        self.assertEqual(1, len(self.async_failures))
+        self.assertIn("No more requests expected, but request",
+                      self.async_failures[0])
 
         # the expected requests have all been made
         self.assertTrue(sequence.consumed())
@@ -330,18 +326,18 @@ class RequestSequenceTests(TestCase):
         """
         :obj:`mock.ANY` can be used with the request parameters.
         """
-        testcase = _FakeTestCase()
         sequence = RequestSequence(
             [((ANY, ANY, ANY, ANY, ANY), (418, {}, 'body'))],
-            testcase)
+            async_failure_reporter=self.async_failures.append)
         stub = StubTreq(StringStubbingResource(sequence))
 
-        with sequence.consume():
+        with sequence.consume(sync_failure_reporter=self.fail):
             d = stub.get('https://anything', data='what', headers={'1': '1'})
             resp = self.successResultOf(d)
             self.assertEqual(418, resp.code)
             self.assertEqual('body', self.successResultOf(stub.content(resp)))
-            testcase.cleanUp()
+
+        self.assertEqual([], self.async_failures)
 
         # the expected requests have all been made
         self.assertTrue(sequence.consumed())
@@ -351,23 +347,24 @@ class RequestSequenceTests(TestCase):
         If the `consume` context manager is used, if there are any remaining
         expecting requests, the test case will be failed.
         """
-        testcase = _FakeTestCase()
         sequence = RequestSequence(
             [((ANY, ANY, ANY, ANY, ANY), (418, {}, 'body'))] * 2,
-            testcase)
+            async_failure_reporter=self.async_failures.append)
         stub = StubTreq(StringStubbingResource(sequence))
 
-        def use_consume():
-            with sequence.consume():
-                self.successResultOf(stub.get('https://anything', data='what',
-                                              headers={'1': '1'}))
-                testcase.cleanUp()
+        consume_failures = []
+        with sequence.consume(sync_failure_reporter=consume_failures.append):
+            self.successResultOf(stub.get('https://anything', data='what',
+                                          headers={'1': '1'}))
 
-        exception = self.assertRaises(AssertionError, use_consume)
+        self.assertEqual(1, len(consume_failures))
         self.assertIn(
             "Not all expected requests were made.  Still expecting:",
-            repr(exception))
+            consume_failures[0])
         self.assertIn(
             "{0}(url={0}, params={0}, headers={0}, data={0})".format(
                 repr(ANY)),
-            repr(exception))
+            consume_failures[0])
+
+        # no asynchronous failures (mismatches, etc.)
+        self.assertEqual([], self.async_failures)

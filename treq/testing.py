@@ -341,14 +341,15 @@ class RequestSequence(object):
 
     :ivar list sequence: The sequence of expected request arguments mapped to
         stubbed responses
-    :ivar testcase: A :obj:`TestCase` that can be used to report failures in
-        matching requests against expected requests.  Raising exceptions does
-        not work, because :obj:`Resource.render` will just convert that into
-        a 500 response.
+    :ivar async_failure_reporter: A callable that takes a single message
+        reporting failures - it's asynchronous because it cannot just raise
+        an exception - if it does, :obj:`Resource.render` will just convert
+        that into a 500 response, and there will be no other failure reporting
+        mechanism.
     """
-    def __init__(self, sequence, testcase):
+    def __init__(self, sequence, async_failure_reporter):
         self._sequence = sequence
-        self._testcase = testcase
+        self._async_reporter = async_failure_reporter
 
     def consumed(self):
         """
@@ -359,7 +360,7 @@ class RequestSequence(object):
         return len(self._sequence) == 0
 
     @contextmanager
-    def consume(self):
+    def consume(self, sync_failure_reporter):
         """
         Usage::
 
@@ -372,12 +373,17 @@ class RequestSequence(object):
         If there are still remaining expected requests to be made in the
         sequence, fails the provided test case.
 
+        :param sync_failure_reporter: A callable that takes a single message
+            reporting failures.  This can just raise an exception - it does
+            not need to be asynchronous, since the exception would not get
+            raised within a Resource.
+
         :return: a context manager that can be used to ensure all expected
             requests have been made.
         """
         yield
         if not self.consumed():
-            self._testcase.fail("\n".join(
+            sync_failure_reporter("\n".join(
                 ["Not all expected requests were made.  Still expecting:"] +
                 ["- {0}(url={1}, params={2}, headers={3}, data={4})".format(
                     *expected) for expected, _ in self._sequence]))
@@ -388,8 +394,7 @@ class RequestSequence(object):
             parameters match the next in the sequence.
         """
         if len(self._sequence) == 0:
-            self._testcase.addCleanup(
-                self._testcase.fail,
+            self._async_reporter(
                 "No more requests expected, but request {0!r} made.".format(
                     (method, url, params, headers, data)))
             return (500, {}, "StubbingError")
@@ -406,8 +411,7 @@ class RequestSequence(object):
         ]
         mismatches = [param for success, param in checks if not success]
         if mismatches:
-            self._testcase.addCleanup(
-                self._testcase.fail,
+            self._async_reporter(
                 "\nExpected the next request to be: {0!r}"
                 "\nGot request                    : {1!r}\n"
                 "\nMismatches: {2!r}"

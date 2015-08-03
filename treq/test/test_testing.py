@@ -18,7 +18,7 @@ import treq
 from treq.test.util import TestCase
 from treq.testing import (
     HasHeaders,
-    SequenceStringStubs,
+    RequestSequence,
     StringStubbingResource,
     StubTreq
 )
@@ -278,9 +278,9 @@ class _FakeTestCase(object):
             f(*args, **kwargs)
 
 
-class SequenceStringStubsTests(TestCase):
+class RequestSequenceTests(TestCase):
     """
-    Tests for :obj:`SequenceStringStubs`.
+    Tests for :obj:`RequestSequence`.
     """
     def test_mismatched_request_causes_failure(self):
         """
@@ -288,14 +288,14 @@ class SequenceStringStubsTests(TestCase):
         causes a failure.
         """
         testcase = _FakeTestCase()
-        sequence = SequenceStringStubs(
+        sequence = RequestSequence(
             [(('get', 'https://anything/', {'1': ['2']},
                HasHeaders({'1': ['1']}), 'what'),
               (418, {}, 'body')),
              (('get', 'http://anything', {}, HasHeaders({'2': ['1']}), 'what'),
               (202, {}, 'deleted'))],
             testcase)
-        stub = StubTreq(StringStubbingResource(sequence.get_response_for))
+        stub = StubTreq(StringStubbingResource(sequence))
         get = partial(stub.get, 'https://anything?1=2', data='what',
                       headers={'1': '1'})
 
@@ -316,8 +316,8 @@ class SequenceStringStubsTests(TestCase):
         failure.
         """
         testcase = _FakeTestCase()
-        sequence = SequenceStringStubs([], testcase)
-        stub = StubTreq(StringStubbingResource(sequence.get_response_for))
+        sequence = RequestSequence([], testcase)
+        stub = StubTreq(StringStubbingResource(sequence))
         d = stub.get('https://anything', data='what', headers={'1': '1'})
         resp = self.successResultOf(d)
         self.assertEqual(500, resp.code)
@@ -331,10 +331,10 @@ class SequenceStringStubsTests(TestCase):
         :obj:`mock.ANY` can be used with the request parameters.
         """
         testcase = _FakeTestCase()
-        sequence = SequenceStringStubs(
+        sequence = RequestSequence(
             [((ANY, ANY, ANY, ANY, ANY), (418, {}, 'body'))],
             testcase)
-        stub = StubTreq(StringStubbingResource(sequence.get_response_for))
+        stub = StubTreq(StringStubbingResource(sequence))
 
         with sequence.consume():
             d = stub.get('https://anything', data='what', headers={'1': '1'})
@@ -352,10 +352,10 @@ class SequenceStringStubsTests(TestCase):
         expecting requests, the test case will be failed.
         """
         testcase = _FakeTestCase()
-        sequence = SequenceStringStubs(
+        sequence = RequestSequence(
             [((ANY, ANY, ANY, ANY, ANY), (418, {}, 'body'))] * 2,
             testcase)
-        stub = StubTreq(StringStubbingResource(sequence.get_response_for))
+        stub = StubTreq(StringStubbingResource(sequence))
 
         def use_consume():
             with sequence.consume():

@@ -306,7 +306,7 @@ class HasHeaders(object):
         return not self.__eq__(other_headers)
 
 
-class SequenceStringStubs(object):
+class RequestSequence(object):
     """
     Takes a sequence of::
 
@@ -363,8 +363,8 @@ class SequenceStringStubs(object):
         """
         Usage::
 
-            stub_treq = StubTreq(StringStubbingResource(
-                sequence_stubs.get_response_for))
+            sequence_stubs = RequestSequence([...])
+            stub_treq = StubTreq(StringStubbingResource(sequence_stubs))
             with sequence_stubs.consume():
                 stub_treq.get('http://fakeurl.com')
                 stub_treq.get('http://another-fake-url.com')
@@ -382,7 +382,7 @@ class SequenceStringStubs(object):
                 ["- {0}(url={1}, params={2}, headers={3}, data={4})".format(
                     *expected) for expected, _ in self._sequence]))
 
-    def get_response_for(self, method, url, params, headers, data):
+    def __call__(self, method, url, params, headers, data):
         """
         :return: the next response in the sequence, provided that the
             parameters match the next in the sequence.

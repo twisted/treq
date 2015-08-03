@@ -306,22 +306,6 @@ class HasHeaders(object):
         return not self.__eq__(other_headers)
 
 
-class _any(object):
-    """
-    An object is equivalent to any other object.
-    """
-    def __repr__(self):
-        return "ANYTHING"
-
-    def __eq__(self, _):
-        return True
-
-    def __ne__(self, _):
-        return False
-
-ANY = _any()
-
-
 class SequenceStringStubs(object):
     """
     Takes a sequence of::
@@ -332,6 +316,28 @@ class SequenceStringStubs(object):
     Expects the requests to arrive in sequence order.  If there are no more
     responses, or the request's paramters do not match the next item's expected
     request paramters, raises :obj:`AssertionError`.
+
+    For the expected request arguments::
+
+    - ``method`` should be normalized to lowercase.
+    - ``url`` should be normalized as per the transformations in
+        https://en.wikipedia.org/wiki/URL_normalization that (usually) preserve
+        semantics.  A url to `http://something-that-looks-like-a-directory`
+        would be normalized to `http://something-that-looks-like-a-directory/`
+        and a url to `http://something-that-looks-like-a-page/page.html`
+        remains unchanged.
+    - ``params`` is a dictionary mapping `str` to `lists` of `str`
+    - ``headers`` is a dictionary mapping `str` to `lists` of `str` - note that
+        :obj:`twisted.web.client.Agent` may adds its own headers though, which
+        are not guaranteed (for instance, `user-agent` or `content-length`),
+        so it's better to use some kind of matcher like :obj:`HasHeaders`.
+    - ``data`` is a `str`
+
+    For the response::
+
+    - ``code`` is an integer representing the HTTP status code to return
+    - ``headers`` is a dictionary mapping `str` to `str` or `lists` of `str`
+    - ``body`` is a `str`
 
     :ivar list sequence: The sequence of expected request arguments mapped to
         stubbed responses
@@ -392,16 +398,12 @@ class SequenceStringStubs(object):
         e_method, e_url, e_params, e_headers, e_data = expected
 
         checks = [
-            (e_method is ANY or e_method.lower() == method.lower(), "method"),
-            (e_url is ANY or
-             # URLPath does not have an __eq__ function
-             str(URLPath.fromString(e_url)) == str(URLPath.fromString(url)),
-             "url"),
+            (e_method == method.lower(), "method"),
+            (e_url == url, "url"),
             (e_params == params, 'parameters'),
-            (e_headers is ANY or HasHeaders(e_headers) == headers, "headers"),
+            (e_headers == headers, "headers"),
             (e_data == data, "data")
         ]
-
         mismatches = [param for success, param in checks if not success]
         if mismatches:
             self._testcase.addCleanup(

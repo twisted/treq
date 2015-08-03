@@ -4,6 +4,8 @@ In-memory treq returns stubbed responses.
 from functools import partial
 from inspect import getmembers, isfunction
 
+from mock import ANY
+
 from six import text_type, binary_type
 
 from twisted.web.client import ResponseFailed
@@ -15,7 +17,6 @@ import treq
 
 from treq.test.util import TestCase
 from treq.testing import (
-    ANY,
     HasHeaders,
     SequenceStringStubs,
     StringStubbingResource,
@@ -221,41 +222,6 @@ class HasHeadersTests(TestCase):
                          repr(HasHeaders({'A': ['b']})))
 
 
-class AnyTests(TestCase):
-    """
-    :obj:`ANY` matches equality-wise against any object.
-    """
-    def test_equality(self):
-        """
-        :obj:`ANY` is equivalent to anything
-        """
-        for anything in (ANY, 1, False, object(), "string", {}, [], (), None,
-                         str):
-            self.assertEqual(ANY, anything)
-
-    def test_inequality(self):
-        """
-        :obj:`ANY` is not not-equal to anything.
-        """
-        for anything in (ANY, 1, False, object(), "string", {}, [], (), None,
-                         str):
-            self.assertFalse(ANY != anything)
-
-    def test_is(self):
-        """
-        :obj:`ANY` is only itself, not something else
-        """
-        for anything in (1, False, object(), "string", {}, [], (), None, str):
-            self.assertIsNot(ANY, anything)
-        self.assertIs(ANY, ANY)
-
-    def test_repr(self):
-        """
-        :obj:`ANY` has a repr
-        """
-        self.assertEqual("ANYTHING", repr(ANY))
-
-
 class StringStubbingTests(TestCase):
     """
     Tests for :obj:`StringStubbingResource`.
@@ -323,13 +289,14 @@ class SequenceStringStubsTests(TestCase):
         """
         testcase = _FakeTestCase()
         sequence = SequenceStringStubs(
-            [(('get', 'https://anything', {}, {'1': ['1']}, 'what'),
+            [(('get', 'https://anything/', {'1': ['2']},
+               HasHeaders({'1': ['1']}), 'what'),
               (418, {}, 'body')),
-             (('get', 'http://anything', {}, {'2': ['1']}, 'what'),
+             (('get', 'http://anything', {}, HasHeaders({'2': ['1']}), 'what'),
               (202, {}, 'deleted'))],
             testcase)
         stub = StubTreq(StringStubbingResource(sequence.get_response_for))
-        get = partial(stub.get, 'https://anything', data='what',
+        get = partial(stub.get, 'https://anything?1=2', data='what',
                       headers={'1': '1'})
 
         resp = self.successResultOf(get())
@@ -359,9 +326,9 @@ class SequenceStringStubsTests(TestCase):
         # the expected requests have all been made
         self.assertTrue(sequence.consumed())
 
-    def test_works_with_any(self):
+    def test_works_with_mock_any(self):
         """
-        `ANY` can be used with the request parameters.
+        :obj:`mock.ANY` can be used with the request parameters.
         """
         testcase = _FakeTestCase()
         sequence = SequenceStringStubs(
@@ -401,6 +368,6 @@ class SequenceStringStubsTests(TestCase):
             "Not all expected requests were made.  Still expecting:",
             repr(exception))
         self.assertIn(
-            "ANYTHING(url=ANYTHING, params=ANYTHING, headers=ANYTHING, "
-            "data=ANYTHING)",
+            "{0}(url={0}, params={0}, headers={0}, data={0})".format(
+                repr(ANY)),
             repr(exception))

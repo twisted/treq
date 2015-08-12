@@ -82,7 +82,7 @@ features is.  Here is a list of `requests`_ features and their status in treq.
 +----------------------------------+----------+----------+
 | Basic Authentication             | yes      | yes      |
 +----------------------------------+----------+----------+
-| Digest Authentication            | yes      | no       |
+| Digest Authentication            | yes      | yes      |
 +----------------------------------+----------+----------+
 | Elegant Key/Value Cookies        | yes      | yes      |
 +----------------------------------+----------+----------+

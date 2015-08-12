@@ -8,12 +8,14 @@ from twisted.internet.tcp import Client
 
 from twisted import version as current_version
 from twisted.python.versions import Version
+from twisted.python.monkey import MonkeyPatcher
 
-from twisted.web.client import HTTPConnectionPool, ResponseFailed
+from twisted.web.client import HTTPConnectionPool, ResponseFailed, Agent
 
-from treq.test.util import DEBUG, is_pypy
+from treq.test.util import DEBUG
 
 import treq
+from treq.auth import HTTPDigestAuth
 
 HTTPBIN_URL = "http://httpbin.org"
 HTTPSBIN_URL = "https://httpbin.org"
@@ -231,6 +233,102 @@ class TreqIntegrationTests(TestCase):
         yield print_response(response)
 
     @inlineCallbacks
+    def test_digest_auth(self):
+        """
+            Test successful Digest authentication
+        :return:
+        """
+        response = yield self.get('/digest-auth/auth/treq/treq',
+                                  auth=HTTPDigestAuth('treq', 'treq'))
+        self.assertEqual(response.code, 200)
+        yield print_response(response)
+        json = yield treq.json_content(response)
+        self.assertTrue(json['authenticated'])
+        self.assertEqual(json['user'], 'treq')
+
+    @inlineCallbacks
+    def test_digest_auth_multiple_calls(self):
+        """
+            Test proper Digest authentication credentials caching
+        """
+
+        # A mutable holder for call counter
+        agent_request_call_storage = {
+            'c': 0,
+            'i': []
+        }
+
+        # Original Agent request call
+        agent_request_orig = Agent.request
+
+        def agent_request_patched(*args, **kwargs):
+            """
+                Patched Agent.request function,
+                that inscreaces call count on every HTTP request
+                and appends
+            """
+            response_deferred = agent_request_orig(*args, **kwargs)
+            agent_request_call_storage['c'] += 1
+            agent_request_call_storage['i'].append((args, kwargs))
+            return response_deferred
+
+        patcher = MonkeyPatcher(
+            (Agent, 'request', agent_request_patched)
+        )
+        patcher.patch()
+
+        response1 = yield self.get(
+            '/digest-auth/auth/treq-digest-auth-multiple/treq',
+            auth=HTTPDigestAuth('treq-digest-auth-multiple', 'treq')
+        )
+        self.assertEqual(response1.code, 200)
+        yield print_response(response1)
+        json1 = yield treq.json_content(response1)
+
+        # Assume we did two actual HTTP requests - one to obtain credentials
+        # and second is original request with authentication
+        self.assertEqual(
+            agent_request_call_storage['c'],
+            2
+        )
+        headers_for_second_request = agent_request_call_storage['i'][1][0][3]
+        self.assertIn(
+            'Authorization',
+            dict(headers_for_second_request.getAllRawHeaders())
+        )
+
+        response2 = yield self.get(
+            '/digest-auth/auth/treq-digest-auth-multiple/treq',
+            auth=HTTPDigestAuth('treq-digest-auth-multiple', 'treq'),
+            cookies=response1.cookies()
+        )
+        self.assertEqual(response2.code, 200)
+        yield print_response(response2)
+        json2 = yield treq.json_content(response2)
+        self.assertTrue(json1['authenticated'])
+        self.assertEqual(json1['user'], 'treq-digest-auth-multiple')
+
+        # Assume that responses are the same
+        self.assertEqual(json1, json2)
+
+        # Assume we need only one call to obtain second response
+        self.assertEqual(
+            agent_request_call_storage['c'],
+            3
+        )
+        patcher.restore()
+
+    @inlineCallbacks
+    def test_failed_digest_auth(self):
+        """
+            Test digest auth with invalid credentials
+        """
+        response = yield self.get('/digest-auth/auth/treq/treq',
+                                  auth=HTTPDigestAuth('not-treq', 'not-treq'))
+        self.assertEqual(response.code, 401)
+        yield print_response(response)
+
+    @inlineCallbacks
     def test_timeout(self):
         """
         Verify a timeout fires if a request takes too long.
@@ -252,7 +350,7 @@ class TreqIntegrationTests(TestCase):
         response = yield self.get('/cookies/set',
                                   allow_redirects=False,
                                   params={'hello': 'there'})
-        #self.assertEqual(response.code, 200)
+        # self.assertEqual(response.code, 200)
         yield print_response(response)
         self.assertEqual(response.cookies()['hello'], 'there')
 

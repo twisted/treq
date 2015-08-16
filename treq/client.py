@@ -176,7 +176,6 @@ class HTTPClient(object):
             # multipart/form-data request as it suits better for cases
             # with files and/or large objects.
             files = list(_convert_files(files))
-            print(files)
             boundary = str(uuid.uuid4()).encode('ascii')
             headers.setRawHeaders(
                 b'content-type', [
@@ -317,10 +316,14 @@ def _guess_content_type(filename):
 
 
 registerAdapter(_from_bytes, bytes, IBodyProducer)
-registerAdapter(_from_file, open, IBodyProducer)
 registerAdapter(_from_file, BytesIO, IBodyProducer)
 
 if not _PY3:
     from StringIO import StringIO
     registerAdapter(_from_file, StringIO, IBodyProducer)
     registerAdapter(_from_bytes, str, IBodyProducer)
+    registerAdapter(_from_bytes, file, IBodyProucer)
+else:
+    import io
+    # file()/open() equiv on Py3
+    registerAdapter(_from_file, io.BufferedReader, IBodyProducer)

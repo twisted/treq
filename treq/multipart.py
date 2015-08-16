@@ -61,13 +61,11 @@ class MultiPartProducer(object):
         self._cooperate = cooperator.cooperate
 
         self.boundary = boundary or uuid4().hex
-        self.length = self._calculateLength()
 
         if isinstance(self.boundary, unicode):
             self.boundary = self.boundary.encode('ascii')
 
-        print("what")
-        print(self.boundary)
+        self.length = self._calculateLength()
 
     def startProducing(self, consumer):
         """
@@ -130,7 +128,7 @@ class MultiPartProducer(object):
         If the determination cannot be made, return C{UNKNOWN_LENGTH}.
         """
         consumer = _LengthConsumer()
-        for i in self._writeLoop(consumer):
+        for i in list(self._writeLoop(consumer)):
             pass
         return consumer.length
 
@@ -141,7 +139,6 @@ class MultiPartProducer(object):
 
         --this-is-my-boundary
         """
-        print(self.boundary)
         f = b"--" if final else b""
         return b"--" + self.boundary + f
 
@@ -263,6 +260,7 @@ def _converted(fields):
 
     for name, value in fields:
         name = _enforce_unicode(name)
+        print(name)
 
         if isinstance(value, (tuple, list)):
             if len(value) != 3:
@@ -336,7 +334,7 @@ class _Header(object):
                     h.write(b"; ")
                     h.write(_escape(name).encode("us-ascii"))
                     h.write(b"=")
-                    h.write(b'"' + _escape(val).encode('utf-8') + b"'")
+                    h.write(b'"' + _escape(val).encode('utf-8') + b'"')
             h.seek(0)
             return h.read()
 

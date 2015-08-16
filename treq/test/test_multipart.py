@@ -18,6 +18,7 @@ from treq.multipart import MultiPartProducer, _LengthConsumer
 
 if compat._PY3:
     long = int
+    unicode = compat.unicode
 
 
 class MultiPartProducerTestCase(unittest.TestCase):
@@ -107,7 +108,11 @@ class MultiPartProducerTestCase(unittest.TestCase):
             return output.getvalue()
 
     def newLines(self, value):
-        return value.replace(b"\n", b"\r\n")
+
+        if isinstance(value, unicode):
+            return value.replace(u"\n", u"\r\n")
+        else:
+            return value.replace(b"\n", b"\r\n")
 
     def test_interface(self):
         """
@@ -444,7 +449,7 @@ another string
             }, cooperator=self.cooperator, boundary=b"heyDavid"),
             with_producer=True)
 
-        expected = self.newLines("""--heyDavid
+        expected = self.newLines(b"""--heyDavid
 Content-Disposition: form-data; name="bfield"
 
 just a string
@@ -494,7 +499,7 @@ my lovely bytes
             }, cooperator=self.cooperator, boundary=b"heyDavid"),
             with_producer=True)
 
-        expected = self.newLines("""--heyDavid
+        expected = self.newLines(b"""--heyDavid
 Content-Disposition: form-data; name="bfield"
 
 another string
@@ -572,7 +577,7 @@ my lovely bytes
                 boundary=b"heyDavid"),
             with_producer=True)
 
-        expected = self.newLines("""--heyDavid
+        expected = self.newLines(b"""--heyDavid
 Content-Disposition: form-data; name="field"
 Content-Type: image/jpeg
 Content-Length: 15
@@ -617,8 +622,8 @@ my lovely bytes
         """
         output = self.getOutput(
             MultiPartProducer([
-                ("cfield", b"just a string\r\n"),
-                ("cfield", b"another string"),
+                ("cfield", "just a string\r\n"),
+                ("cfield", "another string"),
                 ("efield", ('ef', "text/html", FileBodyProducer(
                             inputFile=BytesIO(b"my lovely bytes2"),
                             cooperator=self.cooperator,
@@ -636,14 +641,12 @@ my lovely bytes
         )
 
         form = cgi.parse_multipart(BytesIO(output), {"boundary": b"heyDavid"})
-        print(output)
-        print(form)
-        self.assertEqual(set(['just a string\r\n', 'another string']),
+        self.assertEqual(set([b'just a string\r\n', b'another string']),
                          set(form['cfield']))
 
-        self.assertEqual(set(['my lovely bytes2']), set(form['efield']))
-        self.assertEqual(set(['my lovely bytes219']), set(form['xfield']))
-        self.assertEqual(set(['my lovely bytes22']), set(form['afield']))
+        self.assertEqual(set([b'my lovely bytes2']), set(form['efield']))
+        self.assertEqual(set([b'my lovely bytes219']), set(form['xfield']))
+        self.assertEqual(set([b'my lovely bytes22']), set(form['afield']))
 
 
 class LengthConsumerTestCase(unittest.TestCase):

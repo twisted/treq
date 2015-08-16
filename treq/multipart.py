@@ -328,7 +328,7 @@ class _Header(object):
 
     def __bytes__(self):
         with closing(BytesIO()) as h:
-            h.write(self.name + b": " +_escape(self.value).encode("us-ascii"))
+            h.write(self.name + b": " + _escape(self.value).encode("us-ascii"))
             if self.params:
                 for (name, val) in self.params:
                     h.write(b"; ")

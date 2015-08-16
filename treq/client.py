@@ -322,7 +322,7 @@ if not _PY3:
     from StringIO import StringIO
     registerAdapter(_from_file, StringIO, IBodyProducer)
     registerAdapter(_from_bytes, str, IBodyProducer)
-    registerAdapter(_from_bytes, file, IBodyProucer)
+    registerAdapter(_from_bytes, file, IBodyProducer)
 else:
     import io
     # file()/open() equiv on Py3

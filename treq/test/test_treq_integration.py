@@ -11,7 +11,7 @@ from twisted.python.versions import Version
 
 from twisted.web.client import HTTPConnectionPool, ResponseFailed
 
-from treq.test.util import DEBUG, is_pypy
+from treq.test.util import DEBUG
 
 import treq
 
@@ -259,7 +259,7 @@ class TreqIntegrationTests(TestCase):
         response = yield self.get('/cookies/set',
                                   allow_redirects=False,
                                   params={'hello': 'there'})
-        #self.assertEqual(response.code, 200)
+        self.assertEqual(response.code, 200)
         yield print_response(response)
         self.assertEqual(response.cookies()['hello'], 'there')
 

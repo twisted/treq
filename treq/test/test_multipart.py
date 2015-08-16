@@ -657,7 +657,8 @@ class LengthConsumerTestCase(unittest.TestCase):
 
     def test_scalarsUpdateCounter(self):
         """
-        When a long or an int are written, _LengthConsumer updates its internal counter.
+        When a long or an int are written, _LengthConsumer updates its internal
+        counter.
         """
         consumer = _LengthConsumer()
         self.assertEqual(consumer.length, 0)
@@ -670,7 +671,8 @@ class LengthConsumerTestCase(unittest.TestCase):
         """
         Use the written string length to update the internal counter
         """
-        a = b"Cantami, o Diva, del Pelide Achille\n l'ira funesta che infiniti addusse\n lutti agli Achei"
+        a = (b"Cantami, o Diva, del Pelide Achille\n l'ira funesta che "
+             b"infiniti addusse\n lutti agli Achei")
 
         consumer = _LengthConsumer()
         self.assertEqual(consumer.length, 0)

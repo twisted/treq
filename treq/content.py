@@ -113,8 +113,8 @@ def text_content(response, encoding='ISO-8859-1'):
 
         if _PY3:
             headers = Headers({
-                key.decode('ascii'):[y.decode('ascii') for y in val]
-                for key,val in response.headers.getAllRawHeaders()})
+                key.decode('ascii'): [y.decode('ascii') for y in val]
+                for key, val in response.headers.getAllRawHeaders()})
         else:
             headers = response.headers
 

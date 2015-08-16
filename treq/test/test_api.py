@@ -50,4 +50,4 @@ class TreqAPITests(TestCase):
         """
         custom_agent = mock.Mock()
         treq.get('https://www.example.org/', agent=custom_agent)
-        self.HTTPClient.assertCalledWith(custom_agent)
+        self.HTTPClient.assert_called_once_with(custom_agent)

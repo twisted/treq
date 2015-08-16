@@ -1,6 +1,8 @@
 # Copyright (c) Twisted Matrix Laboratories.
 # See LICENSE for details.
 
+from __future__ import absolute_import, division, print_function
+
 from uuid import uuid4
 from io import BytesIO
 from contextlib import closing
@@ -260,7 +262,6 @@ def _converted(fields):
 
     for name, value in fields:
         name = _enforce_unicode(name)
-        print(name)
 
         if isinstance(value, (tuple, list)):
             if len(value) != 3:
@@ -337,6 +338,10 @@ class _Header(object):
                     h.write(b'"' + _escape(val).encode('utf-8') + b'"')
             h.seek(0)
             return h.read()
+
+    def __str__(self):
+        return self.__bytes__()
+
 
 
 def _sorted_by_type(fields):

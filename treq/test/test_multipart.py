@@ -466,7 +466,6 @@ Content-Length: 15
 my lovely bytes
 --heyDavid--
 """)
-
         self.assertEqual(producer.length, len(expected))
         self.assertEqual(output, expected)
 

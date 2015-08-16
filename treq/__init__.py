@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from pkg_resources import resource_string
 
 from treq.api import head, get, post, put, patch, delete, request

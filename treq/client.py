@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import mimetypes
 import uuid
 
@@ -321,8 +323,7 @@ registerAdapter(_from_file, BytesIO, IBodyProducer)
 if not _PY3:
     from StringIO import StringIO
     registerAdapter(_from_file, StringIO, IBodyProducer)
-    registerAdapter(_from_bytes, str, IBodyProducer)
-    registerAdapter(_from_bytes, file, IBodyProducer)
+    registerAdapter(_from_file, file, IBodyProducer)
 else:
     import io
     # file()/open() equiv on Py3

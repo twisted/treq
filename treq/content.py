@@ -1,16 +1,17 @@
 import cgi
 import json
 
+from twisted.python.compat import _PY3
 from twisted.internet.defer import Deferred, succeed
 
 from twisted.internet.protocol import Protocol
 from twisted.web.client import ResponseDone
 from twisted.web.http import PotentialDataLoss
+from twisted.web.http_headers import Headers
 
 
 def _encoding_from_headers(headers):
     content_types = headers.getRawHeaders('content-type')
-
     if content_types is None:
         return None
 
@@ -89,7 +90,11 @@ def json_content(response):
 
     :rtype: Deferred that fires with the decoded JSON.
     """
-    d = content(response)
+    if _PY3:
+        d = text_content(response)
+    else:
+        d = content(response)
+
     d.addCallback(json.loads)
     return d
 
@@ -105,7 +110,15 @@ def text_content(response, encoding='ISO-8859-1'):
     :rtype: Deferred that fires with a unicode.
     """
     def _decode_content(c):
-        e = _encoding_from_headers(response.headers)
+
+        if _PY3:
+            headers = Headers({
+                key.decode('ascii'):[y.decode('ascii') for y in val]
+                for key,val in response.headers.getAllRawHeaders()})
+        else:
+            headers = response.headers
+
+        e = _encoding_from_headers(headers)
 
         if e is not None:
             return c.decode(e)

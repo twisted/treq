@@ -2,12 +2,12 @@ import mimetypes
 import uuid
 
 from io import BytesIO
-from os import path
 
 from twisted.internet.interfaces import IProtocol
 from twisted.internet.defer import Deferred
 from twisted.python.components import proxyForInterface
-from twisted.python.compat import _PY3
+from twisted.python.compat import _PY3, unicode
+from twisted.python.filepath import FilePath
 
 from twisted.web.http import urlparse
 
@@ -125,16 +125,16 @@ class HTTPClient(object):
     def request(self, method, url, **kwargs):
         method = method.encode('ascii').upper()
 
-        if _PY3:
-            # If it's PY3, and it's str, encode the URL.
-            if isinstance(url, str):
-                url = url.encode('ascii')
-
         # Join parameters provided in the URL
         # and the ones passed as argument.
         params = kwargs.get('params')
         if params:
             url = _combine_query_params(url, params)
+
+        if _PY3:
+            # If it's PY3, and it's str, encode the URL.
+            if isinstance(url, str):
+                url = url.encode('ascii')
 
         # Convert headers dictionary to
         # twisted raw headers format.
@@ -143,8 +143,22 @@ class HTTPClient(object):
             if isinstance(headers, dict):
                 h = Headers({})
                 for k, v in headers.items():
-                    if isinstance(v, str):
+
+                    if isinstance(k, unicode):
+                        k = k.encode('ascii')
+
+                    if isinstance(v, bytes):
                         h.addRawHeader(k, v)
+                    elif isinstance(v, unicode):
+                        h.addRawHeader(k, v.encode('ascii'))
+                    elif isinstance(v, list):
+                        cleanHeaders = []
+                        for item in v:
+                            if isinstance(item, unicode):
+                                cleanHeaders.append(item.encode('ascii'))
+                            else:
+                                cleanHeaders.append(item)
+                        h.setRawHeaders(k, cleanHeaders)
                     else:
                         h.setRawHeaders(k, v)
 
@@ -162,7 +176,8 @@ class HTTPClient(object):
             # multipart/form-data request as it suits better for cases
             # with files and/or large objects.
             files = list(_convert_files(files))
-            boundary = uuid.uuid4().encode('ascii')
+            print(files)
+            boundary = str(uuid.uuid4()).encode('ascii')
             headers.setRawHeaders(
                 b'content-type', [
                     b'multipart/form-data; boundary=' + boundary])
@@ -188,7 +203,6 @@ class HTTPClient(object):
             cookies = cookiejar_from_dict(cookies)
 
         cookies = merge_cookies(self._cookiejar, cookies)
-
         wrapped_agent = CookieAgent(self._agent, cookies)
 
         if kwargs.get('allow_redirects', True):
@@ -226,6 +240,8 @@ class HTTPClient(object):
 def _convert_params(params):
     if hasattr(params, "iteritems"):
         return list(sorted(params.iteritems()))
+    elif hasattr(params, "items"):
+        return list(sorted(params.items()))
     elif isinstance(params, (tuple, list)):
         return list(params)
     else:
@@ -248,6 +264,8 @@ def _convert_files(files):
 
     if hasattr(files, "iteritems"):
         files = files.iteritems()
+    elif hasattr(files, "items"):
+        files = files.items()
 
     for param, val in files:
         file_name, content_type, fobj = (None, None, None)
@@ -259,7 +277,7 @@ def _convert_files(files):
         else:
             fobj = val
             if hasattr(fobj, "name"):
-                file_name = path.basename(fobj.name)
+                file_name = FilePath(fobj.name).basename()
 
         if not content_type:
             content_type = _guess_content_type(file_name)
@@ -268,7 +286,7 @@ def _convert_files(files):
 
 
 def _combine_query_params(url, params):
-    parsed_url = urlparse(url)
+    parsed_url = urlparse(url.encode('ascii'))
 
     qs = []
 
@@ -292,16 +310,17 @@ def _from_file(orig_file):
 
 def _guess_content_type(filename):
     if filename:
-        guessed = mimetypes.guess_type(filename)[0].encode('ascii')
+        guessed = mimetypes.guess_type(filename)[0]
     else:
         guessed = None
-    return guessed or b'application/octet-stream'
+    return guessed or 'application/octet-stream'
 
 
-registerAdapter(_from_bytes, str, IBodyProducer)
+registerAdapter(_from_bytes, bytes, IBodyProducer)
 registerAdapter(_from_file, open, IBodyProducer)
 registerAdapter(_from_file, BytesIO, IBodyProducer)
 
 if not _PY3:
     from StringIO import StringIO
     registerAdapter(_from_file, StringIO, IBodyProducer)
+    registerAdapter(_from_bytes, str, IBodyProducer)

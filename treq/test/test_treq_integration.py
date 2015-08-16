@@ -15,8 +15,8 @@ from treq.test.util import DEBUG, is_pypy
 
 import treq
 
-HTTPBIN_URL = b"http://httpbin.org"
-HTTPSBIN_URL = b"https://httpbin.org"
+HTTPBIN_URL = "http://httpbin.org"
+HTTPSBIN_URL = "https://httpbin.org"
 
 
 def todo_relative_redirect(test_method):
@@ -76,7 +76,7 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def assert_data(self, response, expected_data):
         body = yield treq.json_content(response)
-        self.assertIn(b'data', body)
+        self.assertIn('data', body)
         self.assertEqual(body['data'], expected_data)
 
     @inlineCallbacks
@@ -87,13 +87,20 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def test_get(self):
-        response = yield self.get(b'/get')
+        response = yield self.get('/get')
         self.assertEqual(response.code, 200)
         yield print_response(response)
 
     @inlineCallbacks
     def test_get_headers(self):
-        response = yield self.get('/get', {'X-Blah': ['Foo', 'Bar']})
+        response = yield self.get('/get', {b'X-Blah': [b'Foo', b'Bar']})
+        self.assertEqual(response.code, 200)
+        yield self.assert_sent_header(response, 'X-Blah', 'Foo,Bar')
+        yield print_response(response)
+
+    @inlineCallbacks
+    def test_get_headers_unicode(self):
+        response = yield self.get('/get', {u'X-Blah': [u'Foo', b'Bar']})
         self.assertEqual(response.code, 200)
         yield self.assert_sent_header(response, 'X-Blah', 'Foo,Bar')
         yield print_response(response)
@@ -122,7 +129,7 @@ class TreqIntegrationTests(TestCase):
     def test_head(self):
         response = yield self.head('/get')
         body = yield treq.content(response)
-        self.assertEqual('', body)
+        self.assertEqual(b'', body)
         yield print_response(response)
 
     @inlineCallbacks
@@ -147,7 +154,7 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def test_post(self):
-        response = yield self.post('/post', 'Hello!')
+        response = yield self.post('/post', b'Hello!')
         self.assertEqual(response.code, 200)
         yield self.assert_data(response, 'Hello!')
         yield print_response(response)
@@ -165,7 +172,7 @@ class TreqIntegrationTests(TestCase):
         response = yield self.post(
             '/post',
             data={"a": "b"},
-            files={"file1": FileLikeObject("file")})
+            files={"file1": FileLikeObject(b"file")})
         self.assertEqual(response.code, 200)
 
         body = yield treq.json_content(response)
@@ -177,7 +184,7 @@ class TreqIntegrationTests(TestCase):
     def test_post_headers(self):
         response = yield self.post(
             '/post',
-            '{msg: "Hello!"}',
+            b'{msg: "Hello!"}',
             headers={'Content-Type': ['application/json']}
         )
 
@@ -189,12 +196,12 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def test_put(self):
-        response = yield self.put('/put', data='Hello!')
+        response = yield self.put('/put', data=b'Hello!')
         yield print_response(response)
 
     @inlineCallbacks
     def test_patch(self):
-        response = yield self.patch('/patch', data='Hello!')
+        response = yield self.patch('/patch', data=b'Hello!')
         self.assertEqual(response.code, 200)
         yield self.assert_data(response, 'Hello!')
         yield print_response(response)

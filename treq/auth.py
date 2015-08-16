@@ -25,10 +25,11 @@ class _RequestHeaderSettingAgent(object):
 
 
 def add_basic_auth(agent, username, password):
-    creds = base64.b64encode('{0}:{1}'.format(username, password))
+    creds = base64.b64encode(
+        '{0}:{1}'.format(username, password).encode('ascii'))
     return _RequestHeaderSettingAgent(
         agent,
-        Headers({'Authorization': ['Basic {0}'.format(creds)]}))
+        Headers({b'Authorization': [b'Basic ' + creds]}))
 
 
 def add_auth(agent, auth_config):

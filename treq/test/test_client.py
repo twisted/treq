@@ -368,7 +368,7 @@ class BodyBufferingProtocolTests(TestCase):
             finished
         )
 
-        class TestResponseDone(object):
+        class TestResponseDone(Exception):
             pass
 
         protocol.connectionLost(TestResponseDone())
@@ -383,7 +383,7 @@ class BodyBufferingProtocolTests(TestCase):
             Deferred().addErrback(lambda ign: None)
         )
 
-        class TestResponseDone(object):
+        class TestResponseDone(Exception):
             pass
 
         reason = TestResponseDone()

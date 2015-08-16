@@ -74,7 +74,7 @@ def content(response):
     """
     _content = []
     d = collect(response, _content.append)
-    d.addCallback(lambda _: ''.join(_content))
+    d.addCallback(lambda _: b''.join(_content))
     return d
 
 

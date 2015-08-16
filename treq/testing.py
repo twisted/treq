@@ -3,8 +3,6 @@ In-memory version of treq for testing.
 """
 from functools import wraps
 
-from six import string_types
-
 from twisted.test.proto_helpers import StringTransport, MemoryReactor
 
 from twisted.internet.address import IPv4Address
@@ -13,6 +11,7 @@ from twisted.internet.defer import succeed
 from twisted.internet.interfaces import ISSLTransport
 
 from twisted.python.urlpath import URLPath
+from twisted.python.compat import unicode
 
 from twisted.web.client import Agent
 from twisted.web.server import Site
@@ -80,7 +79,7 @@ class RequestTraversalAgent(object):
         # connection with the reactor's connectSSL method, and MemoryReactor
         # will place it into the sslClients list.  We'll extract that.
         scheme = URLPath.fromString(uri).scheme
-        if scheme == "https":
+        if scheme == b"https":
             host, port, factory, context_factory, timeout, bindAddress = (
                 self._memoryReactor.sslClients[-1])
         else:
@@ -94,7 +93,7 @@ class RequestTraversalAgent(object):
         # We want to capture the output of that connection so we'll make an
         # in-memory transport.
         clientTransport = AbortableStringTransport()
-        if scheme == "https":
+        if scheme == b"https":
             directlyProvides(clientTransport, ISSLTransport)
 
         # When the protocol is connected to a transport, it ought to send the
@@ -112,7 +111,7 @@ class RequestTraversalAgent(object):
         # Connect the channel to another in-memory transport so we can collect
         # the response.
         serverTransport = AbortableStringTransport()
-        if scheme == "https":
+        if scheme == b"https":
             directlyProvides(serverTransport, ISSLTransport)
         serverTransport.hostAddr = IPv4Address('TCP', '127.0.0.1', port)
         channel.makeConnection(serverTransport)
@@ -159,7 +158,7 @@ class _SynchronousProducer(object):
         self.body = body
         msg = ("StubTreq currently only supports url-encodable types, bytes, "
                "or unicode as data.")
-        assert isinstance(body, string_types), msg
+        assert isinstance(body, (bytes, unicode)), msg
         self.length = len(body)
 
     def startProducing(self, consumer):

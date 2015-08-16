@@ -22,8 +22,8 @@ class _StaticTestResource(Resource):
 
     def render(self, request):
         request.setResponseCode(418)
-        request.setHeader("x-teapot", "teapot!")
-        return "I'm a teapot"
+        request.setHeader(b"x-teapot", b"teapot!")
+        return b"I'm a teapot"
 
 
 class _NonResponsiveTestResource(Resource):
@@ -85,9 +85,9 @@ class StubbingTests(TestCase):
             'https://supports-https.com:8080',
             'http://supports-http.com:8080',
         )
-        params = (None, {}, {'page': [1]})
-        headers = (None, {}, {'x-random-header': ['value', 'value2']})
-        data = (None, "", 'some data', '{"some": "json"}')
+        params = (None, {}, {b'page': [1]})
+        headers = (None, {}, {b'x-random-header': [b'value', b'value2']})
+        data = (None, b"", b'some data', b'{"some": "json"}')
 
         stub = StubTreq(_StaticTestResource())
 
@@ -106,9 +106,9 @@ class StubbingTests(TestCase):
             for d in deferreds:
                 resp = self.successResultOf(d)
                 self.assertEqual(418, resp.code)
-                self.assertEqual(['teapot!'],
-                                 resp.headers.getRawHeaders('x-teapot'))
-                self.assertEqual("" if verb == "HEAD" else "I'm a teapot",
+                self.assertEqual([b'teapot!'],
+                                 resp.headers.getRawHeaders(b'x-teapot'))
+                self.assertEqual(b"" if verb == "HEAD" else b"I'm a teapot",
                                  self.successResultOf(stub.content(resp)))
 
     def test_handles_invalid_schemes(self):
@@ -129,7 +129,7 @@ class StubbingTests(TestCase):
         stub = StubTreq(_StaticTestResource())
         self.assertRaises(
             AssertionError, stub.request,
-            'method', 'http://url', files='some file')
+            'method', 'http://url', files=b'some file')
 
     def test_passing_in_strange_data_is_rejected(self):
         """
@@ -143,7 +143,7 @@ class StubbingTests(TestCase):
         self.successResultOf(stub.request('method', 'http://url', data=[]))
         self.successResultOf(stub.request('method', 'http://url', data=()))
         self.successResultOf(
-            stub.request('method', 'http://url', data=binary_type("")))
+            stub.request('method', 'http://url', data=binary_type(b"")))
         self.successResultOf(
             stub.request('method', 'http://url', data=text_type("")))
 
@@ -152,7 +152,7 @@ class StubbingTests(TestCase):
         Handle a resource returning NOT_DONE_YET.
         """
         stub = StubTreq(_NonResponsiveTestResource())
-        d = stub.request('method', 'http://url', data="1234")
+        d = stub.request('method', 'http://url', data=b"1234")
         self.assertNoResult(d)
         d.cancel()
         self.failureResultOf(d, ResponseFailed)

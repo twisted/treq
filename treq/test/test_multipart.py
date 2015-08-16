@@ -1,8 +1,10 @@
 # coding: utf-8
 # Copyright (c) Twisted Matrix Laboratories.
 # See LICENSE for details.
+
 import cgi
-from StringIO import StringIO
+
+from io import BytesIO
 
 from twisted.trial import unittest
 from zope.interface.verify import verifyObject
@@ -89,7 +91,7 @@ class MultiPartProducerTestCase(unittest.TestCase):
         """
         A convenience function to consume and return outpute.
         """
-        consumer = output = StringIO()
+        consumer = output = BytesIO()
 
         producer.startProducing(consumer)
 
@@ -102,7 +104,7 @@ class MultiPartProducerTestCase(unittest.TestCase):
             return output.getvalue()
 
     def newLines(self, value):
-        return value.replace("\n", "\r\n")
+        return value.replace(b"\n", b"\r\n")
 
     def test_interface(self):
         """
@@ -141,7 +143,7 @@ class MultiPartProducerTestCase(unittest.TestCase):
         size of the file as determined by those methods.
         """
         inputBytes = "here are some bytes"
-        inputFile = StringIO(inputBytes)
+        inputFile = BytesIO(inputBytes)
         inputFile.seek(5)
         producer = MultiPartProducer({
             "field": ('file name', None, FileBodyProducer(
@@ -165,7 +167,7 @@ class MultiPartProducerTestCase(unittest.TestCase):
         """
         producer = MultiPartProducer({
             "field": ('file name', None, FileBodyProducer(
-                      StringIO("yo"),
+                      BytesIO("yo"),
                       cooperator=self.cooperator))
         })
         self.assertEqual(task.cooperate, producer._cooperate)
@@ -176,11 +178,11 @@ class MultiPartProducerTestCase(unittest.TestCase):
         file to the given L{IConsumer} and returns a L{Deferred} which fires
         when they have all been written.
         """
-        consumer = output = StringIO()
+        consumer = output = BytesIO()
 
         producer = MultiPartProducer({
             "field": ('file name', "text/hello-world", FileBodyProducer(
-                StringIO("Hello, World"),
+                BytesIO("Hello, World"),
                 cooperator=self.cooperator))
         }, cooperator=self.cooperator, boundary="heyDavid")
 
@@ -207,8 +209,8 @@ Hello, World
         When L{MultiPartProducer} reaches end-of-file on the input
         file given to it, the input file is closed.
         """
-        inputFile = StringIO("hello, world!")
-        consumer = StringIO()
+        inputFile = BytesIO("hello, world!")
+        consumer = BytesIO()
 
         producer = MultiPartProducer({
             "field": (
@@ -246,7 +248,7 @@ Hello, World
                     cooperator=self.cooperator))
         }, cooperator=self.cooperator, boundary="heyDavid")
 
-        complete = producer.startProducing(StringIO())
+        complete = producer.startProducing(BytesIO())
 
         while self._scheduled:
             self._scheduled.pop(0)()
@@ -260,8 +262,8 @@ Hello, World
         calling C{resumeProducing} and closes the input file but does
         not cause the L{Deferred} returned by C{startProducing} to fire.
         """
-        inputFile = StringIO("hello, world!")
-        consumer = StringIO()
+        inputFile = BytesIO("hello, world!")
+        consumer = BytesIO()
 
         producer = MultiPartProducer({
             "field": (
@@ -283,8 +285,8 @@ Hello, World
         L{MultiPartProducer.pauseProducing} temporarily suspends writing bytes
         from the input file to the given L{IConsumer}.
         """
-        inputFile = StringIO("hello, world!")
-        consumer = output = StringIO()
+        inputFile = BytesIO("hello, world!")
+        consumer = output = BytesIO()
 
         producer = MultiPartProducer({
             "field": (
@@ -317,8 +319,8 @@ Hello, World
         from the input file to the given L{IConsumer} after it was previously
         paused with L{MultiPartProducer.pauseProducing}.
         """
-        inputFile = StringIO("hello, world!")
-        consumer = output = StringIO()
+        inputFile = BytesIO("hello, world!")
+        consumer = output = BytesIO()
 
         producer = MultiPartProducer({
             "field": (
@@ -380,7 +382,7 @@ Content-Disposition: form-data; name="afield"
         self.assertRaises(
             ValueError,
             MultiPartProducer, {
-                (1, 2): StringIO("yo"),
+                (1, 2): BytesIO("yo"),
             },
             cooperator=self.cooperator, boundary="heyDavid")
 
@@ -434,7 +436,7 @@ another string
                     "file name",
                     "text/hello-world",
                     FileBodyProducer(
-                        inputFile=StringIO("my lovely bytes"),
+                        inputFile=BytesIO("my lovely bytes"),
                         cooperator=self.cooperator))
             }, cooperator=self.cooperator, boundary="heyDavid"),
             with_producer=True)
@@ -472,19 +474,19 @@ my lovely bytes
                     "ef",
                     "text/html",
                     FileBodyProducer(
-                        inputFile=StringIO("my lovely bytes2"),
+                        inputFile=BytesIO("my lovely bytes2"),
                         cooperator=self.cooperator)),
                 "xfield": (
                     "xf",
                     "text/json",
                     FileBodyProducer(
-                        inputFile=StringIO("my lovely bytes219"),
+                        inputFile=BytesIO("my lovely bytes219"),
                         cooperator=self.cooperator)),
                 "afield": (
                     "af",
                     "text/xml",
                     FileBodyProducer(
-                        inputFile=StringIO("my lovely bytes22"),
+                        inputFile=BytesIO("my lovely bytes22"),
                         cooperator=self.cooperator))
             }, cooperator=self.cooperator, boundary="heyDavid"),
             with_producer=True)
@@ -531,7 +533,7 @@ my lovely bytes219
                     u'Так себе имя.jpg',
                     "image/jpeg",
                     FileBodyProducer(
-                        inputFile=StringIO("my lovely bytes"),
+                        inputFile=BytesIO("my lovely bytes"),
                         cooperator=self.cooperator
                     )
                 )
@@ -559,7 +561,7 @@ my lovely bytes
                     None,
                     "image/jpeg",
                     FileBodyProducer(
-                        inputFile=StringIO("my lovely bytes"),
+                        inputFile=BytesIO("my lovely bytes"),
                         cooperator=self.cooperator,
                     )
                 )
@@ -588,7 +590,7 @@ my lovely bytes
                     u'\r\noops.j\npg',
                     "image/jp\reg\n",
                     FileBodyProducer(
-                        inputFile=StringIO("my lovely bytes"),
+                        inputFile=BytesIO("my lovely bytes"),
                         cooperator=self.cooperator
                     )
                 )
@@ -615,22 +617,22 @@ my lovely bytes
                 ("cfield", "just a string\r\n"),
                 ("cfield", "another string"),
                 ("efield", ('ef', "text/html", FileBodyProducer(
-                            inputFile=StringIO("my lovely bytes2"),
+                            inputFile=BytesIO("my lovely bytes2"),
                             cooperator=self.cooperator,
                             ))),
                 ("xfield", ('xf', "text/json", FileBodyProducer(
-                            inputFile=StringIO("my lovely bytes219"),
+                            inputFile=BytesIO("my lovely bytes219"),
                             cooperator=self.cooperator,
                             ))),
                 ("afield", ('af', "text/xml", FileBodyProducer(
-                            inputFile=StringIO("my lovely bytes22"),
+                            inputFile=BytesIO("my lovely bytes22"),
                             cooperator=self.cooperator,
                             )))
             ], cooperator=self.cooperator, boundary="heyDavid"
             )
         )
 
-        form = cgi.parse_multipart(StringIO(output), {"boundary": "heyDavid"})
+        form = cgi.parse_multipart(BytesIO(output), {"boundary": "heyDavid"})
         self.assertEqual(set(['just a string\r\n', 'another string']),
                          set(form['cfield']))
 

@@ -1,4 +1,4 @@
-from StringIO import StringIO
+from io import BytesIO
 
 from twisted.trial.unittest import TestCase
 from twisted.internet.defer import CancelledError, inlineCallbacks
@@ -15,8 +15,8 @@ from treq.test.util import DEBUG, is_pypy
 
 import treq
 
-HTTPBIN_URL = "http://httpbin.org"
-HTTPSBIN_URL = "https://httpbin.org"
+HTTPBIN_URL = b"http://httpbin.org"
+HTTPSBIN_URL = b"https://httpbin.org"
 
 
 def todo_relative_redirect(test_method):
@@ -32,13 +32,13 @@ def todo_relative_redirect(test_method):
 @inlineCallbacks
 def print_response(response):
     if DEBUG:
-        print
-        print '---'
-        print response.code
-        print response.headers
+        print()
+        print('---')
+        print(response.code)
+        print(response.headers)
         text = yield treq.text_content(response)
-        print text
-        print '---'
+        print(text)
+        print('---')
 
 
 def with_baseurl(method):
@@ -76,7 +76,7 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def assert_data(self, response, expected_data):
         body = yield treq.json_content(response)
-        self.assertIn('data', body)
+        self.assertIn(b'data', body)
         self.assertEqual(body['data'], expected_data)
 
     @inlineCallbacks
@@ -87,7 +87,7 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def test_get(self):
-        response = yield self.get('/get')
+        response = yield self.get(b'/get')
         self.assertEqual(response.code, 200)
         yield print_response(response)
 
@@ -154,13 +154,13 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def test_multipart_post(self):
-        class FileLikeObject(StringIO):
+        class FileLikeObject(BytesIO):
             def __init__(self, val):
-                StringIO.__init__(self, val)
+                BytesIO.__init__(self, val)
                 self.name = "david.png"
 
             def read(*args, **kwargs):
-                return StringIO.read(*args, **kwargs)
+                return BytesIO.read(*args, **kwargs)
 
         response = yield self.post(
             '/post',

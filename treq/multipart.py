@@ -343,7 +343,6 @@ class _Header(object):
         return self.__bytes__()
 
 
-
 def _sorted_by_type(fields):
     """Sorts params so that strings are placed before files.
 

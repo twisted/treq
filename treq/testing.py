@@ -212,8 +212,11 @@ class StubTreq(object):
 class StringStubbingResource(Resource):
     """
     A resource that takes a callable with 5 parameters
-    ``(method, url, params, headers, data) -> (code, headers, body)``
-    and uses the callable to return a real response as a result of a request.
+    ``(method, url, params, headers, data)`` and returns
+    ``(code, headers, body)``.
+
+    The resource uses the callable to return a real response as a result of a
+    request.
 
     The parameters for the callable are::
 
@@ -238,8 +241,7 @@ class StringStubbingResource(Resource):
 
     def __init__(self, get_response_for):
         """
-        :param get_response_for: A callable that takes 5 parameters:
-        ``(method, url, params, headers, data) -> (code, headers, body)``
+        See ``StringStubbingResource``.
         """
         Resource.__init__(self)
         self._get_response_for = get_response_for
@@ -308,6 +310,8 @@ class HasHeaders(object):
 
 class RequestSequence(object):
     """
+    For an example usage, see :meth:`RequestSequence.consume`.
+
     Takes a sequence of::
 
         [((method, url, params, headers, data), (code, headers, body)),
@@ -366,7 +370,7 @@ class RequestSequence(object):
 
             sequence_stubs = RequestSequence([...])
             stub_treq = StubTreq(StringStubbingResource(sequence_stubs))
-            with sequence_stubs.consume():
+            with sequence_stubs.consume(self.fail):  # self = unittest.TestCase
                 stub_treq.get('http://fakeurl.com')
                 stub_treq.get('http://another-fake-url.com')
 

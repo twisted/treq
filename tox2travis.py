@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# Run like this:
+# tox -l | python tox2travis.py > .travis.yml
+
 from __future__ import absolute_import, print_function
 
 import sys

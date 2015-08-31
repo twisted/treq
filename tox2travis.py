@@ -37,8 +37,7 @@ notifications:
 # Don't fail on trunk versions.
 matrix:
   allow_failures:
-    - env: TOX_ENV=pypy-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py27-twisted_trunk-pyopenssl_trunk
+    {allow_fails}
 
 branches:
   only:
@@ -54,6 +53,17 @@ if __name__ == "__main__":
         tox_envs.append(line)
         line = sys.stdin.readline()
 
+    allow_fail_features = [
+        "twisted_trunk",
+        "pyopenssl_trunk",
+        "pypy",
+    ]
     print(travis_template.format(
         envs='  '.join(
-            '- TOX_ENV={0}'.format(env) for env in tox_envs)))
+            '- TOX_ENV={0}'.format(env) for env in tox_envs),
+        allow_fails='    '.join(
+            '- env: TOX_ENV={0}'.format(env)
+            for env in tox_envs
+            if any(feature in env for feature in allow_fail_features)
+        )
+    ))

@@ -83,6 +83,18 @@ matrix:
   allow_failures:
     - env: TOX_ENV=pypy-twisted_trunk-pyopenssl_trunk
     - env: TOX_ENV=py27-twisted_trunk-pyopenssl_trunk
+    - env: TOX_ENV=pypy-twisted_13.2.0-pyopenssl_0.14
+    - env: TOX_ENV=pypy-twisted_13.2.0-pyopenssl_0.15.1
+    - env: TOX_ENV=pypy-twisted_14.0.0-pyopenssl_0.14
+    - env: TOX_ENV=pypy-twisted_14.0.0-pyopenssl_0.15.1
+    - env: TOX_ENV=pypy-twisted_15.0.0-pyopenssl_0.14
+    - env: TOX_ENV=pypy-twisted_15.0.0-pyopenssl_0.15.1
+    - env: TOX_ENV=pypy-twisted_15.1.0-pyopenssl_0.14
+    - env: TOX_ENV=pypy-twisted_15.1.0-pyopenssl_0.15.1
+    - env: TOX_ENV=pypy-twisted_15.3.0-pyopenssl_0.14
+    - env: TOX_ENV=pypy-twisted_15.3.0-pyopenssl_0.15.1
+    - env: TOX_ENV=pypy-twisted_current-pyopenssl_0.14
+    - env: TOX_ENV=pypy-twisted_current-pyopenssl_0.15.1
 
 branches:
   only:

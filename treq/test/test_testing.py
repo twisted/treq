@@ -89,7 +89,7 @@ class StubbingTests(TestCase):
         urls = (
             'http://supports-http.com',
             'https://supports-https.com',
-            'http://this/has/a/path/and/invalid/domain/name'
+            'http://this/has/a/path/and/invalid/domain/name',
             'https://supports-https.com:8080',
             'http://supports-http.com:8080',
         )

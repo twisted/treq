@@ -91,6 +91,10 @@ class RequestTraversalAgent(object):
             clientProtocol, isServer=False,
             hostAddress=clientAddress, peerAddress=serverAddress)
 
+        # Twisted 13.2 compatibility.
+        serverTransport.abortConnection = serverTransport.loseConnection
+        clientTransport.abortConnection = clientTransport.loseConnection
+
         if scheme == "https":
             # Provide ISSLTransport on both transports, so everyone knows that
             # this is HTTPS.

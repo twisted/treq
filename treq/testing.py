@@ -6,10 +6,10 @@ from functools import wraps
 
 from six import string_types
 
-from twisted.test.proto_helpers import StringTransport, MemoryReactor
+from twisted.test.proto_helpers import MemoryReactor
+from twisted.test import iosim
 
 from twisted.internet.address import IPv4Address
-from twisted.internet.error import ConnectionDone
 from twisted.internet.defer import succeed
 from twisted.internet.interfaces import ISSLTransport
 
@@ -20,24 +20,10 @@ from twisted.web.resource import Resource
 from twisted.web.server import Site
 from twisted.web.iweb import IAgent, IBodyProducer
 
-from twisted.python.failure import Failure
-
 from zope.interface import directlyProvides, implementer
 
 import treq
 from treq.client import HTTPClient
-
-
-class AbortableStringTransport(StringTransport):
-    """
-    A :obj:`StringTransport` that supports ``abortConnection``.
-    """
-    def abortConnection(self):
-        """
-        Since all connection cessation is immediate in this in-memory
-        transport, just call ``loseConnection``.
-        """
-        self.loseConnection()
 
 
 @implementer(IAgent)
@@ -55,6 +41,7 @@ class RequestTraversalAgent(object):
         self._memoryReactor = MemoryReactor()
         self._realAgent = Agent(reactor=self._memoryReactor)
         self._rootResource = rootResource
+        self._pumps = set()
 
     def request(self, method, uri, headers=None, bodyProducer=None):
         """
@@ -89,54 +76,50 @@ class RequestTraversalAgent(object):
             host, port, factory, timeout, bindAddress = (
                 self._memoryReactor.tcpClients[-1])
 
-        # Then we need to convince that factory it's connected to something and
-        # it will give us a protocol for that connection.
-        protocol = factory.buildProtocol(None)
+        serverAddress = IPv4Address('TCP', '127.0.0.1', port)
+        clientAddress = IPv4Address('TCP', '127.0.0.1', 31337)
 
-        # We want to capture the output of that connection so we'll make an
-        # in-memory transport.
-        clientTransport = AbortableStringTransport()
+        # Create the protocol and fake transport for the client and server,
+        # using the factory that was passed to the MemoryReactor for the
+        # client, and a Site around our rootResource for the server.
+        serverProtocol = Site(self._rootResource).buildProtocol(None)
+        serverTransport = iosim.FakeTransport(
+            serverProtocol, isServer=True,
+            hostAddress=serverAddress, peerAddress=clientAddress)
+        clientProtocol = factory.buildProtocol(None)
+        clientTransport = iosim.FakeTransport(
+            clientProtocol, isServer=False,
+            hostAddress=clientAddress, peerAddress=serverAddress)
+
         if scheme == "https":
+            # Provide ISSLTransport on both transports, so everyone knows that
+            # this is HTTPS.
+            directlyProvides(serverTransport, ISSLTransport)
             directlyProvides(clientTransport, ISSLTransport)
 
-        # When the protocol is connected to a transport, it ought to send the
-        # whole request because callers of this should not use an asynchronous
-        # bodyProducer.
-        protocol.makeConnection(clientTransport)
+        # Make a pump for wiring the client and server together.
+        pump = iosim.connect(
+            serverProtocol, serverTransport, clientProtocol, clientTransport)
+        self._pumps.add(pump)
 
-        # Get the data from the request.
-        requestData = clientTransport.io.getvalue()
+        return response
 
-        # Now time for the server to do its job.  Ask it to build an HTTP
-        # channel.
-        channel = Site(self._rootResource).buildProtocol(None)
+    def flush(self):
+        """
+        Flush all data between pending client/server pairs.
 
-        # Connect the channel to another in-memory transport so we can collect
-        # the response.
-        serverTransport = AbortableStringTransport()
-        if scheme == "https":
-            directlyProvides(serverTransport, ISSLTransport)
-        serverTransport.hostAddr = IPv4Address('TCP', '127.0.0.1', port)
-        channel.makeConnection(serverTransport)
-
-        # Feed it the data that the Agent synthesized.
-        channel.dataReceived(requestData)
-
-        # Now we have the response data, let's give it back to the Agent.
-        protocol.dataReceived(serverTransport.io.getvalue())
-
-        def finish(r):
-            # By now the Agent should have all it needs to parse a response.
-            protocol.connectionLost(Failure(ConnectionDone()))
-            # Tell it that the connection is now complete so it can clean up.
-            channel.connectionLost(Failure(ConnectionDone()))
-            # Propogate the response.
-            return r
-
-        # Return the response in the accepted format (Deferred firing
-        # IResponse).  This should be synchronously fired, and if not, it's the
-        # system under test's problem.
-        return response.addBoth(finish)
+        This is only necessary if a :obj:`Resource` under test returns
+        :obj:`NOT_DONE_YET` from its ``render`` method, making a response
+        asynchronous. In that case, after each write from the server,
+        :meth:`pump` must be called so the client can see it.
+        """
+        old_pumps = self._pumps
+        new_pumps = self._pumps = set()
+        for p in old_pumps:
+            p.flush()
+            if p.clientIO.disconnected and p.serverIO.disconnected:
+                continue
+            new_pumps.add(p)
 
 
 @implementer(IBodyProducer)
@@ -197,7 +180,8 @@ class StubTreq(object):
         Construct a client, and pass through client methods and/or
         treq.content functions.
         """
-        _client = HTTPClient(agent=RequestTraversalAgent(resource),
+        _agent = RequestTraversalAgent(resource)
+        _client = HTTPClient(agent=_agent,
                              data_to_body_producer=_SynchronousProducer)
         for function_name in treq.__all__:
             function = getattr(_client, function_name, None)
@@ -207,6 +191,7 @@ class StubTreq(object):
                 function = _reject_files(function)
 
             setattr(self, function_name, function)
+        self.flush = _agent.flush
 
 
 class StringStubbingResource(Resource):

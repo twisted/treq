@@ -1,6 +1,7 @@
 import mock
 
 from treq.test.util import TestCase
+
 import treq
 from treq._utils import set_global_pool
 
@@ -43,11 +44,3 @@ class TreqAPITests(TestCase):
         treq.get('http://test.com')
 
         self.Agent.assert_called_with(mock.ANY, pool=pool)
-
-    def test_custom_agent(self):
-        """
-        A custom Agent is used if specified.
-        """
-        custom_agent = mock.Mock()
-        treq.get('https://www.example.org/', agent=custom_agent)
-        self.HTTPClient.assert_called_with(custom_agent)

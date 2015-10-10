@@ -1,6 +1,11 @@
 Making Requests
 ===============
 
+The :py:mod:`treq` module provides several shortcut functions for making
+requests.  These functions all create a default 
+:py:class:`treq.client.HTTPClient` instance and pass their arguments to
+the appropriate :py:class:`~treq.client.HTTPClient` method.
+
 .. module:: treq
 
 .. autofunction:: request
@@ -18,6 +23,16 @@ Accessing Content
 .. autofunction:: content
 .. autofunction:: text_content
 .. autofunction:: json_content
+
+The HTTP Client
+===============
+
+.. module:: treq.client
+
+.. class:: HTTPClient(agent, cookiejar=None, data_to_body_producer=IBodyProducer)
+
+:py:class:`~treq.client.HTTPClient` has methods that match the signatures of the
+shortcut request functions in the :py:mod:`treq` module.
 
 Responses
 =========

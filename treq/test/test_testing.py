@@ -42,6 +42,18 @@ class _NonResponsiveTestResource(Resource):
         return NOT_DONE_YET
 
 
+class _EventuallyResponsiveTestResource(Resource):
+    """
+    Resource that returns NOT_DONE_YET and stores the request so that something
+    else can finish the response later.
+    """
+    isLeaf = True
+
+    def render(self, request):
+        self.stored_request = request
+        return NOT_DONE_YET
+
+
 class StubbingTests(TestCase):
     """
     Tests for :class:`StubTreq`.
@@ -89,7 +101,7 @@ class StubbingTests(TestCase):
         urls = (
             'http://supports-http.com',
             'https://supports-https.com',
-            'http://this/has/a/path/and/invalid/domain/name'
+            'http://this/has/a/path/and/invalid/domain/name',
             'https://supports-https.com:8080',
             'http://supports-http.com:8080',
         )
@@ -155,15 +167,82 @@ class StubbingTests(TestCase):
         self.successResultOf(
             stub.request('method', 'http://url', data=text_type("")))
 
-    def test_handles_asynchronous_requests(self):
+    def test_handles_failing_asynchronous_requests(self):
         """
-        Handle a resource returning NOT_DONE_YET.
+        Handle a resource returning NOT_DONE_YET and then canceling the
+        request.
         """
         stub = StubTreq(_NonResponsiveTestResource())
         d = stub.request('method', 'http://url', data="1234")
         self.assertNoResult(d)
         d.cancel()
         self.failureResultOf(d, ResponseFailed)
+
+    def test_handles_successful_asynchronous_requests(self):
+        """
+        Handle a resource returning NOT_DONE_YET and then later finishing the
+        response.
+        """
+        rsrc = _EventuallyResponsiveTestResource()
+        stub = StubTreq(rsrc)
+        d = stub.request('method', 'http://example.com/', data="1234")
+        self.assertNoResult(d)
+        rsrc.stored_request.finish()
+        stub.flush()
+        resp = self.successResultOf(d)
+        self.assertEqual(resp.code, 200)
+
+    def test_handles_successful_asynchronous_requests_with_response_data(self):
+        """
+        Handle a resource returning NOT_DONE_YET and then sending some data in
+        the response.
+        """
+        rsrc = _EventuallyResponsiveTestResource()
+        stub = StubTreq(rsrc)
+        d = stub.request('method', 'http://example.com/', data="1234")
+        self.assertNoResult(d)
+
+        chunks = []
+        rsrc.stored_request.write('spam ')
+        rsrc.stored_request.write('eggs')
+        stub.flush()
+        resp = self.successResultOf(d)
+        d = stub.collect(resp, chunks.append)
+        self.assertNoResult(d)
+        self.assertEqual(''.join(chunks), 'spam eggs')
+
+        rsrc.stored_request.finish()
+        stub.flush()
+        self.successResultOf(d)
+
+    def test_handles_successful_asynchronous_requests_with_streaming(self):
+        """
+        Handle a resource returning NOT_DONE_YET and then streaming data back
+        gradually over time.
+        """
+        rsrc = _EventuallyResponsiveTestResource()
+        stub = StubTreq(rsrc)
+        d = stub.request('method', 'http://example.com/', data="1234")
+        self.assertNoResult(d)
+
+        chunks = []
+        rsrc.stored_request.write('spam ')
+        rsrc.stored_request.write('eggs')
+        stub.flush()
+        resp = self.successResultOf(d)
+        d = stub.collect(resp, chunks.append)
+        self.assertNoResult(d)
+        self.assertEqual(''.join(chunks), 'spam eggs')
+
+        del chunks[:]
+        rsrc.stored_request.write('eggs\r\nspam\r\n')
+        stub.flush()
+        self.assertNoResult(d)
+        self.assertEqual(''.join(chunks), 'eggs\r\nspam\r\n')
+
+        rsrc.stored_request.finish()
+        stub.flush()
+        self.successResultOf(d)
 
 
 class HasHeadersTests(TestCase):

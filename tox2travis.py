@@ -12,9 +12,7 @@ sudo: false
 language: python
 python: 2.7
 
-cache:
-  directories:
-    - $HOME/.cache/pip
+cache: false
 
 env:
   {envs}

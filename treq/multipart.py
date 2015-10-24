@@ -29,7 +29,7 @@ class MultiPartProducer(object):
     and
     U{Mime format<http://tools.ietf.org/html/rfc2046>}
 
-    The encoded request is produced inncrementally and the bytes are
+    The encoded request is produced incrementally and the bytes are
     written to a consumer.
 
     Fields should have form: [(parameter name, value), ...]
@@ -39,7 +39,7 @@ class MultiPartProducer(object):
     * Unicode strings (in this case parameter will be encoded with utf-8)
     * Tuples with (file name, content-type, L{IBodyProducer} objects)
 
-    Since MultiPart producer can accept L{IBodyProucer} like objects
+    Since MultiPart producer can accept L{IBodyProducer} like objects
     and these objects sometimes cannot be read from in an event-driven manner
     (e.g. L{FileBodyProducer} is passed in)
     L{FileBodyProducer} uses a L{Cooperator} instance to schedule reads from

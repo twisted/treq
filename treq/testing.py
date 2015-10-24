@@ -70,7 +70,7 @@ class RequestTraversalAgent(object):
         # the tcpClients list.  Alternately, it will try to establish an HTTPS
         # connection with the reactor's connectSSL method, and MemoryReactor
         # will place it into the sslClients list.  We'll extract that.
-        scheme = URLPath.fromString(uri).scheme
+        scheme = URLPath.fromBytes(uri).scheme
         if scheme == b"https":
             host, port, factory, context_factory, timeout, bindAddress = (
                 self._memoryReactor.sslClients[-1])

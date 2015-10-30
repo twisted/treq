@@ -133,10 +133,8 @@ class HTTPClient(object):
         if params:
             url = _combine_query_params(url, params)
 
-        if _PY3:
-            # If it's PY3, and it's str, encode the URL.
-            if isinstance(url, str):
-                url = url.encode('ascii')
+        if isinstance(url, unicode):
+            url = url.encode('ascii')
 
         # Convert headers dictionary to
         # twisted raw headers format.

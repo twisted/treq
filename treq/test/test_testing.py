@@ -365,7 +365,8 @@ class RequestSequenceTests(TestCase):
             [((b'get', 'https://anything/', {b'1': [b'2']},
                HasHeaders({b'1': [b'1']}), b'what'),
               (418, {}, b'body')),
-             ((b'get', 'http://anything', {}, HasHeaders({b'2': [b'1']}), b'what'),
+             ((b'get', 'http://anything', {},
+               HasHeaders({b'2': [b'1']}), b'what'),
               (202, {}, b'deleted'))],
             async_failure_reporter=self.async_failures.append)
 
@@ -416,7 +417,8 @@ class RequestSequenceTests(TestCase):
         stub = StubTreq(StringStubbingResource(sequence))
 
         with sequence.consume(sync_failure_reporter=self.fail):
-            d = stub.get('https://anything', data=b'what', headers={b'1': b'1'})
+            d = stub.get('https://anything', data=b'what',
+                         headers={b'1': b'1'})
             resp = self.successResultOf(d)
             self.assertEqual(418, resp.code)
             self.assertEqual(b'body', self.successResultOf(stub.content(resp)))

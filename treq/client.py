@@ -166,6 +166,16 @@ class HTTPClient(object):
             bodyProducer = self._data_to_body_producer(data)
 
         cookies = kwargs.get('cookies', {})
+        
+        
+	proxy = kwargs.get('proxy')
+	
+	if proxy is not None:
+		proxy = proxy.split(":")
+		_host = proxy[0]
+		port = int(proxy[1])
+		endpoint = TCP4ClientEndpoint(reactor, _host, port)
+		self._agent = ProxyAgent(endpoint)
 
         if not isinstance(cookies, CookieJar):
             cookies = cookiejar_from_dict(cookies)

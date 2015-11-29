@@ -34,7 +34,7 @@ install_requires = [
 ]
 
 if PY3:
-    install_requires.append("Twisted >= 15.4.0")
+    install_requires.append("Twisted >= 15.5.0")
 else:
     install_requires.append("Twisted >= 13.2.0")
 

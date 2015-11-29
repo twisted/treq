@@ -39,7 +39,7 @@ setup(
     extras_require={
         ':python_version<"3.0"': ["Twisted>=13.2.0"],
         ':python_version>"3.0"': ["Twisted>=15.5.0"],
-    }
+    },
     package_data={"treq": ["_version"]},
     author="David Reid",
     author_email="dreid@dreid.org",

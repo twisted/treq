@@ -24,6 +24,8 @@ classifiers = [
 with open('README.rst') as f:
     readme = f.read()
 
+PY3 = (sys.version_info[0] >= 3)
+
 install_requires = [
     "pyOpenSSL >= 0.13",
     "requests >= 2.1.0",
@@ -31,21 +33,22 @@ install_requires = [
     "six"
 ]
 
+if PY3:
+    install_requires.append("Twisted >= 15.5.0")
+else:
+    install_requires.append("Twisted >= 13.2.0")
+
 setup(
     name="treq",
     version=__version__,
     packages=find_packages(),
     install_requires=install_requires,
-    extras_require={
-        ':python_version<"3.0"': ["Twisted>=13.2.0"],
-        ':python_version>"3.0"': ["Twisted>=15.5.0"],
-    },
     package_data={"treq": ["_version"]},
     author="David Reid",
     author_email="dreid@dreid.org",
     classifiers=classifiers,
     description="A requests-like API built on top of twisted.web's Agent",
     license="MIT/X",
-    url="http://github.com/twisted/treq",
+    url="http://github.com/dreid/treq",
     long_description=readme
 )

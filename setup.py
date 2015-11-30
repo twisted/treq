@@ -46,9 +46,11 @@ setup(
     package_data={"treq": ["_version"]},
     author="David Reid",
     author_email="dreid@dreid.org",
+    maintainer="Amber Brown",
+    maintainer_email="hawkowl@twistedmatrix.com",
     classifiers=classifiers,
     description="A requests-like API built on top of twisted.web's Agent",
     license="MIT/X",
-    url="http://github.com/dreid/treq",
+    url="http://github.com/twisted/treq",
     long_description=readme
 )

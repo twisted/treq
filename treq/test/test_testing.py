@@ -12,6 +12,7 @@ from twisted.web.client import ResponseFailed
 from twisted.web.error import SchemeNotSupported
 from twisted.web.resource import Resource
 from twisted.web.server import NOT_DONE_YET
+from twisted.python.compat import _PY3
 
 import treq
 
@@ -30,8 +31,8 @@ class _StaticTestResource(Resource):
 
     def render(self, request):
         request.setResponseCode(418)
-        request.setHeader("x-teapot", "teapot!")
-        return "I'm a teapot"
+        request.setHeader(b"x-teapot", b"teapot!")
+        return b"I'm a teapot"
 
 
 class _NonResponsiveTestResource(Resource):
@@ -105,9 +106,9 @@ class StubbingTests(TestCase):
             'https://supports-https.com:8080',
             'http://supports-http.com:8080',
         )
-        params = (None, {}, {'page': [1]})
-        headers = (None, {}, {'x-random-header': ['value', 'value2']})
-        data = (None, "", 'some data', '{"some": "json"}')
+        params = (None, {}, {b'page': [1]})
+        headers = (None, {}, {b'x-random-header': [b'value', b'value2']})
+        data = (None, b"", b'some data', b'{"some": "json"}')
 
         stub = StubTreq(_StaticTestResource())
 
@@ -126,9 +127,9 @@ class StubbingTests(TestCase):
             for d in deferreds:
                 resp = self.successResultOf(d)
                 self.assertEqual(418, resp.code)
-                self.assertEqual(['teapot!'],
-                                 resp.headers.getRawHeaders('x-teapot'))
-                self.assertEqual("" if verb == "HEAD" else "I'm a teapot",
+                self.assertEqual([b'teapot!'],
+                                 resp.headers.getRawHeaders(b'x-teapot'))
+                self.assertEqual(b"" if verb == "HEAD" else b"I'm a teapot",
                                  self.successResultOf(stub.content(resp)))
 
     def test_handles_invalid_schemes(self):
@@ -149,7 +150,7 @@ class StubbingTests(TestCase):
         stub = StubTreq(_StaticTestResource())
         self.assertRaises(
             AssertionError, stub.request,
-            'method', 'http://url', files='some file')
+            'method', 'http://url', files=b'some file')
 
     def test_passing_in_strange_data_is_rejected(self):
         """
@@ -163,7 +164,7 @@ class StubbingTests(TestCase):
         self.successResultOf(stub.request('method', 'http://url', data=[]))
         self.successResultOf(stub.request('method', 'http://url', data=()))
         self.successResultOf(
-            stub.request('method', 'http://url', data=binary_type("")))
+            stub.request('method', 'http://url', data=binary_type(b"")))
         self.successResultOf(
             stub.request('method', 'http://url', data=text_type("")))
 
@@ -173,7 +174,7 @@ class StubbingTests(TestCase):
         request.
         """
         stub = StubTreq(_NonResponsiveTestResource())
-        d = stub.request('method', 'http://url', data="1234")
+        d = stub.request('method', 'http://url', data=b"1234")
         self.assertNoResult(d)
         d.cancel()
         self.failureResultOf(d, ResponseFailed)
@@ -185,7 +186,7 @@ class StubbingTests(TestCase):
         """
         rsrc = _EventuallyResponsiveTestResource()
         stub = StubTreq(rsrc)
-        d = stub.request('method', 'http://example.com/', data="1234")
+        d = stub.request('method', 'http://example.com/', data=b"1234")
         self.assertNoResult(d)
         rsrc.stored_request.finish()
         stub.flush()
@@ -199,17 +200,17 @@ class StubbingTests(TestCase):
         """
         rsrc = _EventuallyResponsiveTestResource()
         stub = StubTreq(rsrc)
-        d = stub.request('method', 'http://example.com/', data="1234")
+        d = stub.request('method', 'http://example.com/', data=b"1234")
         self.assertNoResult(d)
 
         chunks = []
-        rsrc.stored_request.write('spam ')
-        rsrc.stored_request.write('eggs')
+        rsrc.stored_request.write(b'spam ')
+        rsrc.stored_request.write(b'eggs')
         stub.flush()
         resp = self.successResultOf(d)
         d = stub.collect(resp, chunks.append)
         self.assertNoResult(d)
-        self.assertEqual(''.join(chunks), 'spam eggs')
+        self.assertEqual(b''.join(chunks), b'spam eggs')
 
         rsrc.stored_request.finish()
         stub.flush()
@@ -226,19 +227,19 @@ class StubbingTests(TestCase):
         self.assertNoResult(d)
 
         chunks = []
-        rsrc.stored_request.write('spam ')
-        rsrc.stored_request.write('eggs')
+        rsrc.stored_request.write(b'spam ')
+        rsrc.stored_request.write(b'eggs')
         stub.flush()
         resp = self.successResultOf(d)
         d = stub.collect(resp, chunks.append)
         self.assertNoResult(d)
-        self.assertEqual(''.join(chunks), 'spam eggs')
+        self.assertEqual(b''.join(chunks), b'spam eggs')
 
         del chunks[:]
-        rsrc.stored_request.write('eggs\r\nspam\r\n')
+        rsrc.stored_request.write(b'eggs\r\nspam\r\n')
         stub.flush()
         self.assertNoResult(d)
-        self.assertEqual(''.join(chunks), 'eggs\r\nspam\r\n')
+        self.assertEqual(b''.join(chunks), b'eggs\r\nspam\r\n')
 
         rsrc.stored_request.finish()
         stub.flush()
@@ -283,22 +284,25 @@ class HasHeadersTests(TestCase):
         The :obj:`HasHeaders` equality function ignores the case of the header
         keys.
         """
-        self.assertEqual(HasHeaders({'A': ['1'], 'b': ['2']}),
-                         {'a': ['1'], 'B': ['2']})
+        self.assertEqual(HasHeaders({b'A': [b'1'], b'b': [b'2']}),
+                         {b'a': [b'1'], b'B': [b'2']})
 
     def test_case_sensitive_values(self):
         """
         The :obj:`HasHeaders` equality function does care about the case of
         the header value.
         """
-        self.assertNotEqual(HasHeaders({'a': ['a']}), {'a': ['A']})
+        self.assertNotEqual(HasHeaders({b'a': [b'a']}), {b'a': [b'A']})
 
     def test_repr(self):
         """
         :obj:`HasHeaders` returns a nice string repr.
         """
-        self.assertEqual("HasHeaders({'a': ['b']})",
-                         repr(HasHeaders({'A': ['b']})))
+        if _PY3:
+            reprOutput = "HasHeaders({b'a': [b'b']})"
+        else:
+            reprOutput = "HasHeaders({'a': ['b']})"
+        self.assertEqual(reprOutput, repr(HasHeaders({b'A': [b'b']})))
 
 
 class StringStubbingTests(TestCase):
@@ -326,19 +330,19 @@ class StringStubbingTests(TestCase):
         which to evaluate the response, and the response is returned.
         """
         resource = StringStubbingResource(self._get_response_for(
-            ('DELETE', 'http://what/a/thing', {'page': ['1']},
-             {'x-header': ['eh']}, 'datastr'),
-            (418, {'x-response': 'responseheader'}, 'response body')))
+            (b'DELETE', 'http://what/a/thing', {b'page': [b'1']},
+             {b'x-header': [b'eh']}, b'datastr'),
+            (418, {b'x-response': b'responseheader'}, b'response body')))
 
         stub = StubTreq(resource)
 
-        d = stub.delete('http://what/a/thing', headers={'x-header': 'eh'},
-                        params={'page': '1'}, data='datastr')
+        d = stub.delete('http://what/a/thing', headers={b'x-header': b'eh'},
+                        params={b'page': b'1'}, data=b'datastr')
         resp = self.successResultOf(d)
         self.assertEqual(418, resp.code)
-        self.assertEqual(['responseheader'],
-                         resp.headers.getRawHeaders('x-response'))
-        self.assertEqual('response body',
+        self.assertEqual([b'responseheader'],
+                         resp.headers.getRawHeaders(b'x-response'))
+        self.assertEqual(b'response body',
                          self.successResultOf(stub.content(resp)))
 
 
@@ -358,20 +362,22 @@ class RequestSequenceTests(TestCase):
         causes a failure.
         """
         sequence = RequestSequence(
-            [(('get', 'https://anything/', {'1': ['2']},
-               HasHeaders({'1': ['1']}), 'what'),
-              (418, {}, 'body')),
-             (('get', 'http://anything', {}, HasHeaders({'2': ['1']}), 'what'),
-              (202, {}, 'deleted'))],
+            [((b'get', 'https://anything/', {b'1': [b'2']},
+               HasHeaders({b'1': [b'1']}), b'what'),
+              (418, {}, b'body')),
+             ((b'get', 'http://anything', {},
+               HasHeaders({b'2': [b'1']}), b'what'),
+              (202, {}, b'deleted'))],
             async_failure_reporter=self.async_failures.append)
 
         stub = StubTreq(StringStubbingResource(sequence))
-        get = partial(stub.get, 'https://anything?1=2', data='what',
-                      headers={'1': '1'})
+        get = partial(stub.get, 'https://anything?1=2', data=b'what',
+                      headers={b'1': b'1'})
 
         resp = self.successResultOf(get())
+
         self.assertEqual(418, resp.code)
-        self.assertEqual('body', self.successResultOf(stub.content(resp)))
+        self.assertEqual(b'body', self.successResultOf(stub.content(resp)))
         self.assertEqual([], self.async_failures)
 
         resp = self.successResultOf(get())
@@ -391,7 +397,7 @@ class RequestSequenceTests(TestCase):
             [],
             async_failure_reporter=self.async_failures.append)
         stub = StubTreq(StringStubbingResource(sequence))
-        d = stub.get('https://anything', data='what', headers={'1': '1'})
+        d = stub.get('https://anything', data=b'what', headers={b'1': b'1'})
         resp = self.successResultOf(d)
         self.assertEqual(500, resp.code)
         self.assertEqual(1, len(self.async_failures))
@@ -406,15 +412,16 @@ class RequestSequenceTests(TestCase):
         :obj:`mock.ANY` can be used with the request parameters.
         """
         sequence = RequestSequence(
-            [((ANY, ANY, ANY, ANY, ANY), (418, {}, 'body'))],
+            [((ANY, ANY, ANY, ANY, ANY), (418, {}, b'body'))],
             async_failure_reporter=self.async_failures.append)
         stub = StubTreq(StringStubbingResource(sequence))
 
         with sequence.consume(sync_failure_reporter=self.fail):
-            d = stub.get('https://anything', data='what', headers={'1': '1'})
+            d = stub.get('https://anything', data=b'what',
+                         headers={b'1': b'1'})
             resp = self.successResultOf(d)
             self.assertEqual(418, resp.code)
-            self.assertEqual('body', self.successResultOf(stub.content(resp)))
+            self.assertEqual(b'body', self.successResultOf(stub.content(resp)))
 
         self.assertEqual([], self.async_failures)
 
@@ -427,14 +434,15 @@ class RequestSequenceTests(TestCase):
         expecting requests, the test case will be failed.
         """
         sequence = RequestSequence(
-            [((ANY, ANY, ANY, ANY, ANY), (418, {}, 'body'))] * 2,
+            [((ANY, ANY, ANY, ANY, ANY), (418, {}, b'body'))] * 2,
             async_failure_reporter=self.async_failures.append)
         stub = StubTreq(StringStubbingResource(sequence))
 
         consume_failures = []
         with sequence.consume(sync_failure_reporter=consume_failures.append):
-            self.successResultOf(stub.get('https://anything', data='what',
-                                          headers={'1': '1'}))
+
+            self.successResultOf(stub.get('https://anything', data=b'what',
+                                          headers={b'1': b'1'}))
 
         self.assertEqual(1, len(consume_failures))
         self.assertIn(

@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 import mock
 
 from treq.test.util import TestCase
@@ -50,4 +52,4 @@ class TreqAPITests(TestCase):
         """
         custom_agent = mock.Mock()
         treq.get('https://www.example.org/', agent=custom_agent)
-        self.HTTPClient.assert_called_with(custom_agent)
+        self.HTTPClient.assert_called_once_with(custom_agent)

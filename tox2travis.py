@@ -34,6 +34,9 @@ matrix:
   allow_failures:
     - env: TOX_ENV=pypy-twisted_trunk-pyopenssl_trunk
     - env: TOX_ENV=py27-twisted_trunk-pyopenssl_trunk
+    - env: TOX_ENV=py33-twisted_trunk-pyopenssl_trunk
+    - env: TOX_ENV=py34-twisted_trunk-pyopenssl_trunk
+    - env: TOX_ENV=py35-twisted_trunk-pyopenssl_trunk
 
 branches:
   only:

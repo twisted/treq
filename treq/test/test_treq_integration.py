@@ -1,4 +1,4 @@
-from StringIO import StringIO
+from io import BytesIO
 
 from twisted.trial.unittest import TestCase
 from twisted.internet.defer import CancelledError, inlineCallbacks
@@ -11,7 +11,7 @@ from twisted.python.versions import Version
 
 from twisted.web.client import HTTPConnectionPool, ResponseFailed
 
-from treq.test.util import DEBUG, is_pypy
+from treq.test.util import DEBUG
 
 import treq
 
@@ -32,13 +32,13 @@ def todo_relative_redirect(test_method):
 @inlineCallbacks
 def print_response(response):
     if DEBUG:
-        print
-        print '---'
-        print response.code
-        print response.headers
+        print()
+        print('---')
+        print(response.code)
+        print(response.headers)
         text = yield treq.text_content(response)
-        print text
-        print '---'
+        print(text)
+        print('---')
 
 
 def with_baseurl(method):
@@ -93,7 +93,14 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def test_get_headers(self):
-        response = yield self.get('/get', {'X-Blah': ['Foo', 'Bar']})
+        response = yield self.get('/get', {b'X-Blah': [b'Foo', b'Bar']})
+        self.assertEqual(response.code, 200)
+        yield self.assert_sent_header(response, 'X-Blah', 'Foo,Bar')
+        yield print_response(response)
+
+    @inlineCallbacks
+    def test_get_headers_unicode(self):
+        response = yield self.get('/get', {u'X-Blah': [u'Foo', b'Bar']})
         self.assertEqual(response.code, 200)
         yield self.assert_sent_header(response, 'X-Blah', 'Foo,Bar')
         yield print_response(response)
@@ -122,7 +129,7 @@ class TreqIntegrationTests(TestCase):
     def test_head(self):
         response = yield self.head('/get')
         body = yield treq.content(response)
-        self.assertEqual('', body)
+        self.assertEqual(b'', body)
         yield print_response(response)
 
     @inlineCallbacks
@@ -147,25 +154,25 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def test_post(self):
-        response = yield self.post('/post', 'Hello!')
+        response = yield self.post('/post', b'Hello!')
         self.assertEqual(response.code, 200)
         yield self.assert_data(response, 'Hello!')
         yield print_response(response)
 
     @inlineCallbacks
     def test_multipart_post(self):
-        class FileLikeObject(StringIO):
+        class FileLikeObject(BytesIO):
             def __init__(self, val):
-                StringIO.__init__(self, val)
+                BytesIO.__init__(self, val)
                 self.name = "david.png"
 
             def read(*args, **kwargs):
-                return StringIO.read(*args, **kwargs)
+                return BytesIO.read(*args, **kwargs)
 
         response = yield self.post(
             '/post',
             data={"a": "b"},
-            files={"file1": FileLikeObject("file")})
+            files={"file1": FileLikeObject(b"file")})
         self.assertEqual(response.code, 200)
 
         body = yield treq.json_content(response)
@@ -177,7 +184,7 @@ class TreqIntegrationTests(TestCase):
     def test_post_headers(self):
         response = yield self.post(
             '/post',
-            '{msg: "Hello!"}',
+            b'{msg: "Hello!"}',
             headers={'Content-Type': ['application/json']}
         )
 
@@ -189,12 +196,12 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def test_put(self):
-        response = yield self.put('/put', data='Hello!')
+        response = yield self.put('/put', data=b'Hello!')
         yield print_response(response)
 
     @inlineCallbacks
     def test_patch(self):
-        response = yield self.patch('/patch', data='Hello!')
+        response = yield self.patch('/patch', data=b'Hello!')
         self.assertEqual(response.code, 200)
         yield self.assert_data(response, 'Hello!')
         yield print_response(response)
@@ -252,7 +259,7 @@ class TreqIntegrationTests(TestCase):
         response = yield self.get('/cookies/set',
                                   allow_redirects=False,
                                   params={'hello': 'there'})
-        #self.assertEqual(response.code, 200)
+        # self.assertEqual(response.code, 200)
         yield print_response(response)
         self.assertEqual(response.cookies()['hello'], 'there')
 

@@ -1,10 +1,13 @@
 """
 In-memory version of treq for testing.
 """
+
+from __future__ import absolute_import, division, print_function
+
+from six import text_type, PY3
+
 from contextlib import contextmanager
 from functools import wraps
-
-from six import string_types
 
 from twisted.test.proto_helpers import MemoryReactor
 from twisted.test import iosim
@@ -68,8 +71,12 @@ class RequestTraversalAgent(object):
         # the tcpClients list.  Alternately, it will try to establish an HTTPS
         # connection with the reactor's connectSSL method, and MemoryReactor
         # will place it into the sslClients list.  We'll extract that.
-        scheme = URLPath.fromString(uri).scheme
-        if scheme == "https":
+        if PY3:
+            scheme = URLPath.fromBytes(uri).scheme
+        else:
+            scheme = URLPath.fromString(uri).scheme
+
+        if scheme == b"https":
             host, port, factory, context_factory, timeout, bindAddress = (
                 self._memoryReactor.sslClients[-1])
         else:
@@ -95,7 +102,7 @@ class RequestTraversalAgent(object):
         serverTransport.abortConnection = serverTransport.loseConnection
         clientTransport.abortConnection = clientTransport.loseConnection
 
-        if scheme == "https":
+        if scheme == b"https":
             # Provide ISSLTransport on both transports, so everyone knows that
             # this is HTTPS.
             directlyProvides(serverTransport, ISSLTransport)
@@ -148,7 +155,9 @@ class _SynchronousProducer(object):
         self.body = body
         msg = ("StubTreq currently only supports url-encodable types, bytes, "
                "or unicode as data.")
-        assert isinstance(body, string_types), msg
+        assert isinstance(body, (bytes, text_type)), msg
+        if isinstance(body, text_type):
+            self.body = body.encode('utf-8')
         self.length = len(body)
 
     def startProducing(self, consumer):
@@ -271,6 +280,15 @@ class StringStubbingResource(Resource):
         return body
 
 
+def _maybeEncode(someStr):
+    """
+    Encode `someStr` to ASCII if required.
+    """
+    if isinstance(someStr, text_type):
+        return someStr.encode('ascii')
+    return someStr
+
+
 class HasHeaders(object):
     """
     Since Twisted adds headers to a request, such as the host and the content
@@ -278,16 +296,19 @@ class HasHeaders(object):
     headers (the ones that are not automatically added by Twisted).
 
     This wraps a set of headers, and can be used in an equality test against
-    a superset if the provided headers.
+    a superset if the provided headers. The headers keys are lowercased, and
+    keys and values are compared in their bytes-encoded forms.
     """
     def __init__(self, headers):
-        self._headers = dict([(k.lower(), v) for k, v in headers.items()])
+        self._headers = dict([(_maybeEncode(k).lower(), _maybeEncode(v))
+                              for k, v in headers.items()])
 
     def __repr__(self):
         return "HasHeaders({0})".format(repr(self._headers))
 
     def __eq__(self, other_headers):
-        compare_to = dict([(k.lower(), v) for k, v in other_headers.items()])
+        compare_to = dict([(_maybeEncode(k).lower(), _maybeEncode(v))
+                           for k, v in other_headers.items()])
 
         return (set(self._headers.keys()).issubset(set(compare_to.keys())) and
                 all([set(v).issubset(set(compare_to[k]))
@@ -312,25 +333,27 @@ class RequestSequence(object):
 
     For the expected request arguments::
 
-    - ``method`` should be normalized to lowercase.
+    - ``method`` should be `bytes` normalized to lowercase.
     - ``url`` should be normalized as per the transformations in
         https://en.wikipedia.org/wiki/URL_normalization that (usually) preserve
         semantics.  A url to `http://something-that-looks-like-a-directory`
         would be normalized to `http://something-that-looks-like-a-directory/`
         and a url to `http://something-that-looks-like-a-page/page.html`
         remains unchanged.
-    - ``params`` is a dictionary mapping `str` to `lists` of `str`
-    - ``headers`` is a dictionary mapping `str` to `lists` of `str` - note that
-        :obj:`twisted.web.client.Agent` may adds its own headers though, which
-        are not guaranteed (for instance, `user-agent` or `content-length`),
-        so it's better to use some kind of matcher like :obj:`HasHeaders`.
-    - ``data`` is a `str`
+    - ``params`` is a dictionary mapping `bytes` to `lists` of `bytes`
+    - ``headers`` is a dictionary mapping `bytes` to `lists` of `bytes` - note
+        that :obj:`twisted.web.client.Agent` may add its own headers though,
+        which are not guaranteed (for instance, `user-agent` or
+        `content-length`), so it's better to use some kind of matcher like
+        :obj:`HasHeaders`.
+    - ``data`` is a `bytes`
 
     For the response::
 
     - ``code`` is an integer representing the HTTP status code to return
-    - ``headers`` is a dictionary mapping `str` to `str` or `lists` of `str`
-    - ``body`` is a `str`
+    - ``headers`` is a dictionary mapping `bytes` to `bytes` or `lists` of
+        `bytes`
+    - ``body`` is a `bytes`
 
     :ivar list sequence: The sequence of expected request arguments mapped to
         stubbed responses

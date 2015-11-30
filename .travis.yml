@@ -13,55 +13,40 @@ env:
   - TOX_ENV=pypy-twisted_14.0.0-pyopenssl_0.13.1
   - TOX_ENV=pypy-twisted_14.0.0-pyopenssl_0.14
   - TOX_ENV=pypy-twisted_14.0.0-pyopenssl_0.15.1
-  - TOX_ENV=pypy-twisted_15.0.0-pyopenssl_0.13.1
-  - TOX_ENV=pypy-twisted_15.0.0-pyopenssl_0.14
-  - TOX_ENV=pypy-twisted_15.0.0-pyopenssl_0.15.1
   - TOX_ENV=pypy-twisted_15.1.0-pyopenssl_0.13.1
   - TOX_ENV=pypy-twisted_15.1.0-pyopenssl_0.14
   - TOX_ENV=pypy-twisted_15.1.0-pyopenssl_0.15.1
   - TOX_ENV=pypy-twisted_15.3.0-pyopenssl_0.13.1
   - TOX_ENV=pypy-twisted_15.3.0-pyopenssl_0.14
   - TOX_ENV=pypy-twisted_15.3.0-pyopenssl_0.15.1
-  - TOX_ENV=pypy-twisted_current-pyopenssl_0.13.1
-  - TOX_ENV=pypy-twisted_current-pyopenssl_0.14
-  - TOX_ENV=pypy-twisted_current-pyopenssl_0.15.1
+  - TOX_ENV=pypy-twisted_15.5.0-pyopenssl_0.13.1
+  - TOX_ENV=pypy-twisted_15.5.0-pyopenssl_0.14
+  - TOX_ENV=pypy-twisted_15.5.0-pyopenssl_0.15.1
   - TOX_ENV=py27-twisted_13.2.0-pyopenssl_0.13.1
   - TOX_ENV=py27-twisted_13.2.0-pyopenssl_0.14
   - TOX_ENV=py27-twisted_13.2.0-pyopenssl_0.15.1
   - TOX_ENV=py27-twisted_14.0.0-pyopenssl_0.13.1
   - TOX_ENV=py27-twisted_14.0.0-pyopenssl_0.14
   - TOX_ENV=py27-twisted_14.0.0-pyopenssl_0.15.1
-  - TOX_ENV=py27-twisted_15.0.0-pyopenssl_0.13.1
-  - TOX_ENV=py27-twisted_15.0.0-pyopenssl_0.14
-  - TOX_ENV=py27-twisted_15.0.0-pyopenssl_0.15.1
   - TOX_ENV=py27-twisted_15.1.0-pyopenssl_0.13.1
   - TOX_ENV=py27-twisted_15.1.0-pyopenssl_0.14
   - TOX_ENV=py27-twisted_15.1.0-pyopenssl_0.15.1
   - TOX_ENV=py27-twisted_15.3.0-pyopenssl_0.13.1
   - TOX_ENV=py27-twisted_15.3.0-pyopenssl_0.14
   - TOX_ENV=py27-twisted_15.3.0-pyopenssl_0.15.1
-  - TOX_ENV=py27-twisted_current-pyopenssl_0.13.1
-  - TOX_ENV=py27-twisted_current-pyopenssl_0.14
-  - TOX_ENV=py27-twisted_current-pyopenssl_0.15.1
-  - TOX_ENV=py26-twisted_13.2.0-pyopenssl_0.13.1
-  - TOX_ENV=py26-twisted_13.2.0-pyopenssl_0.14
-  - TOX_ENV=py26-twisted_13.2.0-pyopenssl_0.15.1
-  - TOX_ENV=py26-twisted_14.0.0-pyopenssl_0.13.1
-  - TOX_ENV=py26-twisted_14.0.0-pyopenssl_0.14
-  - TOX_ENV=py26-twisted_14.0.0-pyopenssl_0.15.1
-  - TOX_ENV=py26-twisted_15.0.0-pyopenssl_0.13.1
-  - TOX_ENV=py26-twisted_15.0.0-pyopenssl_0.14
-  - TOX_ENV=py26-twisted_15.0.0-pyopenssl_0.15.1
-  - TOX_ENV=py26-twisted_15.1.0-pyopenssl_0.13.1
-  - TOX_ENV=py26-twisted_15.1.0-pyopenssl_0.14
-  - TOX_ENV=py26-twisted_15.1.0-pyopenssl_0.15.1
-  - TOX_ENV=py26-twisted_15.3.0-pyopenssl_0.13.1
-  - TOX_ENV=py26-twisted_15.3.0-pyopenssl_0.14
-  - TOX_ENV=py26-twisted_15.3.0-pyopenssl_0.15.1
+  - TOX_ENV=py27-twisted_15.5.0-pyopenssl_0.13.1
+  - TOX_ENV=py27-twisted_15.5.0-pyopenssl_0.14
+  - TOX_ENV=py27-twisted_15.5.0-pyopenssl_0.15.1
+  - TOX_ENV=py33-twisted_15.5.0-pyopenssl_0.15.1
+  - TOX_ENV=py34-twisted_15.5.0-pyopenssl_0.15.1
   - TOX_ENV=pypy-twisted_trunk-pyopenssl_trunk
   - TOX_ENV=py27-twisted_trunk-pyopenssl_trunk
+  - TOX_ENV=py33-twisted_trunk-pyopenssl_trunk
+  - TOX_ENV=py34-twisted_trunk-pyopenssl_trunk
+  - TOX_ENV=py35-twisted_trunk-pyopenssl_trunk
   - TOX_ENV=pypi-readme
   - TOX_ENV=check-manifest
+  - TOX_ENV=flake8
 
 
 install:
@@ -81,6 +66,9 @@ matrix:
   allow_failures:
     - env: TOX_ENV=pypy-twisted_trunk-pyopenssl_trunk
     - env: TOX_ENV=py27-twisted_trunk-pyopenssl_trunk
+    - env: TOX_ENV=py33-twisted_trunk-pyopenssl_trunk
+    - env: TOX_ENV=py34-twisted_trunk-pyopenssl_trunk
+    - env: TOX_ENV=py35-twisted_trunk-pyopenssl_trunk
 
 branches:
   only:

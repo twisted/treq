@@ -36,7 +36,7 @@ if PY3:
     install_requires.append("Twisted >= 15.5.0")
     install_requires.append("pyOpenSSL >= 0.15.1")
 else:
-    install_requires.append("Twisted >= 13.2.0")
+    install_requires.append("Twisted >= 14.0.2")
     install_requires.append("pyOpenSSL >= 0.13")
 
 setup(

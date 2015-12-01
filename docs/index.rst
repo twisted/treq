@@ -67,7 +67,7 @@ Here is a list of `requests`_ features and their status in treq.
 +----------------------------------+----------+----------+
 | Sessions with Cookie Persistence | yes      | yes      |
 +----------------------------------+----------+----------+
-| Browser-style SSL Verification   | yes      | yes [#]_ |
+| Browser-style SSL Verification   | yes      | yes      |
 +----------------------------------+----------+----------+
 | Basic Authentication             | yes      | yes      |
 +----------------------------------+----------+----------+
@@ -91,8 +91,6 @@ Here is a list of `requests`_ features and their status in treq.
 +----------------------------------+----------+----------+
 | Python 3.x                       | yes      | yes      |
 +----------------------------------+----------+----------+
-
-.. [#] Requires ``Twisted>=14.0`` and ``service_identity``.
 
 Howto
 -----

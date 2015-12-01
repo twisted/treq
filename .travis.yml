@@ -7,9 +7,6 @@ python: 2.7
 cache: false
 
 env:
-  - TOX_ENV=pypy-twisted_13.2.0-pyopenssl_0.13.1
-  - TOX_ENV=pypy-twisted_13.2.0-pyopenssl_0.14
-  - TOX_ENV=pypy-twisted_13.2.0-pyopenssl_0.15.1
   - TOX_ENV=pypy-twisted_14.0.0-pyopenssl_0.13.1
   - TOX_ENV=pypy-twisted_14.0.0-pyopenssl_0.14
   - TOX_ENV=pypy-twisted_14.0.0-pyopenssl_0.15.1
@@ -22,9 +19,6 @@ env:
   - TOX_ENV=pypy-twisted_15.5.0-pyopenssl_0.13.1
   - TOX_ENV=pypy-twisted_15.5.0-pyopenssl_0.14
   - TOX_ENV=pypy-twisted_15.5.0-pyopenssl_0.15.1
-  - TOX_ENV=py27-twisted_13.2.0-pyopenssl_0.13.1
-  - TOX_ENV=py27-twisted_13.2.0-pyopenssl_0.14
-  - TOX_ENV=py27-twisted_13.2.0-pyopenssl_0.15.1
   - TOX_ENV=py27-twisted_14.0.0-pyopenssl_0.13.1
   - TOX_ENV=py27-twisted_14.0.0-pyopenssl_0.14
   - TOX_ENV=py27-twisted_14.0.0-pyopenssl_0.15.1

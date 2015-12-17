@@ -33,6 +33,7 @@ env:
   - TOX_ENV=py27-twisted_15.5-pyopenssl_0.15.1
   - TOX_ENV=py33-twisted_15.5-pyopenssl_0.15.1
   - TOX_ENV=py34-twisted_15.5-pyopenssl_0.15.1
+  - TOX_ENV=py35-twisted_15.5-pyopenssl_0.15.1
   - TOX_ENV=pypy-twisted_trunk-pyopenssl_trunk
   - TOX_ENV=py27-twisted_trunk-pyopenssl_trunk
   - TOX_ENV=py33-twisted_trunk-pyopenssl_trunk

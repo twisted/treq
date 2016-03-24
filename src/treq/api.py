@@ -24,13 +24,13 @@ def get(url, headers=None, **kwargs):
     return _client(**kwargs).get(url, headers=headers, **kwargs)
 
 
-def post(url, data=None, **kwargs):
+def post(url, data=None, json=None, **kwargs):
     """
     Make a ``POST`` request.
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).post(url, data=data, **kwargs)
+    return _client(**kwargs).post(url, data=data, json=json, **kwargs)
 
 
 def put(url, data=None, **kwargs):

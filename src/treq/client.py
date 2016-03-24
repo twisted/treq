@@ -14,7 +14,6 @@ from twisted.python.url import URL
 
 from twisted.web.http import urlparse
 
-
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer, IResponse
 
@@ -28,6 +27,7 @@ from twisted.web.client import (
 )
 
 from twisted.python.components import registerAdapter
+from json import dumps as json_dumps
 
 from treq._utils import default_reactor
 from treq.auth import add_auth
@@ -114,8 +114,8 @@ class HTTPClient(object):
     def patch(self, url, data=None, **kwargs):
         return self.request('PATCH', url, data=data, **kwargs)
 
-    def post(self, url, data=None, **kwargs):
-        return self.request('POST', url, data=data, **kwargs)
+    def post(self, url, data=None, json=None, **kwargs):
+        return self.request('POST', url, data=data, json=json, **kwargs)
 
     def head(self, url, **kwargs):
         return self.request('HEAD', url, **kwargs)
@@ -169,6 +169,7 @@ class HTTPClient(object):
         # based on the parameters passed in.
         bodyProducer = None
         data = kwargs.get('data')
+        json = kwargs.get('json')
         files = kwargs.get('files')
         if files:
             # If the files keyword is present we will issue a
@@ -194,6 +195,13 @@ class HTTPClient(object):
                     b'content-type', [b'application/x-www-form-urlencoded'])
                 data = urlencode(data, doseq=True)
             bodyProducer = self._data_to_body_producer(data)
+        elif json:
+            # If data is sent as json, set Content-Type as 'application/json'
+
+            headers.setRawHeaders(
+                b'content-type', [b'application/json'])
+            json = json_dumps(json).encode('ascii')
+            bodyProducer = self._data_to_body_producer(json)
 
         cookies = kwargs.get('cookies', {})
 

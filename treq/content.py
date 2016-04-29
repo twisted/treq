@@ -93,7 +93,8 @@ def json_content(response):
     :rtype: Deferred that fires with the decoded JSON.
     """
     if _PY3:
-        d = text_content(response)
+        # RFC4627: Default JSON text encoding is UTF-8
+        d = text_content(response, encoding='utf-8')
     else:
         d = content(response)
 

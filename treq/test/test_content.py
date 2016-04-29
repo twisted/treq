@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import mock
 
 from twisted.python.failure import Failure
@@ -125,6 +126,21 @@ class ContentTests(TestCase):
         self.protocol.connectionLost(Failure(ResponseDone()))
 
         self.assertEqual(self.successResultOf(d), {"msg": "hello!"})
+
+    def test_json_content_unicode(self):
+        """
+        When Unicode JSON content is received, the JSON text should be
+        correctly decoded.
+        RFC4627: "JSON text shall be encoded in Unicode. The default encoding
+        is UTF-8."
+        """
+        self.response.headers = Headers()
+        d = json_content(self.response)
+
+        self.protocol.dataReceived(u'{"msg":"hëlló!"}'.encode('utf-8'))
+        self.protocol.connectionLost(Failure(ResponseDone()))
+
+        self.assertEqual(self.successResultOf(d), {u'msg': u'hëlló!'})
 
     def test_text_content(self):
         self.response.headers = Headers(

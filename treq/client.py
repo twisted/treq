@@ -28,6 +28,7 @@ from twisted.web.iweb import IBodyProducer, IResponse
 from twisted.web.client import (
     FileBodyProducer,
     RedirectAgent,
+    BrowserLikeRedirectAgent,
     ContentDecoderAgent,
     GzipDecoder,
     CookieAgent
@@ -205,7 +206,10 @@ class HTTPClient(object):
         wrapped_agent = CookieAgent(self._agent, cookies)
 
         if kwargs.get('allow_redirects', True):
-            wrapped_agent = RedirectAgent(wrapped_agent)
+            if kwargs.get("browser_like_redirects", False):
+                wrapped_agent = BrowserLikeRedirectAgent(wrapped_agent)
+            else:
+                wrapped_agent = RedirectAgent(wrapped_agent)
 
         wrapped_agent = ContentDecoderAgent(wrapped_agent,
                                             [(b'gzip', GzipDecoder)])

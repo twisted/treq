@@ -174,7 +174,7 @@ class HTTPClient(object):
 		proxy = proxy.split(":")
 		_host = proxy[0]
 		port = int(proxy[1])
-		endpoint = TCP4ClientEndpoint(reactor, _host, port)
+		endpoint = TCP4ClientEndpoint(reactor, _host, port,timeout=10)
 		self._agent = ProxyAgent(endpoint)
 
         if not isinstance(cookies, CookieJar):

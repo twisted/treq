@@ -206,7 +206,7 @@ class HTTPClient(object):
         wrapped_agent = CookieAgent(self._agent, cookies)
 
         if kwargs.get('allow_redirects', True):
-            if kwargs.get("browser_like_redirects", False):
+            if kwargs.get('browser_like_redirects', False):
                 wrapped_agent = BrowserLikeRedirectAgent(wrapped_agent)
             else:
                 wrapped_agent = RedirectAgent(wrapped_agent)

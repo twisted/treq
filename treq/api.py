@@ -97,6 +97,8 @@ def request(method, url, **kwargs):
         received within this timeframe, a connection is aborted with
         ``CancelledError``.
 
+    :param bool browser_like_redirects: Use browser like redirects (i.e. Ignore  RFC2616 section 10.3 and follow redirects from POST requests).  Default: ``False``
+
     :rtype: Deferred that fires with an IResponse provider.
 
     """

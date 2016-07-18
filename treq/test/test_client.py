@@ -7,7 +7,7 @@ from twisted.internet.protocol import Protocol
 
 from twisted.python.failure import Failure
 
-from twisted.web.client import Agent
+from twisted.web.client import Agent, ResponseFailed
 from twisted.web.http_headers import Headers
 
 from treq.test.util import TestCase, with_clock
@@ -329,6 +329,27 @@ class HTTPClientTests(TestCase):
 
         # YOLO public attribute.
         self.assertEqual(self.successResultOf(d).original, response)
+
+    def test_request_post_redirect_denied(self):
+        response = mock.Mock(code=302, headers=Headers({'Location': ['/']}))
+        self.agent.request.return_value = succeed(response)
+        d = self.client.post('http://www.example.com')
+        self.failureResultOf(d, ResponseFailed)
+
+    def test_request_browser_like_redirects(self):
+        response = mock.Mock(code=302, headers=Headers({'Location': ['/']}))
+
+        self.agent.request.return_value = succeed(response)
+
+        raw = mock.Mock(return_value=[])
+        final_resp = mock.Mock(code=200, headers=mock.Mock(getRawHeaders=raw))
+        with mock.patch('twisted.web.client.RedirectAgent._handleRedirect',
+                        return_value=final_resp):
+            d = self.client.post('http://www.google.com',
+                                 browser_like_redirects=True,
+                                 unbuffered=True)
+
+        self.assertEqual(self.successResultOf(d).original, final_resp)
 
 
 class BodyBufferingProtocolTests(TestCase):

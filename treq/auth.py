@@ -268,7 +268,7 @@ class _RequestDigestAuthenticationAgent(object):
         if self.digest_auth_cache.get((method, uri), None) is None:
             # Perform first request for getting the realm;
             # the client awaits for 401 response code here
-            d = self._agent.request(method, uri,
+            d = self._agent.request('GET', uri,
                                     headers=headers, bodyProducer=None)
             d.addCallback(self._on_401_response, method, uri,
                           headers, bodyProducer)

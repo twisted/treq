@@ -3,8 +3,8 @@ import re
 import time
 import base64
 import hashlib
-import urlparse
 
+from six.moves.urllib.parse import urlparse
 from twisted.web.http_headers import Headers
 from twisted.python.randbytes import secureRandom
 from requests.utils import parse_dict_header
@@ -63,7 +63,7 @@ def build_digest_authentication_header(agent, **kwargs):
     qop = kwargs.get('qop', None)
     nonce = kwargs.get('nonce')
     opaque = kwargs.get('opaque', None)
-    path_parsed = urlparse.urlparse(kwargs['path'])
+    path_parsed = urlparse(kwargs['path'])
     actual_path = path_parsed.path
 
     if path_parsed.query:

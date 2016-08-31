@@ -8,4 +8,6 @@ __all__ = ['head', 'get', 'post', 'put', 'patch', 'delete', 'request',
 
 from twisted.python.modules import getModule as _getModule
 
-__version__ = _getModule(__name__).filePath.sibling("_version").strip()
+__version__ = (
+    _getModule(__name__).filePath.sibling("_version").getContent().strip()
+)

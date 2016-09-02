@@ -1,16 +1,18 @@
+from __future__ import absolute_import, division, print_function
+
 import mimetypes
 import uuid
 
 from io import BytesIO
-from StringIO import StringIO
-from os import path
-
-from urlparse import urlparse, urlunparse
-from urllib import urlencode
 
 from twisted.internet.interfaces import IProtocol
 from twisted.internet.defer import Deferred
 from twisted.python.components import proxyForInterface
+from twisted.python.compat import _PY3, unicode
+from twisted.python.filepath import FilePath
+
+from twisted.web.http import urlparse
+
 
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer, IResponse
@@ -18,6 +20,7 @@ from twisted.web.iweb import IBodyProducer, IResponse
 from twisted.web.client import (
     FileBodyProducer,
     RedirectAgent,
+    BrowserLikeRedirectAgent,
     ContentDecoderAgent,
     GzipDecoder,
     CookieAgent
@@ -29,9 +32,18 @@ from treq._utils import default_reactor
 from treq.auth import add_auth
 from treq import multipart
 from treq.response import _Response
-
-from cookielib import CookieJar
 from requests.cookies import cookiejar_from_dict, merge_cookies
+
+if _PY3:
+    from urllib.parse import urlunparse, urlencode as _urlencode
+
+    def urlencode(query, doseq):
+        return _urlencode(query, doseq).encode('ascii')
+    from http.cookiejar import CookieJar
+else:
+    from cookielib import CookieJar
+    from urlparse import urlunparse
+    from urllib import urlencode
 
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
@@ -86,9 +98,11 @@ class _BufferedResponse(proxyForInterface(IResponse)):
 
 
 class HTTPClient(object):
-    def __init__(self, agent, cookiejar=None):
+    def __init__(self, agent, cookiejar=None,
+                 data_to_body_producer=IBodyProducer):
         self._agent = agent
         self._cookiejar = cookiejar or cookiejar_from_dict({})
+        self._data_to_body_producer = data_to_body_producer
 
     def get(self, url, **kwargs):
         return self.request('GET', url, **kwargs)
@@ -109,7 +123,7 @@ class HTTPClient(object):
         return self.request('DELETE', url, **kwargs)
 
     def request(self, method, url, **kwargs):
-        method = method.upper()
+        method = method.encode('ascii').upper()
 
         # Join parameters provided in the URL
         # and the ones passed as argument.
@@ -117,15 +131,32 @@ class HTTPClient(object):
         if params:
             url = _combine_query_params(url, params)
 
+        if isinstance(url, unicode):
+            url = url.encode('ascii')
+
         # Convert headers dictionary to
         # twisted raw headers format.
         headers = kwargs.get('headers')
         if headers:
             if isinstance(headers, dict):
                 h = Headers({})
-                for k, v in headers.iteritems():
-                    if isinstance(v, str):
+                for k, v in headers.items():
+
+                    if isinstance(k, unicode):
+                        k = k.encode('ascii')
+
+                    if isinstance(v, bytes):
                         h.addRawHeader(k, v)
+                    elif isinstance(v, unicode):
+                        h.addRawHeader(k, v.encode('ascii'))
+                    elif isinstance(v, list):
+                        cleanHeaders = []
+                        for item in v:
+                            if isinstance(item, unicode):
+                                cleanHeaders.append(item.encode('ascii'))
+                            else:
+                                cleanHeaders.append(item)
+                        h.setRawHeaders(k, cleanHeaders)
                     else:
                         h.setRawHeaders(k, v)
 
@@ -143,10 +174,10 @@ class HTTPClient(object):
             # multipart/form-data request as it suits better for cases
             # with files and/or large objects.
             files = list(_convert_files(files))
-            boundary = uuid.uuid4()
+            boundary = str(uuid.uuid4()).encode('ascii')
             headers.setRawHeaders(
-                'content-type', [
-                    'multipart/form-data; boundary=%s' % (boundary,)])
+                b'content-type', [
+                    b'multipart/form-data; boundary=' + boundary])
             if data:
                 data = _convert_params(data)
             else:
@@ -159,9 +190,9 @@ class HTTPClient(object):
             # as it's generally faster for smaller requests.
             if isinstance(data, (dict, list, tuple)):
                 headers.setRawHeaders(
-                    'content-type', ['application/x-www-form-urlencoded'])
+                    b'content-type', [b'application/x-www-form-urlencoded'])
                 data = urlencode(data, doseq=True)
-            bodyProducer = IBodyProducer(data)
+            bodyProducer = self._data_to_body_producer(data)
 
         cookies = kwargs.get('cookies', {})
 
@@ -169,14 +200,16 @@ class HTTPClient(object):
             cookies = cookiejar_from_dict(cookies)
 
         cookies = merge_cookies(self._cookiejar, cookies)
-
         wrapped_agent = CookieAgent(self._agent, cookies)
 
         if kwargs.get('allow_redirects', True):
-            wrapped_agent = RedirectAgent(wrapped_agent)
+            if kwargs.get('browser_like_redirects', False):
+                wrapped_agent = BrowserLikeRedirectAgent(wrapped_agent)
+            else:
+                wrapped_agent = RedirectAgent(wrapped_agent)
 
         wrapped_agent = ContentDecoderAgent(wrapped_agent,
-                                            [('gzip', GzipDecoder)])
+                                            [(b'gzip', GzipDecoder)])
 
         auth = kwargs.get('auth')
         if auth:
@@ -207,6 +240,8 @@ class HTTPClient(object):
 def _convert_params(params):
     if hasattr(params, "iteritems"):
         return list(sorted(params.iteritems()))
+    elif hasattr(params, "items"):
+        return list(sorted(params.items()))
     elif isinstance(params, (tuple, list)):
         return list(params)
     else:
@@ -229,6 +264,8 @@ def _convert_files(files):
 
     if hasattr(files, "iteritems"):
         files = files.iteritems()
+    elif hasattr(files, "items"):
+        files = files.items()
 
     for param, val in files:
         file_name, content_type, fobj = (None, None, None)
@@ -240,7 +277,7 @@ def _convert_files(files):
         else:
             fobj = val
             if hasattr(fobj, "name"):
-                file_name = path.basename(fobj.name)
+                file_name = FilePath(fobj.name).basename()
 
         if not content_type:
             content_type = _guess_content_type(file_name)
@@ -249,22 +286,22 @@ def _convert_files(files):
 
 
 def _combine_query_params(url, params):
-    parsed_url = urlparse(url)
+    parsed_url = urlparse(url.encode('ascii'))
 
     qs = []
 
     if parsed_url.query:
-        qs.extend([parsed_url.query, '&'])
+        qs.extend([parsed_url.query, b'&'])
 
     qs.append(urlencode(params, doseq=True))
 
     return urlunparse((parsed_url[0], parsed_url[1],
                        parsed_url[2], parsed_url[3],
-                       ''.join(qs), parsed_url[5]))
+                       b''.join(qs), parsed_url[5]))
 
 
 def _from_bytes(orig_bytes):
-    return FileBodyProducer(StringIO(orig_bytes))
+    return FileBodyProducer(BytesIO(orig_bytes))
 
 
 def _from_file(orig_file):
@@ -279,7 +316,14 @@ def _guess_content_type(filename):
     return guessed or 'application/octet-stream'
 
 
-registerAdapter(_from_bytes, str, IBodyProducer)
-registerAdapter(_from_file, file, IBodyProducer)
-registerAdapter(_from_file, StringIO, IBodyProducer)
+registerAdapter(_from_bytes, bytes, IBodyProducer)
 registerAdapter(_from_file, BytesIO, IBodyProducer)
+
+if not _PY3:
+    from StringIO import StringIO
+    registerAdapter(_from_file, StringIO, IBodyProducer)
+    registerAdapter(_from_file, file, IBodyProducer)
+else:
+    import io
+    # file()/open() equiv on Py3
+    registerAdapter(_from_file, io.BufferedReader, IBodyProducer)

@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from twisted.web.client import Agent, ProxyAgent
 
 from treq.client import HTTPClient
@@ -96,6 +98,9 @@ def request(method, url, **kwargs):
         received within this timeframe, a connection is aborted with
         ``CancelledError``.
 
+    :param bool browser_like_redirects: Use browser like redirects
+        (i.e. Ignore  RFC2616 section 10.3 and follow redirects from
+        POST requests).  Default: ``False``
     :param proxy: If specified, send the request through a proxy.
     :type proxy: tuple of ``('host', port)``.
 
@@ -110,15 +115,16 @@ def request(method, url, **kwargs):
 #
 
 def _client(*args, **kwargs):
-    reactor = default_reactor(kwargs.get('reactor'))
-    pool = default_pool(reactor,
-                        kwargs.get('pool'),
-                        kwargs.get('persistent'))
+    agent = kwargs.get('agent')
     proxy = kwargs.get('proxy')
     if proxy is not None:
         (address, port) = proxy
         endpoint = TCP4ClientEndpoint(reactor, address, port)
         agent = ProxyAgent(endpoint)
-    else:
+    if agent is None:
+        reactor = default_reactor(kwargs.get('reactor'))
+        pool = default_pool(reactor,
+                            kwargs.get('pool'),
+                            kwargs.get('persistent'))
         agent = Agent(reactor, pool=pool)
     return HTTPClient(agent)

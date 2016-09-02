@@ -1,14 +1,20 @@
 # Copyright (c) Twisted Matrix Laboratories.
 # See LICENSE for details.
 
+from __future__ import absolute_import, division, print_function
+
 from uuid import uuid4
 from io import BytesIO
 from contextlib import closing
 
 from twisted.internet import defer, task
+from twisted.python.compat import unicode, _PY3
 from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
 
 from zope.interface import implementer
+
+if _PY3:
+    long = int
 
 CRLF = b"\r\n"
 
@@ -23,7 +29,7 @@ class MultiPartProducer(object):
     and
     U{Mime format<http://tools.ietf.org/html/rfc2046>}
 
-    The encoded request is produced inncrementally and the bytes are
+    The encoded request is produced incrementally and the bytes are
     written to a consumer.
 
     Fields should have form: [(parameter name, value), ...]
@@ -33,7 +39,7 @@ class MultiPartProducer(object):
     * Unicode strings (in this case parameter will be encoded with utf-8)
     * Tuples with (file name, content-type, L{IBodyProducer} objects)
 
-    Since MultiPart producer can accept L{IBodyProucer} like objects
+    Since MultiPart producer can accept L{IBodyProducer} like objects
     and these objects sometimes cannot be read from in an event-driven manner
     (e.g. L{FileBodyProducer} is passed in)
     L{FileBodyProducer} uses a L{Cooperator} instance to schedule reads from
@@ -48,8 +54,7 @@ class MultiPartProducer(object):
         schedule all reads.
 
     @ivar boundary: The generated boundary used in form-data encoding
-
-    @ivar boundary: The generated boundary used in form-data encoding
+    @type boundary: L{bytes}
     """
 
     def __init__(self, fields, boundary=None, cooperator=task):
@@ -58,6 +63,10 @@ class MultiPartProducer(object):
         self._cooperate = cooperator.cooperate
 
         self.boundary = boundary or uuid4().hex
+
+        if isinstance(self.boundary, unicode):
+            self.boundary = self.boundary.encode('ascii')
+
         self.length = self._calculateLength()
 
     def startProducing(self, consumer):
@@ -121,7 +130,7 @@ class MultiPartProducer(object):
         If the determination cannot be made, return C{UNKNOWN_LENGTH}.
         """
         consumer = _LengthConsumer()
-        for i in self._writeLoop(consumer):
+        for i in list(self._writeLoop(consumer)):
             pass
         return consumer.length
 
@@ -132,8 +141,8 @@ class MultiPartProducer(object):
 
         --this-is-my-boundary
         """
-        return b"--%s%s" % (
-            self.boundary, b"--" if final else b"")
+        f = b"--" if final else b""
+        return b"--" + self.boundary + f
 
     def _writeLoop(self, consumer):
         """
@@ -158,7 +167,7 @@ class MultiPartProducer(object):
             # This is very important.
             # proper boundary is "CRLF--boundary-valueCRLF"
             consumer.write(
-                (CRLF if index != 0 else "") + self._getBoundary() + CRLF)
+                (CRLF if index != 0 else b"") + self._getBoundary() + CRLF)
             yield self._writeField(name, value, consumer)
 
         consumer.write(CRLF + self._getBoundary(final=True) + CRLF)
@@ -172,25 +181,25 @@ class MultiPartProducer(object):
                 name, filename, content_type, producer, consumer)
 
     def _writeString(self, name, value, consumer):
-        cdisp = _Header("Content-Disposition", "form-data")
-        cdisp.add_param("name", name)
-        consumer.write(str(cdisp) + CRLF + CRLF)
+        cdisp = _Header(b"Content-Disposition", b"form-data")
+        cdisp.add_param(b"name", name)
+        consumer.write(bytes(cdisp) + CRLF + CRLF)
 
         encoded = value.encode("utf-8")
         consumer.write(encoded)
         self._currentProducer = None
 
     def _writeFile(self, name, filename, content_type, producer, consumer):
-        cdisp = _Header("Content-Disposition", "form-data")
-        cdisp.add_param("name", name)
+        cdisp = _Header(b"Content-Disposition", b"form-data")
+        cdisp.add_param(b"name", name)
         if filename:
-            cdisp.add_param("filename", filename)
+            cdisp.add_param(b"filename", filename)
 
-        consumer.write(str(cdisp) + CRLF)
-        consumer.write(str(_Header("Content-Type", content_type)) + CRLF)
+        consumer.write(bytes(cdisp) + CRLF)
+        consumer.write(bytes(_Header(b"Content-Type", content_type)) + CRLF)
         if producer.length != UNKNOWN_LENGTH:
             consumer.write(
-                str(_Header("Content-Length", producer.length)) + CRLF)
+                bytes(_Header(b"Content-Length", producer.length)) + CRLF)
         consumer.write(CRLF)
 
         if isinstance(consumer, _LengthConsumer):
@@ -213,8 +222,10 @@ def _escape(value):
     a newline in the file name parameter makes form-data request unreadable
     for majority of parsers.
     """
-    if not isinstance(value, (str, unicode)):
+    if not isinstance(value, (bytes, unicode)):
         value = unicode(value)
+    if isinstance(value, bytes):
+        value = value.decode('utf-8')
     return value.replace(u"\r", u"").replace(u"\n", u"").replace(u'"', u'\\"')
 
 
@@ -228,7 +239,7 @@ def _enforce_unicode(value):
     if isinstance(value, unicode):
         return value
 
-    elif isinstance(value, str):
+    elif isinstance(value, bytes):
         # we got a byte string, and we have no ide what's the encoding of it
         # we can only assume that it's something cool
         try:
@@ -246,6 +257,8 @@ def _enforce_unicode(value):
 def _converted(fields):
     if hasattr(fields, "iteritems"):
         fields = fields.iteritems()
+    elif hasattr(fields, "items"):
+        fields = fields.items()
 
     for name, value in fields:
         name = _enforce_unicode(name)
@@ -258,7 +271,7 @@ def _converted(fields):
             filename = _enforce_unicode(filename) if filename else None
             yield name, (filename, content_type, producer)
 
-        elif isinstance(value, (str, unicode)):
+        elif isinstance(value, (bytes, unicode)):
             yield name, _enforce_unicode(value)
 
         else:
@@ -291,7 +304,7 @@ class _LengthConsumer(object):
 
         if value is UNKNOWN_LENGTH:
             self.length = value
-        elif isinstance(value, int):
+        elif isinstance(value, (int, long)):
             self.length += value
         else:
             self.length += len(value)
@@ -314,18 +327,20 @@ class _Header(object):
     def add_param(self, name, value):
         self.params.append((name, value))
 
-    def __str__(self):
+    def __bytes__(self):
         with closing(BytesIO()) as h:
-            h.write(b"%s: %s" % (
-                    self.name, _escape(self.value).encode("us-ascii")))
+            h.write(self.name + b": " + _escape(self.value).encode("us-ascii"))
             if self.params:
                 for (name, val) in self.params:
-                    h.write("; ")
+                    h.write(b"; ")
                     h.write(_escape(name).encode("us-ascii"))
-                    h.write("=")
-                    h.write(b'"%s"' % (_escape(val).encode('utf-8'),))
+                    h.write(b"=")
+                    h.write(b'"' + _escape(val).encode('utf-8') + b'"')
             h.seek(0)
             return h.read()
+
+    def __str__(self):
+        return self.__bytes__()
 
 
 def _sorted_by_type(fields):
@@ -336,7 +351,7 @@ def _sorted_by_type(fields):
     """
     def key(p):
         key, val = p
-        if isinstance(val, (str, unicode)):
+        if isinstance(val, (bytes, unicode)):
             return (0, key)
         else:
             return (1, key)

@@ -14,30 +14,30 @@ class RequestHeaderSettingAgentTests(TestCase):
     def test_sets_headers(self):
         agent = _RequestHeaderSettingAgent(
             self.agent,
-            Headers({'X-Test-Header': ['Test-Header-Value']}))
+            Headers({b'X-Test-Header': [b'Test-Header-Value']}))
 
         agent.request('method', 'uri')
 
         self.agent.request.assert_called_once_with(
             'method', 'uri',
-            headers=Headers({'X-Test-Header': ['Test-Header-Value']}),
+            headers=Headers({b'X-Test-Header': [b'Test-Header-Value']}),
             bodyProducer=None
         )
 
     def test_overrides_per_request_headers(self):
         agent = _RequestHeaderSettingAgent(
             self.agent,
-            Headers({'X-Test-Header': ['Test-Header-Value']})
+            Headers({b'X-Test-Header': [b'Test-Header-Value']})
         )
 
         agent.request(
             'method', 'uri',
-            Headers({'X-Test-Header': ['Unwanted-Value']})
+            Headers({b'X-Test-Header': [b'Unwanted-Value']})
         )
 
         self.agent.request.assert_called_once_with(
             'method', 'uri',
-            headers=Headers({'X-Test-Header': ['Test-Header-Value']}),
+            headers=Headers({b'X-Test-Header': [b'Test-Header-Value']}),
             bodyProducer=None
         )
 
@@ -55,20 +55,20 @@ class AddAuthTests(TestCase):
 
         self._RequestHeaderSettingAgent.assert_called_once_with(
             agent,
-            Headers({'authorization': ['Basic dXNlcm5hbWU6cGFzc3dvcmQ=']})
+            Headers({b'authorization': [b'Basic dXNlcm5hbWU6cGFzc3dvcmQ=']})
         )
 
     def test_add_basic_auth_huge(self):
         agent = mock.Mock()
         pwd = ('verylongpasswordthatextendsbeyondthepointwheremultiplel'
                'inesaregenerated')
-        auth = ('Basic dXNlcm5hbWU6dmVyeWxvbmdwYXNzd29yZHRoYXRleHRlbmRz'
-                'YmV5b25kdGhlcG9pbnR3aGVyZW11bHRpcGxlbGluZXNhcmVnZW5lcmF0ZWQ=')
+        auth = (b'Basic dXNlcm5hbWU6dmVyeWxvbmdwYXNzd29yZHRoYXRleHRlbmRzY'
+                b'mV5b25kdGhlcG9pbnR3aGVyZW11bHRpcGxlbGluZXNhcmVnZW5lcmF0ZWQ=')
         add_auth(agent, ('username', pwd))
 
         self._RequestHeaderSettingAgent.assert_called_once_with(
             agent,
-            Headers({'authorization': [auth]}))
+            Headers({b'authorization': [auth]}))
 
     def test_add_unknown_auth(self):
         agent = mock.Mock()

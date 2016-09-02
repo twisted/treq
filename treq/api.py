@@ -4,7 +4,7 @@ from twisted.web.client import Agent, ProxyAgent
 
 from treq.client import HTTPClient
 from treq._utils import default_pool, default_reactor
-from twisted.internet.endpoints import TCP4ClientEndpoint
+from twisted.internet.endpoints import clientFromString
 
 
 def head(url, **kwargs):
@@ -117,14 +117,16 @@ def request(method, url, **kwargs):
 def _client(*args, **kwargs):
     agent = kwargs.get('agent')
     proxy = kwargs.get('proxy')
+    reactor = default_reactor(kwargs.get('reactor'))
+    pool = default_pool(reactor,
+                        kwargs.get('pool'),
+                        kwargs.get('persistent'))
     if not agent and proxy is not None:
         (address, port) = proxy
-        endpoint = TCP4ClientEndpoint(reactor, address, port)
+        endpoint = clientFromString(
+            reactor,
+            'tcp:host={}:{}'.format(address, port))
         agent = ProxyAgent(endpoint)
     if agent is None:
-        reactor = default_reactor(kwargs.get('reactor'))
-        pool = default_pool(reactor,
-                            kwargs.get('pool'),
-                            kwargs.get('persistent'))
         agent = Agent(reactor, pool=pool)
     return HTTPClient(agent)

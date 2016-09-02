@@ -27,7 +27,7 @@ class TreqAPITests(TestCase):
         self.ProxyAgent = proxy_agent_patcher.start()
         self.addCleanup(proxy_agent_patcher.stop)
 
-        tcp_endpoint = mock.patch('treq.api.TCP4ClientEndpoint')
+        tcp_endpoint = mock.patch('treq.api.clientFromString')
         self.TCPEndpoint = tcp_endpoint.start()
         self.addCleanup(tcp_endpoint.stop)
 
@@ -44,12 +44,17 @@ class TreqAPITests(TestCase):
         self.assertEqual(self.client.get.return_value, resp)
 
     def test_proxy(self):
+        """
+        Ensure that eventually a ProxyAgent is used to make the request.
+
+        ProxyAgent just wraps agent with a similar interface, so
+        this is a fairly safe assumption to make.
+        """
         resp = treq.get('http://test.com', proxy=('proxy', 8080))
 
         self.TCPEndpoint.assert_called_once_with(
             mock.ANY,
-            'proxy',
-            8080
+            'tcp:host=proxy:8080'
         )
 
         endpoint = self.TCPEndpoint.return_value

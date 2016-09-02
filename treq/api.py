@@ -117,7 +117,7 @@ def request(method, url, **kwargs):
 def _client(*args, **kwargs):
     agent = kwargs.get('agent')
     proxy = kwargs.get('proxy')
-    if proxy is not None:
+    if not agent and proxy is not None:
         (address, port) = proxy
         endpoint = TCP4ClientEndpoint(reactor, address, port)
         agent = ProxyAgent(endpoint)

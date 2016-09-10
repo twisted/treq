@@ -90,8 +90,8 @@ class _RequestDigestAuthenticationAgent(object):
 
     def __init__(self, agent, username, password):
         self._agent = agent
-        self.username = username
-        self.password = password
+        self._username = username
+        self._password = password
 
     def _build_digest_authentication_header(self, agent, path, method, cached,
         nonce, realm, qop=None, algorithm='MD5', opaque=None):
@@ -128,9 +128,9 @@ class _RequestDigestAuthenticationAgent(object):
             actual_path += '?' + path_parsed.query
 
         a1 = '%s:%s:%s' % (
-            agent.username,
+            self._username,
             realm,
-            agent.password
+            self._password
         )
 
         a2 = '%s:%s' % (
@@ -173,7 +173,7 @@ class _RequestDigestAuthenticationAgent(object):
             response_digest = digest_hash_func("%s:%s" % (ha1, noncebit))
 
         hb = 'username="%s", realm="%s", nonce="%s", uri="%s", response="%s"' % (
-            agent.username, realm, nonce, actual_path, response_digest
+            self._username, realm, nonce, actual_path, response_digest
         )
         if opaque:
             hb += ', opaque="%s"' % opaque

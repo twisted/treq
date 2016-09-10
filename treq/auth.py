@@ -33,104 +33,6 @@ def _sha1_utf_digest(x):
     return hashlib.sha1(x).hexdigest()
 
 
-def build_digest_authentication_header(agent, **kwargs):
-    """
-    Build the authorization header for credentials got from the server.
-    Algorithm is accurately ported from http://python-requests.org
-        with small adjustments.
-    See
-    https://github.com/kennethreitz/requests/blob/v2.5.1/requests/auth.py#L72
-        for details.
-    :param agent: _RequestDigestAuthenticationAgent instance
-    :param kwargs: - algorithm - algorithm to be used for authentication,
-                        defaults to MD5, supported values are
-                         "MD5", "MD5-SESS" and "SHA"
-                   - realm - HTTP Digest authentication realm
-                   - nonce - "nonce" HTTP Digest authentication param
-                   - qop - Quality Of Protection HTTP Digest auth param
-                   - opaque - "opaque" HTTP Digest authentication param
-                         (should be sent back to server unchanged)
-                   - cached - Identifies that authentication already have been
-                         performed for URI/method,
-                         and new request should use the same params as first
-                         authenticated request
-                   - path - the URI path where we are authenticating
-                   - method - HTTP method to be used when requesting
-    :return: HTTP Digest authentication string
-    """
-    algo = kwargs.get('algorithm', 'MD5').upper()
-    original_algo = kwargs.get('algorithm')
-    qop = kwargs.get('qop', None)
-    nonce = kwargs.get('nonce')
-    opaque = kwargs.get('opaque', None)
-    path_parsed = urlparse(kwargs['path'])
-    actual_path = path_parsed.path
-
-    if path_parsed.query:
-        actual_path += '?' + path_parsed.query
-
-    a1 = '%s:%s:%s' % (
-        agent.username,
-        kwargs['realm'],
-        agent.password
-    )
-
-    a2 = '%s:%s' % (
-        kwargs['method'],
-        actual_path
-    )
-
-    if algo == 'MD5' or algo == 'MD5-SESS':
-        digest_hash_func = _md5_utf_digest
-    elif algo == 'SHA':
-        digest_hash_func = _sha1_utf_digest
-    else:
-        raise UnknownDigestAuthAlgorithm(algo)
-
-    ha1 = digest_hash_func(a1)
-    ha2 = digest_hash_func(a2)
-
-    cnonce = generate_client_nonce(nonce)
-
-    if algo == 'MD5-SESS':
-        ha1 = digest_hash_func("%s:%s:%s" % (ha1, nonce, cnonce), algo)
-
-    if kwargs['cached']:
-        agent.digest_auth_cache[(kwargs['method'], kwargs['path'])]['c'] += 1
-        nonce_count = agent.digest_auth_cache[
-            (kwargs['method'], kwargs['path'])
-        ]['c']
-    else:
-        nonce_count = 1
-
-    ncvalue = '%08x' % nonce_count
-    if qop is None:
-        response_digest = digest_hash_func(
-            "%s:%s" % (ha1, "%s:%s" % (ha2, nonce))
-        )
-    else:
-        noncebit = "%s:%s:%s:%s:%s" % (
-            nonce, ncvalue, cnonce.encode('utf-8'), 'auth', ha2
-        )
-        response_digest = digest_hash_func("%s:%s" % (ha1, noncebit))
-
-    hb = 'username="%s", realm="%s", nonce="%s", uri="%s", response="%s"' % (
-        agent.username, kwargs['realm'], nonce, actual_path, response_digest
-    )
-    if opaque:
-        hb += ', opaque="%s"' % opaque
-    if original_algo:
-        hb += ', algorithm="%s"' % original_algo
-    if qop:
-        hb += ', qop="auth", nc=%s, cnonce="%s"' % (ncvalue, cnonce)
-    if not kwargs['cached']:
-        agent.digest_auth_cache[(kwargs['method'], kwargs['path'])] = {
-            'p': kwargs,
-            'c': 1
-        }
-    return 'Digest %s' % hb
-
-
 class HTTPDigestAuth(object):
     """
     The container for HTTP Digest authentication credentials
@@ -191,6 +93,112 @@ class _RequestDigestAuthenticationAgent(object):
         self.username = username
         self.password = password
 
+    def _build_digest_authentication_header(self, agent, path, method, cached,
+        nonce, realm, qop=None, algorithm='MD5', opaque=None):
+        """
+        Build the authorization header for credentials got from the server.
+        Algorithm is accurately ported from http://python-requests.org
+            with small adjustments.
+        See
+        https://github.com/kennethreitz/requests/blob/v2.5.1/requests/auth.py#L72
+            for details.
+        :param agent: _RequestDigestAuthenticationAgent instance
+        :param algorithm: algorithm to be used for authentication,
+            defaults to MD5, supported values are
+            "MD5", "MD5-SESS" and "SHA"
+        :param realm: HTTP Digest authentication realm
+        :param nonce: "nonce" HTTP Digest authentication param
+        :param qop: Quality Of Protection HTTP Digest auth param
+        :param opaque: "opaque" HTTP Digest authentication param
+             (should be sent back to server unchanged)
+        :param cached: Identifies that authentication already have been
+             performed for URI/method,
+             and new request should use the same params as first
+             authenticated request
+        :param path: the URI path where we are authenticating
+        :param method: HTTP method to be used when requesting
+        :return: HTTP Digest authentication string
+        """
+        algo = algorithm.upper()
+        original_algo = algorithm
+        path_parsed = urlparse(path)
+        actual_path = path_parsed.path
+
+        if path_parsed.query:
+            actual_path += '?' + path_parsed.query
+
+        a1 = '%s:%s:%s' % (
+            agent.username,
+            realm,
+            agent.password
+        )
+
+        a2 = '%s:%s' % (
+            method,
+            actual_path
+        )
+
+        if algo == 'MD5' or algo == 'MD5-SESS':
+            digest_hash_func = _md5_utf_digest
+        elif algo == 'SHA':
+            digest_hash_func = _sha1_utf_digest
+        else:
+            raise UnknownDigestAuthAlgorithm(algo)
+
+        ha1 = digest_hash_func(a1)
+        ha2 = digest_hash_func(a2)
+
+        cnonce = generate_client_nonce(nonce)
+
+        if algo == 'MD5-SESS':
+            ha1 = digest_hash_func("%s:%s:%s" % (ha1, nonce, cnonce), algo)
+
+        if cached:
+            agent.digest_auth_cache[(method, path)]['c'] += 1
+            nonce_count = agent.digest_auth_cache[
+                (method, path)
+            ]['c']
+        else:
+            nonce_count = 1
+
+        ncvalue = '%08x' % nonce_count
+        if qop is None:
+            response_digest = digest_hash_func(
+                "%s:%s" % (ha1, "%s:%s" % (ha2, nonce))
+            )
+        else:
+            noncebit = "%s:%s:%s:%s:%s" % (
+                nonce, ncvalue, cnonce.encode('utf-8'), 'auth', ha2
+            )
+            response_digest = digest_hash_func("%s:%s" % (ha1, noncebit))
+
+        hb = 'username="%s", realm="%s", nonce="%s", uri="%s", response="%s"' % (
+            agent.username, realm, nonce, actual_path, response_digest
+        )
+        if opaque:
+            hb += ', opaque="%s"' % opaque
+        if original_algo:
+            hb += ', algorithm="%s"' % original_algo
+        if qop:
+            hb += ', qop="auth", nc=%s, cnonce="%s"' % (ncvalue, cnonce)
+        if not cached:
+            cache_params = {
+                'agent': agent,
+                'path': path,
+                'method': method,
+                'cached': cached,
+                'nonce': nonce,
+                'realm': realm,
+                'qop': qop,
+                'algorithm': algorithm,
+                'opaque': opaque
+            }
+            agent.digest_auth_cache[(method, path)] = {
+                'p': cache_params,
+                'c': 1
+            }
+        return 'Digest %s' % hb
+
     def _on_401_response(self, www_authenticate_response, method, uri, headers,
                          bodyProducer):
         """
@@ -222,12 +230,14 @@ class _RequestDigestAuthenticationAgent(object):
                 'auth' not in digest_authentication_params['qop'].split(','):
             # We support only "auth" QoP as defined in rfc-2617 or rfc-2069
             raise UnknownQopForDigestAuth(digest_authentication_params['qop'])
-        digest_authentication_header = build_digest_authentication_header(
+        digest_authentication_header = self._build_digest_authentication_header(
             self,
-            path=uri,
-            method=method,
-            cached=False,
-            **digest_authentication_params
+            uri,
+            method,
+            False,
+            digest_authentication_params['nonce'],
+            digest_authentication_params['realm'],
+            qop=digest_authentication_params['qop']
         )
         return self._perform_request(
             digest_authentication_header, method, uri, headers, bodyProducer
@@ -278,8 +288,16 @@ class _RequestDigestAuthenticationAgent(object):
                 (method, uri)
             )['p']
             digest_params_from_cache['cached'] = True
-            digest_authentication_header = build_digest_authentication_header(
-                self, **digest_params_from_cache
+            digest_authentication_header = self._build_digest_authentication_header(
+                self,
+                digest_params_from_cache['path'],
+                digest_params_from_cache['method'],
+                digest_params_from_cache['cached'],
+                digest_params_from_cache['nonce'],
+                digest_params_from_cache['realm'],
+                qop=digest_params_from_cache['qop'],
+                algorithm=digest_params_from_cache['algorithm'],
+                opaque=digest_params_from_cache['opaque']
             )
             d = self._perform_request(
                 digest_authentication_header, method,

@@ -272,7 +272,7 @@ class _RequestDigestAuthenticationAgent(object):
             used to fetch the response body
         :return: t.i.defer.Deferred (holding the result of the request)
         """
-        if self.digest_auth_cache.get((method, uri), None) is None:
+        if self.digest_auth_cache.get((method, uri)) is None:
             # Perform first request for getting the realm;
             # the client awaits for 401 response code here
             d = self._agent.request('GET', uri,

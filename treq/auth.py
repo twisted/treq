@@ -10,14 +10,14 @@ from twisted.python.randbytes import secureRandom
 from requests.utils import parse_dict_header
 
 
-_DIGEST_HEADER_PREFIX_REGEXP = re.compile(r'digest ', flags=re.IGNORECASE)
+_DIGEST_HEADER_PREFIX_REGEXP = re.compile(b'digest ', flags=re.IGNORECASE)
 
 
 def generate_client_nonce(server_side_nonce):
     return hashlib.sha1(
         hashlib.sha1(server_side_nonce).digest() +
         secureRandom(16) +
-        time.ctime()
+        time.ctime().encode('utf-8')
     ).hexdigest()[:16]
 
 
@@ -90,11 +90,11 @@ class _RequestDigestAuthenticationAgent(object):
 
     def __init__(self, agent, username, password):
         self._agent = agent
-        self._username = username
-        self._password = password
+        self._username = username.encode('utf-8')
+        self._password = password.encode('utf-8')
 
     def _build_digest_authentication_header(self, path, method, cached,
-        nonce, realm, qop=None, algorithm='MD5', opaque=None):
+        nonce, realm, qop=None, algorithm=b'MD5', opaque=None):
         """
         Build the authorization header for credentials got from the server.
         Algorithm is accurately ported from http://python-requests.org
@@ -137,9 +137,9 @@ class _RequestDigestAuthenticationAgent(object):
             actual_path
         )
 
-        if algo == 'MD5' or algo == 'MD5-SESS':
+        if algo == b'MD5' or algo == b'MD5-SESS':
             digest_hash_func = _md5_utf_digest
-        elif algo == 'SHA':
+        elif algo == b'SHA':
             digest_hash_func = _sha1_utf_digest
         else:
             raise UnknownDigestAuthAlgorithm(algo)
@@ -164,22 +164,37 @@ class _RequestDigestAuthenticationAgent(object):
         if qop is None:
             response_digest = digest_hash_func(
                 "%s:%s" % (ha1, "%s:%s" % (ha2, nonce))
-            )
+            ).encode('utf-8')
         else:
             noncebit = "%s:%s:%s:%s:%s" % (
                 nonce, ncvalue, cnonce.encode('utf-8'), 'auth', ha2
             )
-            response_digest = digest_hash_func("%s:%s" % (ha1, noncebit))
-
-        hb = 'username="%s", realm="%s", nonce="%s", uri="%s", response="%s"' % (
-            self._username, realm, nonce, actual_path, response_digest
-        )
+            response_digest = digest_hash_func("%s:%s" % (ha1, noncebit)).encode('utf-8')
+        hb = b'username="'
+        hb += self._username
+        hb += b'", realm="'
+        hb += realm
+        hb += b'", nonce="'
+        hb += nonce
+        hb += b'", uri="'
+        hb += actual_path
+        hb += b'", response="'
+        hb += response_digest
+        hb += b'"'
         if opaque:
-            hb += ', opaque="%s"' % opaque
+            hb += b', opaque="'
+            hb += opaque
+            hb += b'"'
         if original_algo:
-            hb += ', algorithm="%s"' % original_algo
+            hb += b', algorithm="'
+            hb += original_algo
+            hb += b'"'
         if qop:
-            hb += ', qop="auth", nc=%s, cnonce="%s"' % (ncvalue, cnonce)
+            hb += b', qop="auth", nc='
+            hb += ncvalue.encode('utf-8')
+            hb += b', cnonce="'
+            hb += cnonce.encode('utf-8')
+            hb += b'"'
         if not cached:
             cache_params = {
                 'path': path,
@@ -195,7 +210,9 @@ class _RequestDigestAuthenticationAgent(object):
                 'p': cache_params,
                 'c': 1
             }
-        return 'Digest %s' % hb
+        digest_res = b'Digest '
+        digest_res += hb
+        return digest_res
 
     def _on_401_response(self, www_authenticate_response, method, uri, headers,
                          bodyProducer):
@@ -217,24 +234,27 @@ class _RequestDigestAuthenticationAgent(object):
             does not support Digest auth
         """
         www_authenticate_header_string = www_authenticate_response.\
-            headers._rawHeaders.get('www-authenticate', [''])[0]
-        digest_authentication_params = parse_dict_header(
-            _DIGEST_HEADER_PREFIX_REGEXP.sub(
-                '', www_authenticate_header_string, count=1
-            )
+            headers._rawHeaders.get(b'www-authenticate', [b''])[0]
+        digest_header = _DIGEST_HEADER_PREFIX_REGEXP.sub(
+            b'', www_authenticate_header_string, count=1
         )
-        if digest_authentication_params.get('qop', None) is not None and \
-            digest_authentication_params['qop'] != 'auth' and \
-                'auth' not in digest_authentication_params['qop'].split(','):
+        digest_authentication_params_str = parse_dict_header(
+            digest_header.decode("utf-8")
+        )
+        digest_authentication_params = {k.encode('utf8'): v.encode('utf8') \
+            for k, v in digest_authentication_params_str.items()}
+        if digest_authentication_params.get(b'qop', None) is not None and \
+            digest_authentication_params[b'qop'] != b'auth' and \
+                b'auth' not in digest_authentication_params[b'qop'].split(b','):
             # We support only "auth" QoP as defined in rfc-2617 or rfc-2069
-            raise UnknownQopForDigestAuth(digest_authentication_params['qop'])
+            raise UnknownQopForDigestAuth(digest_authentication_params[b'qop'])
         digest_authentication_header = self._build_digest_authentication_header(
             uri,
             method,
             False,
-            digest_authentication_params['nonce'],
-            digest_authentication_params['realm'],
-            qop=digest_authentication_params['qop']
+            digest_authentication_params[b'nonce'],
+            digest_authentication_params[b'realm'],
+            qop=digest_authentication_params[b'qop']
         )
         return self._perform_request(
             digest_authentication_header, method, uri, headers, bodyProducer
@@ -255,9 +275,9 @@ class _RequestDigestAuthenticationAgent(object):
         :return: t.i.defer.Deferred (holding the result of the request)
         """
         if not headers:
-            headers = Headers({'Authorization': digest_authentication_header})
+            headers = Headers({b'Authorization': digest_authentication_header})
         else:
-            headers.addRawHeader('Authorization', digest_authentication_header)
+            headers.addRawHeader(b'Authorization', digest_authentication_header)
         return self._agent.request(
             method, uri, headers=headers, bodyProducer=bodyProducer
         )
@@ -275,7 +295,7 @@ class _RequestDigestAuthenticationAgent(object):
         if self.digest_auth_cache.get((method, uri)) is None:
             # Perform first request for getting the realm;
             # the client awaits for 401 response code here
-            d = self._agent.request('GET', uri,
+            d = self._agent.request(b'GET', uri,
                                     headers=headers, bodyProducer=None)
             d.addCallback(self._on_401_response, method, uri,
                           headers, bodyProducer)

@@ -93,7 +93,7 @@ class _RequestDigestAuthenticationAgent(object):
         self._username = username
         self._password = password
 
-    def _build_digest_authentication_header(self, agent, path, method, cached,
+    def _build_digest_authentication_header(self, path, method, cached,
         nonce, realm, qop=None, algorithm='MD5', opaque=None):
         """
         Build the authorization header for credentials got from the server.
@@ -102,7 +102,6 @@ class _RequestDigestAuthenticationAgent(object):
         See
         https://github.com/kennethreitz/requests/blob/v2.5.1/requests/auth.py#L72
             for details.
-        :param agent: _RequestDigestAuthenticationAgent instance
         :param algorithm: algorithm to be used for authentication,
             defaults to MD5, supported values are
             "MD5", "MD5-SESS" and "SHA"
@@ -154,8 +153,8 @@ class _RequestDigestAuthenticationAgent(object):
             ha1 = digest_hash_func("%s:%s:%s" % (ha1, nonce, cnonce), algo)
 
         if cached:
-            agent.digest_auth_cache[(method, path)]['c'] += 1
-            nonce_count = agent.digest_auth_cache[
+            self.digest_auth_cache[(method, path)]['c'] += 1
+            nonce_count = self.digest_auth_cache[
                 (method, path)
             ]['c']
         else:
@@ -183,7 +182,6 @@ class _RequestDigestAuthenticationAgent(object):
             hb += ', qop="auth", nc=%s, cnonce="%s"' % (ncvalue, cnonce)
         if not cached:
             cache_params = {
-                'agent': agent,
                 'path': path,
                 'method': method,
                 'cached': cached,
@@ -193,7 +191,7 @@ class _RequestDigestAuthenticationAgent(object):
                 'algorithm': algorithm,
                 'opaque': opaque
             }
-            agent.digest_auth_cache[(method, path)] = {
+            self.digest_auth_cache[(method, path)] = {
                 'p': cache_params,
                 'c': 1
             }
@@ -231,7 +229,6 @@ class _RequestDigestAuthenticationAgent(object):
             # We support only "auth" QoP as defined in rfc-2617 or rfc-2069
             raise UnknownQopForDigestAuth(digest_authentication_params['qop'])
         digest_authentication_header = self._build_digest_authentication_header(
-            self,
             uri,
             method,
             False,
@@ -289,7 +286,6 @@ class _RequestDigestAuthenticationAgent(object):
             )['p']
             digest_params_from_cache['cached'] = True
             digest_authentication_header = self._build_digest_authentication_header(
-                self,
                 digest_params_from_cache['path'],
                 digest_params_from_cache['method'],
                 digest_params_from_cache['cached'],

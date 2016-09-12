@@ -22,14 +22,10 @@ def generate_client_nonce(server_side_nonce):
 
 
 def _md5_utf_digest(x):
-    if isinstance(x, str):
-        x = x.encode('utf-8')
     return hashlib.md5(x).hexdigest()
 
 
 def _sha1_utf_digest(x):
-    if isinstance(x, str):
-        x = x.encode('utf-8')
     return hashlib.sha1(x).hexdigest()
 
 
@@ -126,16 +122,15 @@ class _RequestDigestAuthenticationAgent(object):
         if path_parsed.query:
             actual_path += '?' + path_parsed.query
 
-        a1 = '%s:%s:%s' % (
-            self._username,
-            realm,
-            self._password
-        )
+        a1 = self._username
+        a1 += b':'
+        a1 += realm
+        a1 += b':'
+        a1 += self._password
 
-        a2 = '%s:%s' % (
-            method,
-            actual_path
-        )
+        a2 = method
+        a2 += b':'
+        a2 += actual_path
 
         if algo == b'MD5' or algo == b'MD5-SESS':
             digest_hash_func = _md5_utf_digest
@@ -162,14 +157,25 @@ class _RequestDigestAuthenticationAgent(object):
 
         ncvalue = '%08x' % nonce_count
         if qop is None:
-            response_digest = digest_hash_func(
-                "%s:%s" % (ha1, "%s:%s" % (ha2, nonce))
-            ).encode('utf-8')
+            rd = ha1.encode('utf-8')
+            rd += b':'
+            rd += ha2
+            rd += b':'
+            rd += nonce
+            response_digest = digest_hash_func(rd).encode('utf-8')
         else:
-            noncebit = "%s:%s:%s:%s:%s" % (
-                nonce, ncvalue, cnonce.encode('utf-8'), 'auth', ha2
-            )
-            response_digest = digest_hash_func("%s:%s" % (ha1, noncebit)).encode('utf-8')
+            rd = ha1.encode('utf-8')
+            rd += b':'
+            rd += nonce
+            rd += b':'
+            rd += ncvalue.encode('utf-8')
+            rd += b':'
+            rd += cnonce.encode('utf-8')
+            rd += b':'
+            rd += b'auth'
+            rd += b':'
+            rd += ha2.encode('utf-8')
+            response_digest = digest_hash_func(rd).encode('utf-8')
         hb = b'username="'
         hb += self._username
         hb += b'", realm="'

@@ -144,8 +144,13 @@ class _RequestDigestAuthenticationAgent(object):
 
         cnonce = generate_client_nonce(nonce)
 
-        if algo == 'MD5-SESS':
-            ha1 = digest_hash_func("%s:%s:%s" % (ha1, nonce, cnonce), algo)
+        if algo == b'MD5-SESS':
+            sess = ha1.encode('utf-8')
+            sess += b':'
+            sess += nonce
+            sess += b':'
+            sess += cnonce.encode('utf-8')
+            ha1 = digest_hash_func(sess)
 
         if cached:
             self.digest_auth_cache[(method, path)]['c'] += 1

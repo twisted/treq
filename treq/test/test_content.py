@@ -131,8 +131,8 @@ class ContentTests(TestCase):
         """
         When Unicode JSON content is received, the JSON text should be
         correctly decoded.
-        RFC4627: "JSON text shall be encoded in Unicode. The default encoding
-        is UTF-8."
+        RFC7159 (8.1): "JSON text SHALL be encoded in UTF-8, UTF-16, or UTF-32.
+        The default encoding is UTF-8"
         """
         self.response.headers = Headers()
         d = json_content(self.response)

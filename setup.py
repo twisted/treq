@@ -29,14 +29,13 @@ PY3 = (sys.version_info[0] >= 3)
 install_requires = [
     "requests >= 2.1.0",
     "service_identity >= 14.0.0",
-    "six"
+    "six",
+    "Twisted >= 16.0.0",
 ]
 
 if PY3:
-    install_requires.append("Twisted >= 16.0.0")
     install_requires.append("pyOpenSSL >= 0.15.1")
 else:
-    install_requires.append("Twisted >= 16.0.0")
     install_requires.append("pyOpenSSL >= 0.13")
 
 setup(

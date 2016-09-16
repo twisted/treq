@@ -10,6 +10,7 @@ from twisted.internet.defer import Deferred
 from twisted.python.components import proxyForInterface
 from twisted.python.compat import _PY3, unicode
 from twisted.python.filepath import FilePath
+from twisted.python.url import URL
 
 from twisted.web.http import urlparse
 
@@ -132,7 +133,7 @@ class HTTPClient(object):
             url = _combine_query_params(url, params)
 
         if isinstance(url, unicode):
-            url = url.encode('ascii')
+            url = URL.fromText(url).asURI().asText().encode('us-ascii')
 
         # Convert headers dictionary to
         # twisted raw headers format.

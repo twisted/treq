@@ -133,7 +133,7 @@ class HTTPClient(object):
             url = _combine_query_params(url, params)
 
         if isinstance(url, unicode):
-            url = URL.fromText(url).asURI().asText().encode('us-ascii')
+            url = URL.fromText(url).asURI().asText().encode('ascii')
 
         # Convert headers dictionary to
         # twisted raw headers format.

@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 from io import BytesIO
 
 import mock
@@ -33,6 +34,12 @@ class HTTPClientTests(TestCase):
     def assertBody(self, expected):
         body = self.FileBodyProducer.mock_calls[0][1][0]
         self.assertEqual(body.read(), expected)
+
+    def test_request_uri_idn(self):
+        self.client.request('GET', u'http://‽.net')
+        self.agent.request.assert_called_once_with(
+            b'GET', b'http://xn--fwg.net',
+            Headers({b'accept-encoding': [b'gzip']}), None)
 
     def test_request_case_insensitive_methods(self):
         self.client.request('gEt', 'http://example.com/')

@@ -37,5 +37,7 @@ def add_basic_auth(agent, username, password):
 def add_auth(agent, auth_config):
     if isinstance(auth_config, tuple):
         return add_basic_auth(agent, auth_config[0], auth_config[1])
+    elif callable(auth_config):
+        return auth_config(agent)
 
     raise UnknownAuthConfig(auth_config)

@@ -2,9 +2,12 @@ import mock
 
 from twisted.web.client import Agent
 from twisted.web.http_headers import Headers
+from twisted.web.iweb import IAgent
 
 from treq.test.util import TestCase
 from treq.auth import _RequestHeaderSettingAgent, add_auth, UnknownAuthConfig
+
+from zope.interface import implementer
 
 
 class RequestHeaderSettingAgentTests(TestCase):
@@ -70,6 +73,22 @@ class AddAuthTests(TestCase):
             agent,
             Headers({b'authorization': [auth]}))
 
+    def test_auth_callable(self):
+        agent = mock.Mock()
+
+        @implementer(IAgent)
+        class AuthorizingAgent(object):
+
+            def __init__(self, agent):
+                self.wrapped_agent = agent
+
+            def request(self, method, uri, headers=None, bodyProducer=None):
+                """Not called by this test"""
+
+        wrapping_agent = add_auth(agent, AuthorizingAgent)
+        self.assertIsInstance(wrapping_agent, AuthorizingAgent)
+        self.assertIs(wrapping_agent.wrapped_agent, agent)
+
     def test_add_unknown_auth(self):
         agent = mock.Mock()
-        self.assertRaises(UnknownAuthConfig, add_auth, agent, mock.Mock())
+        self.assertRaises(UnknownAuthConfig, add_auth, agent, object())

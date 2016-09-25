@@ -54,6 +54,18 @@ Full example: :download:`basic_auth.py <examples/basic_auth.py>`
 
 .. _RFC 2617: http://www.ietf.org/rfc/rfc2617.txt
 
+The ``auth`` keyword argument also supports custom authorization
+implementations.  ``auth`` should be a callable that accepts as its
+only argument the currently configured ``IAgent`` and should return an
+``IAgent`` that implements the desired authorization mechanism.
+
+.. literalinclude:: examples/custom_auth.py
+    :linenos:
+    :lines: 10-33
+
+Full example: :download:`basic_auth.py <examples/custom_auth.py>`
+
+
 Redirects
 ---------
 

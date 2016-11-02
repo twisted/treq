@@ -304,6 +304,9 @@ class HasHeaders(object):
     This wraps a set of headers, and can be used in an equality test against
     a superset if the provided headers. The headers keys are lowercased, and
     keys and values are compared in their bytes-encoded forms.
+
+    Headers should be provided as a mapping from strings or bytes to a list of
+    strings or bytes.
     """
     def __init__(self, headers):
         self._headers = _maybeEncodeHeaders(headers)

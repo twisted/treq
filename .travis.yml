@@ -2,40 +2,67 @@
 
 sudo: false
 language: python
-python: 2.7
 
 cache: false
 
-env:
-  - TOX_ENV=pypy-twisted_lowest-pyopenssl_lowest
-  - TOX_ENV=pypy-twisted_lowest-pyopenssl_latest
-  - TOX_ENV=pypy-twisted_latest-pyopenssl_lowest
-  - TOX_ENV=pypy-twisted_latest-pyopenssl_latest
-  - TOX_ENV=py27-twisted_lowest-pyopenssl_lowest
-  - TOX_ENV=py27-twisted_lowest-pyopenssl_latest
-  - TOX_ENV=py27-twisted_latest-pyopenssl_lowest
-  - TOX_ENV=py27-twisted_latest-pyopenssl_latest
-  - TOX_ENV=py33-twisted_lowest-pyopenssl_lowest
-  - TOX_ENV=py33-twisted_lowest-pyopenssl_latest
-  - TOX_ENV=py33-twisted_latest-pyopenssl_lowest
-  - TOX_ENV=py33-twisted_latest-pyopenssl_latest
-  - TOX_ENV=py34-twisted_lowest-pyopenssl_lowest
-  - TOX_ENV=py34-twisted_lowest-pyopenssl_latest
-  - TOX_ENV=py34-twisted_latest-pyopenssl_lowest
-  - TOX_ENV=py34-twisted_latest-pyopenssl_latest
-  - TOX_ENV=py35-twisted_lowest-pyopenssl_lowest
-  - TOX_ENV=py35-twisted_lowest-pyopenssl_latest
-  - TOX_ENV=py35-twisted_latest-pyopenssl_lowest
-  - TOX_ENV=py35-twisted_latest-pyopenssl_latest
-  - TOX_ENV=pypy-twisted_trunk-pyopenssl_trunk
-  - TOX_ENV=py27-twisted_trunk-pyopenssl_trunk
-  - TOX_ENV=py33-twisted_trunk-pyopenssl_trunk
-  - TOX_ENV=py34-twisted_trunk-pyopenssl_trunk
-  - TOX_ENV=py35-twisted_trunk-pyopenssl_trunk
-  - TOX_ENV=pypi-readme
-  - TOX_ENV=check-manifest
-  - TOX_ENV=flake8
-
+matrix:
+  include:
+    - python: pypy
+      env: TOX_ENV=pypy-twisted_lowest-pyopenssl_lowest
+    - python: pypy
+      env: TOX_ENV=pypy-twisted_lowest-pyopenssl_latest
+    - python: pypy
+      env: TOX_ENV=pypy-twisted_latest-pyopenssl_lowest
+    - python: pypy
+      env: TOX_ENV=pypy-twisted_latest-pyopenssl_latest
+    - python: '2.7'
+      env: TOX_ENV=py27-twisted_lowest-pyopenssl_lowest
+    - python: '2.7'
+      env: TOX_ENV=py27-twisted_lowest-pyopenssl_latest
+    - python: '2.7'
+      env: TOX_ENV=py27-twisted_latest-pyopenssl_lowest
+    - python: '2.7'
+      env: TOX_ENV=py27-twisted_latest-pyopenssl_latest
+    - python: '3.3'
+      env: TOX_ENV=py33-twisted_lowest-pyopenssl_lowest
+    - python: '3.3'
+      env: TOX_ENV=py33-twisted_lowest-pyopenssl_latest
+    - python: '3.3'
+      env: TOX_ENV=py33-twisted_latest-pyopenssl_lowest
+    - python: '3.3'
+      env: TOX_ENV=py33-twisted_latest-pyopenssl_latest
+    - python: '3.4'
+      env: TOX_ENV=py34-twisted_lowest-pyopenssl_lowest
+    - python: '3.4'
+      env: TOX_ENV=py34-twisted_lowest-pyopenssl_latest
+    - python: '3.4'
+      env: TOX_ENV=py34-twisted_latest-pyopenssl_lowest
+    - python: '3.4'
+      env: TOX_ENV=py34-twisted_latest-pyopenssl_latest
+    - python: '3.5'
+      env: TOX_ENV=py35-twisted_lowest-pyopenssl_lowest
+    - python: '3.5'
+      env: TOX_ENV=py35-twisted_lowest-pyopenssl_latest
+    - python: '3.5'
+      env: TOX_ENV=py35-twisted_latest-pyopenssl_lowest
+    - python: '3.5'
+      env: TOX_ENV=py35-twisted_latest-pyopenssl_latest
+    - python: pypy
+      env: TOX_ENV=pypy-twisted_trunk-pyopenssl_trunk
+    - python: '2.7'
+      env: TOX_ENV=py27-twisted_trunk-pyopenssl_trunk
+    - python: '3.3'
+      env: TOX_ENV=py33-twisted_trunk-pyopenssl_trunk
+    - python: '3.4'
+      env: TOX_ENV=py34-twisted_trunk-pyopenssl_trunk
+    - python: '3.5'
+      env: TOX_ENV=py35-twisted_trunk-pyopenssl_trunk
+    - python: '2.7'
+      env: TOX_ENV=pypi-readme
+    - python: '2.7'
+      env: TOX_ENV=check-manifest
+    - python: '2.7'
+      env: TOX_ENV=flake8
 
 before_install:
   - |

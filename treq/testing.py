@@ -291,8 +291,8 @@ def _maybeEncode(someStr):
 
 def _maybeEncodeHeaders(headers):
     """ Convert a headers mapping to its bytes-encoded form. """
-    return dict([(_maybeEncode(k).lower(), [_maybeEncode(v) for v in vs])
-                 for k, vs in headers.items()])
+    return {_maybeEncode(k).lower(): [_maybeEncode(v) for v in vs]
+            for k, vs in headers.items()}
 
 
 class HasHeaders(object):

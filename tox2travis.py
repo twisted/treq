@@ -12,7 +12,7 @@ travis_template = """\
 sudo: false
 language: python
 
-cache: false
+cache: pip
 
 matrix:
   include:
@@ -36,6 +36,7 @@ before_install:
       pyenv install pypy-5.4.1
       pyenv global pypy-5.4.1
     fi
+  - pip install --upgrade pip
 
 install:
   - pip install tox codecov

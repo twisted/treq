@@ -17,6 +17,17 @@ cache: false
 env:
   {envs}
 
+before_install:
+  - |
+    if [[ "${TOX_ENV::5}" == "pypy-" ]]; then
+      PYENV_ROOT="$HOME/.pyenv"
+      git clone --depth 1 https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
+      PATH="$PYENV_ROOT/bin:$PATH"
+      eval "$(pyenv init -)"
+      pyenv install pypy-5.4.1
+      pyenv global pypy-5.4.1
+    fi
+
 install:
   - pip install tox codecov
 

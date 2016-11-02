@@ -18,6 +18,14 @@ matrix:
   include:
     {includes}
 
+  # Don't fail on trunk versions.
+  allow_failures:
+    - env: TOX_ENV=pypy-twisted_trunk-pyopenssl_trunk
+    - env: TOX_ENV=py27-twisted_trunk-pyopenssl_trunk
+    - env: TOX_ENV=py33-twisted_trunk-pyopenssl_trunk
+    - env: TOX_ENV=py34-twisted_trunk-pyopenssl_trunk
+    - env: TOX_ENV=py35-twisted_trunk-pyopenssl_trunk
+
 before_install:
   - |
     if [[ "${{TOX_ENV::5}}" == "pypy-" ]]; then
@@ -40,15 +48,6 @@ after_success:
 
 notifications:
   email: false
-
-# Don't fail on trunk versions.
-matrix:
-  allow_failures:
-    - env: TOX_ENV=pypy-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py27-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py33-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py34-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py35-twisted_trunk-pyopenssl_trunk
 
 branches:
   only:

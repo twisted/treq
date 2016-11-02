@@ -20,15 +20,15 @@ matrix:
 
   # Don't fail on trunk versions.
   allow_failures:
-    - env: TOX_ENV=pypy-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py27-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py33-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py34-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py35-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=py27-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=py33-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=py34-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=py35-twisted_trunk-pyopenssl_trunk
 
 before_install:
   - |
-    if [[ "${{TOX_ENV::5}}" == "pypy-" ]]; then
+    if [[ "${{TOXENV::5}}" == "pypy-" ]]; then
       PYENV_ROOT="$HOME/.pyenv"
       git clone --depth 1 https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
       PATH="$PYENV_ROOT/bin:$PATH"
@@ -42,7 +42,7 @@ install:
   - pip install tox codecov
 
 script:
-  - tox -e $TOX_ENV
+  - tox
 
 after_success:
   - codecov
@@ -79,7 +79,7 @@ if __name__ == "__main__":
 
         includes.extend([
             '- python: {0}'.format(python),
-            '  env: TOX_ENV={0}'.format(tox_env)
+            '  env: TOXENV={0}'.format(tox_env)
         ])
 
     print(travis_template.format(includes='\n    '.join(includes)))

@@ -289,6 +289,12 @@ def _maybeEncode(someStr):
     return someStr
 
 
+def _maybeEncodeHeaders(headers):
+    """ Convert a headers mapping to its bytes-encoded form. """
+    return dict([(_maybeEncode(k).lower(), [_maybeEncode(v) for v in vs])
+                 for k, vs in headers.items()])
+
+
 class HasHeaders(object):
     """
     Since Twisted adds headers to a request, such as the host and the content
@@ -300,15 +306,13 @@ class HasHeaders(object):
     keys and values are compared in their bytes-encoded forms.
     """
     def __init__(self, headers):
-        self._headers = dict([(_maybeEncode(k).lower(), _maybeEncode(v))
-                              for k, v in headers.items()])
+        self._headers = _maybeEncodeHeaders(headers)
 
     def __repr__(self):
         return "HasHeaders({0})".format(repr(self._headers))
 
     def __eq__(self, other_headers):
-        compare_to = dict([(_maybeEncode(k).lower(), _maybeEncode(v))
-                           for k, v in other_headers.items()])
+        compare_to = _maybeEncodeHeaders(other_headers)
 
         return (set(self._headers.keys()).issubset(set(compare_to.keys())) and
                 all([set(v).issubset(set(compare_to[k]))

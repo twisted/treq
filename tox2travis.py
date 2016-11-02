@@ -19,7 +19,7 @@ env:
 
 before_install:
   - |
-    if [[ "${TOX_ENV::5}" == "pypy-" ]]; then
+    if [[ "${{TOX_ENV::5}}" == "pypy-" ]]; then
       PYENV_ROOT="$HOME/.pyenv"
       git clone --depth 1 https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
       PATH="$PYENV_ROOT/bin:$PATH"

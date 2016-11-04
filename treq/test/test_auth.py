@@ -5,7 +5,10 @@ from twisted.web.http_headers import Headers
 from twisted.web.iweb import IAgent
 
 from treq.test.util import TestCase
-from treq.auth import _RequestHeaderSettingAgent, add_auth, UnknownAuthConfig
+from treq.auth import (_RequestHeaderSettingAgent,
+                       _PinToFirstHostAgent,
+                       add_auth,
+                       UnknownAuthConfig)
 
 from zope.interface import implementer
 
@@ -43,6 +46,61 @@ class RequestHeaderSettingAgentTests(TestCase):
             headers=Headers({b'X-Test-Header': [b'Test-Header-Value']}),
             bodyProducer=None
         )
+
+
+class PinToFirstHostAgentTests(TestCase):
+    def setUp(self):
+        self.first_agent = mock.Mock(Agent)
+        self.second_agent = mock.Mock(Agent)
+        self.pinning_agent = _PinToFirstHostAgent(self.first_agent,
+                                                  self.second_agent)
+
+    def test_first_request_uses_first_agent(self):
+        self.pinning_agent.request("method", "http://www.something.com/")
+
+        self.first_agent.request.assert_called_once_with(
+            "method", "http://www.something.com/",
+            headers=None, bodyProducer=None)
+        self.assertFalse(self.second_agent.request.called)
+
+    def test_request_matching_first_uses_first_agent(self):
+        self.pinning_agent.request("method", "http://www.something.com/a")
+        self.pinning_agent.request("method", "http://www.something.com/b")
+
+        self.assertEqual(self.first_agent.request.call_args_list, [
+            mock.call("method", "http://www.something.com/a",
+                      headers=None, bodyProducer=None),
+            mock.call("method", "http://www.something.com/b",
+                      headers=None, bodyProducer=None)
+        ])
+        self.assertFalse(self.second_agent.request.called)
+
+    def test_request_not_matching_first_uses_second_agent(self):
+        self.pinning_agent.request("method", "http://www.something.com/a")
+        self.pinning_agent.request("method", "http://www.other.com/a")
+
+        self.first_agent.request.assert_called_once_with(
+            "method", "http://www.something.com/a",
+            headers=None, bodyProducer=None)
+
+        self.second_agent.request.assert_called_once_with(
+            "method", "http://www.other.com/a",
+            headers=None, bodyProducer=None)
+
+    def test_some_request_matching_first_uses_second_agent(self):
+        self.pinning_agent.request("method", "http://www.something.com/a")
+        self.pinning_agent.request("method", "http://www.other.com/a")
+        self.pinning_agent.request("method", "http://www.something.com/b")
+
+        self.assertEqual(self.first_agent.request.call_args_list, [
+            mock.call("method", "http://www.something.com/a",
+                      headers=None, bodyProducer=None),
+            mock.call("method", "http://www.something.com/b",
+                      headers=None, bodyProducer=None)
+        ])
+        self.second_agent.request.assert_called_once_with(
+            "method", "http://www.other.com/a",
+            headers=None, bodyProducer=None)
 
 
 class AddAuthTests(TestCase):

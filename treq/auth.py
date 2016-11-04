@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from twisted.web.http_headers import Headers
+from six.moves.urllib.parse import urlparse
 import base64
 
 
@@ -23,6 +24,31 @@ class _RequestHeaderSettingAgent(object):
                 headers.setRawHeaders(header, values)
 
         return self._agent.request(
+            method, uri, headers=headers, bodyProducer=bodyProducer)
+
+
+class _PinToFirstHostAgent(object):
+    """
+    An {twisted.web.iweb.IAgent} implementing object that takes two
+    agents, using the first as when the current request's host name
+    matches first request's host name, and the second when it does
+    not.
+    """
+
+    def __init__(self, first_agent, second_agent):
+        self._first_agent = first_agent
+        self._second_agent = second_agent
+        self._first_host = None
+
+    def request(self, method, uri, headers=None, bodyProducer=None):
+        hostname = urlparse(uri).hostname
+        if self._first_host in (None, hostname):
+            self._first_host = hostname
+            agent = self._first_agent
+        else:
+            agent = self._second_agent
+
+        return agent.request(
             method, uri, headers=headers, bodyProducer=bodyProducer)
 
 

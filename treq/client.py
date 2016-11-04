@@ -30,7 +30,7 @@ from twisted.web.client import (
 from twisted.python.components import registerAdapter
 
 from treq._utils import default_reactor
-from treq.auth import add_auth
+from treq.auth import add_auth, _PinToFirstHostAgent
 from treq import multipart
 from treq.response import _Response
 from requests.cookies import cookiejar_from_dict, merge_cookies
@@ -203,6 +203,11 @@ class HTTPClient(object):
         cookies = merge_cookies(self._cookiejar, cookies)
         wrapped_agent = CookieAgent(self._agent, cookies)
 
+        auth = kwargs.get('auth')
+        if auth:
+            auth_agent = add_auth(wrapped_agent, auth)
+            wrapped_agent = _PinToFirstHostAgent(auth_agent, wrapped_agent)
+
         if kwargs.get('allow_redirects', True):
             if kwargs.get('browser_like_redirects', False):
                 wrapped_agent = BrowserLikeRedirectAgent(wrapped_agent)
@@ -211,10 +216,6 @@ class HTTPClient(object):
 
         wrapped_agent = ContentDecoderAgent(wrapped_agent,
                                             [(b'gzip', GzipDecoder)])
-
-        auth = kwargs.get('auth')
-        if auth:
-            wrapped_agent = add_auth(wrapped_agent, auth)
 
         d = wrapped_agent.request(
             method, url, headers=headers,

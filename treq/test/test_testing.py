@@ -294,6 +294,15 @@ class HasHeadersTests(TestCase):
         """
         self.assertNotEqual(HasHeaders({b'a': [b'a']}), {b'a': [b'A']})
 
+    def test_bytes_encoded_forms(self):
+        """
+        The :obj:`HasHeaders` equality function compares the bytes-encoded
+        forms of both sets of headers.
+        """
+        self.assertEqual(HasHeaders({b'a': [b'a']}), {u'a': [u'a']})
+
+        self.assertEqual(HasHeaders({u'b': [u'b']}), {b'b': [b'b']})
+
     def test_repr(self):
         """
         :obj:`HasHeaders` returns a nice string repr.

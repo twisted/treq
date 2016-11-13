@@ -9,11 +9,10 @@ from twisted.internet.defer import Deferred, succeed
 from twisted.internet.protocol import Protocol
 from twisted.web.client import ResponseDone
 from twisted.web.http import PotentialDataLoss
-from twisted.web.http_headers import Headers
 
 
 def _encoding_from_headers(headers):
-    content_types = headers.getRawHeaders('content-type')
+    content_types = headers.getRawHeaders(u'content-type')
     if content_types is None:
         return None
 
@@ -114,14 +113,7 @@ def text_content(response, encoding='ISO-8859-1'):
     """
     def _decode_content(c):
 
-        if _PY3:
-            headers = Headers({
-                key.decode('ascii'): [y.decode('ascii') for y in val]
-                for key, val in response.headers.getAllRawHeaders()})
-        else:
-            headers = response.headers
-
-        e = _encoding_from_headers(headers)
+        e = _encoding_from_headers(response.headers)
 
         if e is not None:
             return c.decode(e)

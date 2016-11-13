@@ -5,7 +5,7 @@ from twisted.web.iweb import IResponse
 
 from requests.cookies import cookiejar_from_dict
 
-from treq.content import content, json_content, text_content
+from treq.content import collect, content, json_content, text_content
 
 
 class _Response(proxyForInterface(IResponse)):
@@ -18,39 +18,54 @@ class _Response(proxyForInterface(IResponse)):
         self.original = original
         self._cookiejar = cookiejar
 
+    def collect(self, collector):
+        """
+        Incrementally collect the body of the response, per
+        :func:`treq.collect()`.
+
+        :param collector: A single argument callable that will be called
+            with chunks of body data as it is received.
+
+        :returns: A `Deferred` that fires when the entire body has been
+            received.
+        """
+        return collect(self.original, collector)
+
     def content(self):
         """
-        Collect the response body as bytes per :func:`treq.content.content()`.
+        Read the entire body all at once, per :func:`treq.content()`.
 
-        :rtype: Deferred that fires with bytes when the entire body has been read.
+        :returns: A `Deferred` that fires with a `bytes` object when the entire
+            body has been received.
         """
         return content(self.original)
 
     def json(self):
         """
-        Collect the response body as JSON per :func:`treq.content.json_response()`.
+        Collect the response body as JSON per :func:`treq.json_content()`.
 
         :rtype: Deferred that fires with the decoded JSON when the entire body
             has been read.
         """
         return json_content(self.original)
 
-    def text(self, *args, **kwargs):
+    def text(self, encoding='ISO-8859-1'):
         """
-        Collect the response body as a unicode string per
-        :func:`treq.content.text_content()`.
+        Read the entire body all at once as text, per
+        :func:`treq.text_content()`.
 
-        :rtype: Deferred that fires with a unicode string when the entire body
-            has been read.
+        :rtype: A `Deferred` that fires with a unicode string when the entire
+            body has been received.
         """
-        return text_content(self.original, *args, **kwargs)
+        return text_content(self.original, encoding)
 
     def history(self):
         """
-        List response history chronologically: this is the list of responses
-        (redirects) which led to this one.
+        Get a list of all responses that (such as intermediate redirects),
+        that ultimately ended in the current response. The responses are
+        ordered chronologically.
 
-        :rtype: list of :class:`_Response` in chronological order
+        :returns: A `list` of :class:`~treq.response._Response` objects
         """
         if not hasattr(self, "previousResponse"):
             raise NotImplementedError(

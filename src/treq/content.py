@@ -107,9 +107,10 @@ def text_content(response, encoding='ISO-8859-1'):
     charset, which may be guessed from the ``Content-Type`` header.
 
     :param IResponse response: The HTTP Response to get the contents of.
-    :param str encoding: An valid charset, such as ``UTF-8`` or ``ISO-8859-1``.
+    :param str encoding: A charset, such as ``UTF-8`` or ``ISO-8859-1``,
+        used if the response does not specify an encoding.
 
-    :rtype: Deferred that fires with a unicode.
+    :rtype: Deferred that fires with a unicode string.
     """
     def _decode_content(c):
 

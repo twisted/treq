@@ -338,7 +338,7 @@ class RequestSequence(object):
     responses, or the request's paramters do not match the next item's expected
     request paramters, raises :obj:`AssertionError`.
 
-    For the expected request arguments::
+    For the expected request arguments:
 
     - ``method`` should be `bytes` normalized to lowercase.
     - ``url`` should be normalized as per the transformations in
@@ -355,7 +355,7 @@ class RequestSequence(object):
         :obj:`HasHeaders`.
     - ``data`` is a `bytes`
 
-    For the response::
+    For the response:
 
     - ``code`` is an integer representing the HTTP status code to return
     - ``headers`` is a dictionary mapping `bytes` to `bytes` or `lists` of

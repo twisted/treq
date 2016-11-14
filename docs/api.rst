@@ -1,5 +1,10 @@
+API Reference
+=============
+
+This page lists all of the interfaces exposed by the `treq` package.
+
 Making Requests
-===============
+---------------
 
 .. module:: treq
 
@@ -12,15 +17,32 @@ Making Requests
 .. autofunction:: delete
 
 Accessing Content
-=================
+-----------------
 
 .. autofunction:: collect
 .. autofunction:: content
 .. autofunction:: text_content
 .. autofunction:: json_content
 
+HTTPClient Objects
+------------------
+
+.. module:: treq.client
+
+The :class:`treq.client.HTTPClient` class provides the same interface as the :mod:`treq` module itself.
+
+.. autoclass:: HTTPClient
+    :members:
+    :undoc-members:
+
+MultiPartProducer Objects
+-------------------------
+
+.. automodule:: treq.multipart
+    :members:
+
 Responses
-=========
+---------
 
 :func:`treq.request`, :func:`treq.get`, etc. return an object which implements :class:`twisted.web.iweb.IResponse`, plus a few additional convenience methods:
 
@@ -47,3 +69,9 @@ Responses
 
     .. method:: deliverBody(protocol)
     .. method:: setPreviousResponse(response)
+
+Test Helpers
+------------
+
+.. automodule:: treq.testing
+    :members:

@@ -61,7 +61,7 @@ Here is a list of `requests`_ features and their status in treq.
 +----------------------------------+----------+----------+
 |                                  | requests |   treq   |
 +----------------------------------+----------+----------+
-| International Domains and URLs   | yes      | no       |
+| International Domains and URLs   | yes      | yes      |
 +----------------------------------+----------+----------+
 | Keep-Alive & Connection Pooling  | yes      | yes      |
 +----------------------------------+----------+----------+

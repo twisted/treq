@@ -38,7 +38,7 @@ class RequestTraversalAgent(object):
 
     def __init__(self, rootResource):
         """
-        :param rootResource: The twisted IResource at the root of the resource
+        :param rootResource: The Twisted `IResource` at the root of the resource
             tree.
         """
         self._memoryReactor = MemoryReactor()
@@ -143,8 +143,8 @@ class _SynchronousProducer(object):
 
     This does not implement the :func:`IBodyProducer.stopProducing` method,
     because that is very difficult to trigger.  (The request from
-    RequestTraversalAgent would have to be canceled while it is still in the
-    transmitting state), and the intent is to use RequestTraversalAgent to
+    `RequestTraversalAgent` would have to be canceled while it is still in the
+    transmitting state), and the intent is to use `RequestTraversalAgent` to
     make synchronous requests.
     """
 
@@ -184,7 +184,7 @@ def _reject_files(f):
 class StubTreq(object):
     """
     A fake version of the treq module that can be used for testing that
-    provides all the function calls exposed in treq.__all__.
+    provides all the function calls exposed in :obj:`treq.__all__`.
 
     :ivar resource: A :obj:`Resource` object that provides the fake responses
     """
@@ -240,7 +240,7 @@ class StringStubbingResource(Resource):
 
     def __init__(self, get_response_for):
         """
-        See ``StringStubbingResource``.
+        See `StringStubbingResource`.
         """
         Resource.__init__(self)
         self._get_response_for = get_response_for

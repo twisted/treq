@@ -75,5 +75,5 @@ MultiPartProducer Objects
 
 :class:`treq.multipart.MultiPartProducer` is used internally when making requests which involve files.
 
- .. automodule:: treq.multipart
-     :members:
+.. automodule:: treq.multipart
+    :members:

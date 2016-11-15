@@ -37,15 +37,14 @@ class MultiPartProducer(object):
     * Tuples with (file name, content-type,
       :class:`~twisted.web.iweb.IBodyProducer` objects)
 
-    Since `MultiPartProducer` can accept `IBodyProducer` like objects
-    and these objects sometimes cannot be read from in an event-driven manner
-    (e.g. `FileBodyProducer` is passed in)
-    `FileBodyProducer` uses a :class:`~twisted.web.task.Cooperator` instance to
-    schedule reads from the underlying producers. This process is also paused
-    and resumed based on notifications from the `IConsumer` provider being
-    written to.
+    Since :class:`MultiPartProducer` can accept objects like
+    :class:`~twisted.web.iweb.IBodyProducer` which cannot be read from in an
+    event-driven manner it uses uses a
+    :class:`~twisted.internet.task.Cooperator` instance to schedule reads
+    from the underlying producers. Reading is also paused and resumed based on
+    notifications from the :class:`IConsumer` provider being written to.
 
-    :ivar _fileds: Sorted parameters, where all strings are enforced to be
+    :ivar _fields: Sorted parameters, where all strings are enforced to be
         unicode and file objects stacked on bottom (to produce a human readable
         form-data request)
 

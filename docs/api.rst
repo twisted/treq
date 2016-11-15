@@ -35,14 +35,8 @@ The :class:`treq.client.HTTPClient` class provides the same interface as the :mo
     :members:
     :undoc-members:
 
-MultiPartProducer Objects
--------------------------
-
-.. automodule:: treq.multipart
-    :members:
-
-Responses
----------
+Augmented Response Objects
+--------------------------
 
 :func:`treq.request`, :func:`treq.get`, etc. return an object which implements :class:`twisted.web.iweb.IResponse`, plus a few additional convenience methods:
 
@@ -75,3 +69,11 @@ Test Helpers
 
 .. automodule:: treq.testing
     :members:
+
+MultiPartProducer Objects
+-------------------------
+
+:class:`treq.multipart.MultiPartProducer` is used internally when making requests which involve files.
+
+ .. automodule:: treq.multipart
+     :members:

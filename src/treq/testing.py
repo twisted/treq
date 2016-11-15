@@ -38,8 +38,8 @@ class RequestTraversalAgent(object):
 
     def __init__(self, rootResource):
         """
-        :param rootResource: The Twisted `IResource` at the root of the resource
-            tree.
+        :param rootResource: The Twisted `IResource` at the root of the
+            resource tree.
         """
         self._memoryReactor = MemoryReactor()
         self._realAgent = Agent(reactor=self._memoryReactor)

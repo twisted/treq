@@ -3,11 +3,10 @@ import mock
 
 from twisted.python.failure import Failure
 
+from twisted.trial.unittest import TestCase
 from twisted.web.http_headers import Headers
 from twisted.web.client import ResponseDone, ResponseFailed
 from twisted.web.http import PotentialDataLoss
-
-from treq.test.util import TestCase
 
 from treq import collect, content, json_content, text_content
 from treq.client import _BufferedResponse

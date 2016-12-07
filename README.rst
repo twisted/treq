@@ -64,11 +64,9 @@ Lint:
     pep8 treq
     pyflakes treq
 
-Build docs:
+Build docs::
 
-::
-
-    cd docs; make html
+    tox -e docs
 
 .. |build| image:: https://secure.travis-ci.org/twisted/treq.svg?branch=master
 .. _build: http://travis-ci.org/twisted/treq

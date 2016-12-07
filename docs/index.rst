@@ -1,8 +1,7 @@
 treq: High-level Twisted HTTP Client API
 ========================================
 
-treq depends on Twisted 12.3.0 or later and optionally pyOpenSSL.
-Python 3 support requires at least Twisted 15.5.
+treq depends on Twisted 16.0.0 or later and optionally pyOpenSSL.
 
 Why?
 ----

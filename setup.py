@@ -30,7 +30,7 @@ setup(
         "requests >= 2.1.0",
         "six",
         "Twisted[tls] >= 16.0.0",
-        # Twisted[tls] 16.0.0 only requires 0.13, which doesn't work on Py3.
+        # Twisted[tls] 16.0.0 requires 0.13, which doesn't work on Python 3.
         "pyOpenSSL >= 0.15.1",
     ],
     package_data={"treq": ["_version"]},

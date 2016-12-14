@@ -7,7 +7,6 @@ build
 dist
 MANIFEST
 .coverage
-.coveragerc
 coverage
 htmlcov
 _trial_temp

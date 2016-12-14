@@ -22,11 +22,12 @@ if __name__ == "__main__":
 
     setup(
         name="treq",
-        packages=find_packages(),
+        packages=find_packages('src'),
         package_dir={"": "src"},
         setup_requires=["incremental"],
         use_incremental=True,
         install_requires=[
+            "incremental",
             "requests >= 2.1.0",
             "six",
             "Twisted[tls] >= 16.0.0",

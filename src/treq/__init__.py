@@ -8,6 +8,6 @@ from treq.content import collect, content, text_content, json_content
 __all__ = ['head', 'get', 'post', 'put', 'patch', 'delete', 'request',
            'collect', 'content', 'text_content', 'json_content']
 
-__version__ = (
-    _getModule(__name__).filePath.sibling("_version").getContent().strip()
-)
+from ._version import __version__
+
+__version__ = __version__.base()

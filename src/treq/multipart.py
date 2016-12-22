@@ -22,39 +22,37 @@ CRLF = b"\r\n"
 @implementer(IBodyProducer)
 class MultiPartProducer(object):
     """
-    L{MultiPartProducer} takes parameters for HTTP Request
-    produces bytes in multipart/form-data format defined
-
-    U{Multipart<http://tools.ietf.org/html/rfc2388>}
-    and
-    U{Mime format<http://tools.ietf.org/html/rfc2046>}
+    :class:`MultiPartProducer` takes parameters for a HTTP request and
+    produces bytes in multipart/form-data format defined in :rfc:`2388` and
+    :rfc:`2046`.
 
     The encoded request is produced incrementally and the bytes are
     written to a consumer.
 
-    Fields should have form: [(parameter name, value), ...]
+    Fields should have form: ``[(parameter name, value), ...]``
 
     Accepted values:
 
     * Unicode strings (in this case parameter will be encoded with utf-8)
-    * Tuples with (file name, content-type, L{IBodyProducer} objects)
+    * Tuples with (file name, content-type,
+      :class:`~twisted.web.iweb.IBodyProducer` objects)
 
-    Since MultiPart producer can accept L{IBodyProducer} like objects
-    and these objects sometimes cannot be read from in an event-driven manner
-    (e.g. L{FileBodyProducer} is passed in)
-    L{FileBodyProducer} uses a L{Cooperator} instance to schedule reads from
-    the undelying producers. This process is also paused and resumed based
-    on notifications from the L{IConsumer} provider being written to.
+    Since :class:`MultiPartProducer` can accept objects like
+    :class:`~twisted.web.iweb.IBodyProducer` which cannot be read from in an
+    event-driven manner it uses uses a
+    :class:`~twisted.internet.task.Cooperator` instance to schedule reads
+    from the underlying producers. Reading is also paused and resumed based on
+    notifications from the :class:`IConsumer` provider being written to.
 
-    @ivar _fileds: Sorted parameters, where all strings are enforced to be
-    unicode and file objects stacked on bottom (to produce a human readable
-    form-data request)
+    :ivar _fields: Sorted parameters, where all strings are enforced to be
+        unicode and file objects stacked on bottom (to produce a human readable
+        form-data request)
 
-    @ivar _cooperate: A method like L{Cooperator.cooperate} which is used to
+    :ivar _cooperate: A method like `Cooperator.cooperate` which is used to
         schedule all reads.
 
-    @ivar boundary: The generated boundary used in form-data encoding
-    @type boundary: L{bytes}
+    :ivar boundary: The generated boundary used in form-data encoding
+    :type boundary: `bytes`
     """
 
     def __init__(self, fields, boundary=None, cooperator=task):
@@ -72,10 +70,10 @@ class MultiPartProducer(object):
     def startProducing(self, consumer):
         """
         Start a cooperative task which will read bytes from the input file and
-        write them to C{consumer}.  Return a L{Deferred} which fires after all
+        write them to `consumer`.  Return a `Deferred` which fires after all
         bytes have been written.
 
-        @param consumer: Any L{IConsumer} provider
+        :param consumer: Any `IConsumer` provider
         """
         self._task = self._cooperate(self._writeLoop(consumer))
         d = self._task.whenDone()
@@ -89,7 +87,7 @@ class MultiPartProducer(object):
     def stopProducing(self):
         """
         Permanently stop writing bytes from the file to the consumer by
-        stopping the underlying L{CooperativeTask}.
+        stopping the underlying `CooperativeTask`.
         """
         if self._currentProducer:
             self._currentProducer.stopProducing()
@@ -98,7 +96,7 @@ class MultiPartProducer(object):
     def pauseProducing(self):
         """
         Temporarily suspend copying bytes from the input file to the consumer
-        by pausing the L{CooperativeTask} which drives that activity.
+        by pausing the `CooperativeTask` which drives that activity.
         """
         if self._currentProducer:
             # Having a current producer means that we are in
@@ -113,8 +111,8 @@ class MultiPartProducer(object):
 
     def resumeProducing(self):
         """
-        Undo the effects of a previous C{pauseProducing} and resume copying
-        bytes to the consumer by resuming the L{CooperativeTask} which drives
+        Undo the effects of a previous `pauseProducing` and resume copying
+        bytes to the consumer by resuming the `CooperativeTask` which drives
         the write activity.
         """
         if self._currentProducer:
@@ -125,9 +123,9 @@ class MultiPartProducer(object):
     def _calculateLength(self):
         """
         Determine how many bytes the overall form post would consume.
-        The easiest way is to calculate is to generate of C{fObj}
+        The easiest way is to calculate is to generate of `fObj`
         (assuming it is not modified from this point on).
-        If the determination cannot be made, return C{UNKNOWN_LENGTH}.
+        If the determination cannot be made, return `UNKNOWN_LENGTH`.
         """
         consumer = _LengthConsumer()
         for i in list(self._writeLoop(consumer)):
@@ -234,7 +232,7 @@ def _enforce_unicode(value):
     This function enforces the stings passed to be unicode, so we won't
     need to guess what's the encoding of the binary strings passed in.
     If someone needs to pass the binary string, use BytesIO and wrap it with
-    L{FileBodyProducer}
+    `FileBodyProducer`.
     """
     if isinstance(value, unicode):
         return value
@@ -282,13 +280,13 @@ def _converted(fields):
 
 class _LengthConsumer(object):
     """
-    L{_LengthConsumer} is used to calculate the length of the multi-part
+    `_LengthConsumer` is used to calculate the length of the multi-part
     request. The easiest way to do that is to consume all the fields,
     but instead writing them to the string just accumulate the request
     length.
 
-    @ivar length: The length of the request. Can be UNKNOWN_LENGTH
-    if consumer finds the field that has length that can not be calculated
+    :ivar length: The length of the request. Can be `UNKNOWN_LENGTH`
+        if consumer finds the field that has length that can not be calculated
 
     """
 
@@ -312,7 +310,7 @@ class _LengthConsumer(object):
 
 class _Header(object):
     """
-    L{_Header} This class is a tiny wrapper that produces
+    `_Header` This class is a tiny wrapper that produces
     request headers. We can't use standard python header
     class because it encodes unicode fields using =? bla bla ?=
     encoding, which is correct, but no one in HTTP world expects

@@ -38,8 +38,8 @@ class RequestTraversalAgent(object):
 
     def __init__(self, rootResource):
         """
-        :param rootResource: The twisted IResource at the root of the resource
-            tree.
+        :param rootResource: The Twisted `IResource` at the root of the
+            resource tree.
         """
         self._memoryReactor = MemoryReactor()
         self._realAgent = Agent(reactor=self._memoryReactor)
@@ -143,8 +143,8 @@ class _SynchronousProducer(object):
 
     This does not implement the :func:`IBodyProducer.stopProducing` method,
     because that is very difficult to trigger.  (The request from
-    RequestTraversalAgent would have to be canceled while it is still in the
-    transmitting state), and the intent is to use RequestTraversalAgent to
+    `RequestTraversalAgent` would have to be canceled while it is still in the
+    transmitting state), and the intent is to use `RequestTraversalAgent` to
     make synchronous requests.
     """
 
@@ -184,7 +184,7 @@ def _reject_files(f):
 class StubTreq(object):
     """
     A fake version of the treq module that can be used for testing that
-    provides all the function calls exposed in treq.__all__.
+    provides all the function calls exposed in :obj:`treq.__all__`.
 
     :ivar resource: A :obj:`Resource` object that provides the fake responses
     """
@@ -216,30 +216,31 @@ class StringStubbingResource(Resource):
     The resource uses the callable to return a real response as a result of a
     request.
 
-    The parameters for the callable are::
+    The parameters for the callable are:
 
-        :param bytes method: An HTTP method
-        :param bytes url: The full URL of the request
-        :param dict params: A dictionary of query parameters mapping query keys
-            lists of values (sorted alphabetically)
-        :param dict headers: A dictionary of headers mapping header keys to
-            a list of header values (sorted alphabetically)
-        :param str data: The request body.
-        :return: a ``tuple`` of (code, headers, body) where the code is
-            the HTTP status code, the headers is a dictionary of bytes
-            (unlike the `headers` parameter, which is a dictionary of lists),
-            and body is a string that will be returned as the response body.
+    - ``method``, the HTTP method as `bytes`.
+    - ``url``, the the full URL of the request as `bytes`.
+    - ``params``, a dictionary of query parameters mapping query keys
+      lists of values (sorted alphabetically).
+    - ``headers``, a dictionary of headers mapping header keys to
+      a list of header values (sorted alphabetically).
+    - ``data``, the request body as `bytes`.
+
+    The callable must return a ``tuple`` of (code, headers, body) where the
+    code is the HTTP status code, the headers is a dictionary of bytes (unlike
+    the `headers` parameter, which is a dictionary of lists), and body is
+    a string that will be returned as the response body.
 
     If there is a stubbing error, the return value is undefined (if an
-    exception is raised, :obj:`Resource` will just eat it and return 500
-    in its place).  The callable, or whomever creates the callable, should
-    have a way to handle error reporting.
+    exception is raised, :obj:`~twisted.web.resource.Resource` will just eat it
+    and return 500 in its place).  The callable, or whomever creates the
+    callable, should have a way to handle error reporting.
     """
     isLeaf = True
 
     def __init__(self, get_response_for):
         """
-        See ``StringStubbingResource``.
+        See `StringStubbingResource`.
         """
         Resource.__init__(self)
         self._get_response_for = get_response_for
@@ -338,28 +339,28 @@ class RequestSequence(object):
     responses, or the request's paramters do not match the next item's expected
     request paramters, raises :obj:`AssertionError`.
 
-    For the expected request arguments::
+    For the expected request arguments:
 
     - ``method`` should be `bytes` normalized to lowercase.
     - ``url`` should be normalized as per the transformations in
-        https://en.wikipedia.org/wiki/URL_normalization that (usually) preserve
-        semantics.  A url to `http://something-that-looks-like-a-directory`
-        would be normalized to `http://something-that-looks-like-a-directory/`
-        and a url to `http://something-that-looks-like-a-page/page.html`
-        remains unchanged.
+      https://en.wikipedia.org/wiki/URL_normalization that (usually) preserve
+      semantics.  A url to `http://something-that-looks-like-a-directory`
+      would be normalized to `http://something-that-looks-like-a-directory/`
+      and a url to `http://something-that-looks-like-a-page/page.html`
+      remains unchanged.
     - ``params`` is a dictionary mapping `bytes` to `lists` of `bytes`
     - ``headers`` is a dictionary mapping `bytes` to `lists` of `bytes` - note
-        that :obj:`twisted.web.client.Agent` may add its own headers though,
-        which are not guaranteed (for instance, `user-agent` or
-        `content-length`), so it's better to use some kind of matcher like
-        :obj:`HasHeaders`.
+      that :obj:`twisted.web.client.Agent` may add its own headers though,
+      which are not guaranteed (for instance, `user-agent` or
+      `content-length`), so it's better to use some kind of matcher like
+      :obj:`HasHeaders`.
     - ``data`` is a `bytes`
 
-    For the response::
+    For the response:
 
     - ``code`` is an integer representing the HTTP status code to return
     - ``headers`` is a dictionary mapping `bytes` to `bytes` or `lists` of
-        `bytes`
+      `bytes`
     - ``body`` is a `bytes`
 
     :ivar list sequence: The sequence of expected request arguments mapped to

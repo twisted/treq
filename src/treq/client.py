@@ -169,8 +169,11 @@ class HTTPClient(object):
         # based on the parameters passed in.
         bodyProducer = None
         data = kwargs.get('data')
-        json = kwargs.get('json')
         files = kwargs.get('files')
+        # since json=None needs to be serialized as 'null', we need to
+        # explicitly check kwargs for this key
+        has_json = 'json' in kwargs
+
         if files:
             # If the files keyword is present we will issue a
             # multipart/form-data request as it suits better for cases
@@ -195,12 +198,13 @@ class HTTPClient(object):
                     b'content-type', [b'application/x-www-form-urlencoded'])
                 data = urlencode(data, doseq=True)
             bodyProducer = self._data_to_body_producer(data)
-        elif json:
+        elif has_json:
+            content = kwargs.get('json')
             # If data is sent as json, set Content-Type as 'application/json'
 
             headers.setRawHeaders(
-                b'content-type', [b'application/json'])
-            json = json_dumps(json).encode('ascii')
+                b'content-type', [b'application/json; charset=UTF-8'])
+            json = json_dumps(content, separators=(u',', u':')).encode('utf-8')
             bodyProducer = self._data_to_body_producer(json)
 
         cookies = kwargs.get('cookies', {})

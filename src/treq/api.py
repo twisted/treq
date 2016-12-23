@@ -81,6 +81,9 @@ def request(method, url, **kwargs):
     :param data: Optional request body.
     :type data: str, file-like, IBodyProducer, or None
 
+    :param json: Optional JSON-serializable content to pass in body.
+    :type data: dict, list/tuple, int, string/unicode/bytearray, bool, or None
+
     :param reactor: Optional twisted reactor.
 
     :param bool persistent: Use persistent HTTP connections.  Default: ``True``

@@ -139,6 +139,60 @@ class HTTPClientTests(TestCase):
 
         self.assertBody(b'hello')
 
+    def test_request_json_dict(self):
+        self.client.request('POST', 'http://example.com/', json={'foo': 'bar'})
+        self.agent.request.assert_called_once_with(
+            b'POST', b'http://example.com/',
+            Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
+                     b'accept-encoding': [b'gzip']}),
+            self.FileBodyProducer.return_value)
+        self.assertBody(u'{"foo":"bar"}')
+
+    def test_request_json_tuple(self):
+        self.client.request('POST', 'http://example.com/', json=('foo', 1))
+        self.agent.request.assert_called_once_with(
+            b'POST', b'http://example.com/',
+            Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
+                     b'accept-encoding': [b'gzip']}),
+            self.FileBodyProducer.return_value)
+        self.assertBody(u'["foo",1]')
+
+    def test_request_json_number(self):
+        self.client.request('POST', 'http://example.com/', json=1.)
+        self.agent.request.assert_called_once_with(
+            b'POST', b'http://example.com/',
+            Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
+                     b'accept-encoding': [b'gzip']}),
+            self.FileBodyProducer.return_value)
+        self.assertBody(u'1.0')
+
+    def test_request_json_string(self):
+        self.client.request('POST', 'http://example.com/', json='hello')
+        self.agent.request.assert_called_once_with(
+            b'POST', b'http://example.com/',
+            Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
+                     b'accept-encoding': [b'gzip']}),
+            self.FileBodyProducer.return_value)
+        self.assertBody(u'"hello"')
+
+    def test_request_json_bool(self):
+        self.client.request('POST', 'http://example.com/', json=True)
+        self.agent.request.assert_called_once_with(
+            b'POST', b'http://example.com/',
+            Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
+                     b'accept-encoding': [b'gzip']}),
+            self.FileBodyProducer.return_value)
+        self.assertBody(u'true')
+
+    def test_request_json_none(self):
+        self.client.request('POST', 'http://example.com/', json=None)
+        self.agent.request.assert_called_once_with(
+            b'POST', b'http://example.com/',
+            Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
+                     b'accept-encoding': [b'gzip']}),
+            self.FileBodyProducer.return_value)
+        self.assertBody(u'null')
+
     @mock.patch('treq.client.uuid.uuid4', mock.Mock(return_value="heyDavid"))
     def test_request_no_name_attachment(self):
 

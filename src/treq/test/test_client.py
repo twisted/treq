@@ -146,7 +146,7 @@ class HTTPClientTests(TestCase):
             Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
                      b'accept-encoding': [b'gzip']}),
             self.FileBodyProducer.return_value)
-        self.assertBody(u'{"foo":"bar"}')
+        self.assertBody(b'{"foo":"bar"}')
 
     def test_request_json_tuple(self):
         self.client.request('POST', 'http://example.com/', json=('foo', 1))
@@ -155,7 +155,7 @@ class HTTPClientTests(TestCase):
             Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
                      b'accept-encoding': [b'gzip']}),
             self.FileBodyProducer.return_value)
-        self.assertBody(u'["foo",1]')
+        self.assertBody(b'["foo",1]')
 
     def test_request_json_number(self):
         self.client.request('POST', 'http://example.com/', json=1.)
@@ -164,7 +164,7 @@ class HTTPClientTests(TestCase):
             Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
                      b'accept-encoding': [b'gzip']}),
             self.FileBodyProducer.return_value)
-        self.assertBody(u'1.0')
+        self.assertBody(b'1.0')
 
     def test_request_json_string(self):
         self.client.request('POST', 'http://example.com/', json='hello')
@@ -173,7 +173,7 @@ class HTTPClientTests(TestCase):
             Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
                      b'accept-encoding': [b'gzip']}),
             self.FileBodyProducer.return_value)
-        self.assertBody(u'"hello"')
+        self.assertBody(b'"hello"')
 
     def test_request_json_bool(self):
         self.client.request('POST', 'http://example.com/', json=True)
@@ -182,7 +182,7 @@ class HTTPClientTests(TestCase):
             Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
                      b'accept-encoding': [b'gzip']}),
             self.FileBodyProducer.return_value)
-        self.assertBody(u'true')
+        self.assertBody(b'true')
 
     def test_request_json_none(self):
         self.client.request('POST', 'http://example.com/', json=None)
@@ -191,7 +191,7 @@ class HTTPClientTests(TestCase):
             Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
                      b'accept-encoding': [b'gzip']}),
             self.FileBodyProducer.return_value)
-        self.assertBody(u'null')
+        self.assertBody(b'null')
 
     @mock.patch('treq.client.uuid.uuid4', mock.Mock(return_value="heyDavid"))
     def test_request_no_name_attachment(self):

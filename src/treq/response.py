@@ -1,6 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
+from twisted.internet import defer
 from twisted.python.components import proxyForInterface
+from twisted.web.error import Error
 from twisted.web.iweb import IResponse
 
 from requests.cookies import cookiejar_from_dict
@@ -91,3 +93,24 @@ class _Response(proxyForInterface(IResponse)):
                 jar.set_cookie(cookie)
 
         return jar
+
+    def check_status(self):
+        """
+        Fail with an error if the response has an error status.
+
+        An error status is a 4xx or 5xx code (RFC 7231).
+
+        :rtype: A `Deferred` that fires with the response itself if
+            the status is a known non-error code, or that calls its
+            errback chain with a :class:`twisted.web.error.Error`
+            otherwise.
+        """
+        if 100 <= self.code < 400:
+            d = defer.succeed(self)
+        else:
+            d = self.content().addCallback(self._raise_error)
+
+        return d
+
+    def _raise_error(self, body):
+        raise Error(self.code, response=body)

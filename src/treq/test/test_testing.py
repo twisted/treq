@@ -2,7 +2,7 @@
 In-memory treq returns stubbed responses.
 """
 from functools import partial
-from inspect import getmembers, isfunction
+from inspect import getmembers, isfunction, ismethod
 
 from mock import ANY
 
@@ -72,15 +72,19 @@ class StubbingTests(TestCase):
                       if obj.__module__ == "treq.api"]
         content_things = [(name, obj) for name, obj in treq_things
                           if obj.__module__ == "treq.content"]
+        response_things = [(name, obj) for name, obj in treq_things
+                           if obj.__module__ == "treq.response"]
 
         # sanity checks - this test should fail if treq exposes a new API
         # without changes being made to StubTreq and this test.
-        msg = ("At the time this test was written, StubTreq only knew about "
-               "treq exposing functions from treq.api and treq.content.  If "
-               "this has changed, StubTreq will need to be updated, as will "
-               "this test.")
-        self.assertTrue(all(isfunction(obj) for name, obj in treq_things), msg)
-        self.assertEqual(set(treq_things), set(api_things + content_things),
+        msg = ("StubTreq assumes that treq only exposes functions from "
+               "treq.api and treq.content, and treq.response.  If this has "
+               "changed, StubTreq will need to be updated, as will this "
+               "test.")
+        self.assertTrue(all((isfunction(obj) or ismethod(obj))
+                            for name, obj in treq_things), msg)
+        self.assertEqual(set(treq_things),
+                         set(api_things + content_things + response_things),
                          msg)
 
         for name, obj in api_things:

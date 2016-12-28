@@ -1,7 +1,8 @@
-from twisted.trial.unittest import SynchronousTestCase
+from twisted.trial.unittest import TestCase
 
 from twisted.python.failure import Failure
 from twisted.web.client import ResponseDone
+from twisted.web.error import Error
 from twisted.web.http_headers import Headers
 
 from treq.response import _Response
@@ -24,7 +25,7 @@ class FakeResponse(object):
         protocol.connectionLost(Failure(ResponseDone()))
 
 
-class ResponseTests(SynchronousTestCase):
+class ResponseTests(TestCase):
     def test_collect(self):
         original = FakeResponse(200, Headers(), body=[b'foo', b'bar', b'baz'])
         calls = []
@@ -79,3 +80,33 @@ class ResponseTests(SynchronousTestCase):
     def test_no_history(self):
         wrapper = _Response(FakeResponse(200, Headers({})), None)
         self.assertEqual(wrapper.history(), [])
+
+    if skip_history:
+        test_history.skip = skip_history
+        test_no_history.skip = skip_history
+
+    def test_history_notimplemented(self):
+        wrapper = _Response(FakeResponse(200, Headers({})), None)
+        self.assertRaises(NotImplementedError, wrapper.history)
+
+    if not skip_history:
+        test_history_notimplemented.skip = "History supported."
+
+    def test_check_status_ok(self):
+        original = FakeResponse(200, Headers(), body=[b''])
+        response = _Response(original, None)
+        d = response.check_status()
+        self.assertEqual(self.successResultOf(d), response)
+
+    def test_check_status_error(self):
+        original = FakeResponse(400, Headers(), body=[b'body'])
+        response = _Response(original, None)
+        error = self.failureResultOf(response.check_status(), Error).value
+        self.assertEqual(error.status, b'400')
+        self.assertEqual(error.response, b'body')
+
+    def test_check_status_is_available_through_treq(self):
+        original = FakeResponse(200, Headers(), body=[b''])
+        response = _Response(original, None)
+        d = response.check_status()
+        self.assertEqual(self.successResultOf(d), response)

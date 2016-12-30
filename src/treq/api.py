@@ -24,7 +24,7 @@ def get(url, headers=None, **kwargs):
     return _client(**kwargs).get(url, headers=headers, **kwargs)
 
 
-def post(url, data=None, json=None, **kwargs):
+def post(url, data=None, **kwargs):
     """
     Make a ``POST`` request.
 

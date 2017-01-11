@@ -30,7 +30,7 @@ def post(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).post(url, data=data, json=json, **kwargs)
+    return _client(**kwargs).post(url, data=data, **kwargs)
 
 
 def put(url, data=None, **kwargs):

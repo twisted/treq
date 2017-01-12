@@ -5,6 +5,7 @@
 _build
 build
 dist
+/docs/html
 MANIFEST
 .coverage
 coverage

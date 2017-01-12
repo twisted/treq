@@ -44,6 +44,6 @@ if __name__ == "__main__":
         classifiers=classifiers,
         description="A requests-like API built on top of twisted.web's Agent",
         license="MIT/X",
-        url="http://github.com/twisted/treq",
+        url="https://github.com/twisted/treq",
         long_description=readme
     )

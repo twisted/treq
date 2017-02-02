@@ -10,9 +10,9 @@ from twisted.web.http import FORBIDDEN
 import treq
 
 
-class SillyAuthResource(Resource, object):
+class TrivialAuthResource(Resource, object):
     """
-    A resource that uses a silly, header-based authentication
+    A resource that uses a trivial, header-based authentication
     mechanism.
     """
     isLeaf = True
@@ -30,9 +30,9 @@ class SillyAuthResource(Resource, object):
         return b"It's good!"
 
 
-class SillyAuth(object):
+class TrivialAuth(object):
     """
-    I implement a silly, header-based authentication mechanism.
+    I implement a trivial, header-based authentication mechanism.
     """
 
     def __init__(self, header, secret, agent):
@@ -49,20 +49,20 @@ class SillyAuth(object):
 
 @inlineCallbacks
 def main(reactor, *args):
-    header = b'x-silly-auth'
+    header = b'x-trivial-auth'
     secret = b'secret'
 
-    auth_resource = SillyAuthResource(header=header, secret=secret)
+    auth_resource = TrivialAuthResource(header=header, secret=secret)
 
     endpoint = serverFromString(reactor, "tcp:8080")
     listener = yield endpoint.listen(Site(auth_resource))
 
-    def sillyAuthCallable(agent):
-        return SillyAuth(header, secret, agent)
+    def trivialAuthCallable(agent):
+        return TrivialAuth(header, secret, agent)
 
     response = yield treq.get(
         'http://localhost:8080/',
-        auth=sillyAuthCallable,
+        auth=trivialAuthCallable,
     )
 
     content = yield response.content()

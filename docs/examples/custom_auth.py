@@ -10,7 +10,7 @@ from twisted.web.http import FORBIDDEN
 import treq
 
 
-class SillyAuthResource(Resource):
+class SillyAuthResource(Resource, object):
     """
     A resource that uses a silly, header-based authentication
     mechanism.

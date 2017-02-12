@@ -173,3 +173,19 @@ class ContentTests(TestCase):
         self.protocol.connectionLost(Failure(ResponseDone()))
 
         self.assertEqual(self.successResultOf(d), u'\xa1')
+
+    def test_text_content_unicode_headers(self):
+        """
+        Header parsing is robust against unicode header names and values.
+        """
+        self.response.headers = Headers({
+            b'Content-Type': [u'text/plain; charset="UTF-16BE"; u=ᛃ'.encode('utf-8')],
+            u'Coördination'.encode('iso-8859-1'): [u'koʊˌɔrdɪˈneɪʃən'.encode('utf-8')],
+        })
+
+        d = text_content(self.response)
+
+        self.protocol.dataReceived(u'ᚠᚡ'.encode('UTF-16BE'))
+        self.protocol.connectionLost(Failure(ResponseDone()))
+
+        self.assertEqual(self.successResultOf(d), u'ᚠᚡ')

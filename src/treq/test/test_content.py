@@ -142,6 +142,17 @@ class ContentTests(TestCase):
 
         self.assertEqual(self.successResultOf(d), {u'msg': u'hëlló!'})
 
+    def test_json_content_utf16(self):
+        self.response.headers = Headers({
+            b'Content-Type': [b"application/json; charset='UTF-16LE'"],
+        })
+        d = json_content(self.response)
+
+        self.protocol.dataReceived(u'{"msg":"hëlló!"}'.encode('UTF-16LE'))
+        self.protocol.connectionLost(Failure(ResponseDone()))
+
+        self.assertEqual(self.successResultOf(d), {u'msg': u'hëlló!'})
+
     def test_text_content(self):
         self.response.headers = Headers(
             {b'Content-Type': [b'text/plain; charset=utf-8']})

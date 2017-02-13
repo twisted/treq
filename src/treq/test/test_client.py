@@ -35,6 +35,12 @@ class HTTPClientTests(TestCase):
         body = self.FileBodyProducer.mock_calls[0][1][0]
         self.assertEqual(body.read(), expected)
 
+    def test_post(self):
+        self.client.post('http://example.com/')
+        self.agent.request.assert_called_once_with(
+            b'POST', b'http://example.com/',
+            Headers({b'accept-encoding': [b'gzip']}), None)
+
     def test_request_uri_idn(self):
         self.client.request('GET', u'http://‽.net')
         self.agent.request.assert_called_once_with(

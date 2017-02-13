@@ -114,8 +114,8 @@ class HTTPClient(object):
     def patch(self, url, data=None, **kwargs):
         return self.request('PATCH', url, data=data, **kwargs)
 
-    def post(self, url, data=None, json=None, **kwargs):
-        return self.request('POST', url, data=data, json=json, **kwargs)
+    def post(self, url, data=None, **kwargs):
+        return self.request('POST', url, data=data, **kwargs)
 
     def head(self, url, **kwargs):
         return self.request('HEAD', url, **kwargs)

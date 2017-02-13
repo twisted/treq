@@ -202,7 +202,7 @@ class HTTPClient(object):
             # If data is sent as json, set Content-Type as 'application/json'
             headers.setRawHeaders(
                 b'content-type', [b'application/json; charset=UTF-8'])
-            content = kwargs.get('json')
+            content = kwargs['json']
             json = json_dumps(content, separators=(u',', u':')).encode('utf-8')
             bodyProducer = self._data_to_body_producer(json)
 

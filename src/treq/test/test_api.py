@@ -45,7 +45,10 @@ class TreqAPITests(TestCase):
         this is a fairly safe assumption to make.
         """
         agent = RequestTraversalAgent
-        resp = treq.get('http://test.com', proxy=('proxy', 8080), proxy_agent_cls=agent)
+        resp = treq.get(
+            'http://test.com',
+            proxy=('proxy', 8080),
+            proxy_agent_cls=agent)
 
         hostnameEndpoint.assert_called_once_with(
             mock.ANY,

@@ -24,10 +24,6 @@ class TreqAPITests(TestCase):
         self.HTTPConnectionPool = pool_patcher.start()
         self.addCleanup(pool_patcher.stop)
 
-        tcp_endpoint = mock.patch('treq.api.clientFromString')
-        self.TCPEndpoint = tcp_endpoint.start()
-        self.addCleanup(tcp_endpoint.stop)
-
         self.client = self.HTTPClient.return_value
 
     def test_default_pool(self):
@@ -40,7 +36,8 @@ class TreqAPITests(TestCase):
 
         self.assertEqual(self.client.get.return_value, resp)
 
-    def test_proxy(self):
+    @mock.patch('treq.api.HostnameEndpoint', create_autospec=True)
+    def test_proxy(self, hostnameEndpoint):
         """
         Ensure that eventually a ProxyAgent is used to make the request.
 
@@ -50,9 +47,9 @@ class TreqAPITests(TestCase):
         agent = RequestTraversalAgent
         resp = treq.get('http://test.com', proxy=('proxy', 8080), proxy_agent_cls=agent)
 
-        self.TCPEndpoint.assert_called_once_with(
+        hostnameEndpoint.assert_called_once_with(
             mock.ANY,
-            'tcp:host=proxy:8080'
+            host="proxy", port=8080
         )
 
         self.assertEqual(self.client.get.return_value, resp)

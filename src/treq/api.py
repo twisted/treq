@@ -129,7 +129,8 @@ def _client(*args, **kwargs):
         endpoint = clientFromString(
             reactor,
             'tcp:host={}:{}'.format(address, port))
-        agent = ProxyAgent(endpoint)
+        agent_cls = kwargs.pop('proxy_agent_cls', ProxyAgent)
+        agent = agent_cls(endpoint)
     if agent is None:
         agent = Agent(reactor, pool=pool)
     return HTTPClient(agent)

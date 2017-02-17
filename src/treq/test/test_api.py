@@ -5,6 +5,7 @@ import mock
 from treq.test.util import TestCase
 import treq
 from treq._utils import set_global_pool
+from treq.testing import RequestTraversalAgent
 
 
 class TreqAPITests(TestCase):
@@ -22,10 +23,6 @@ class TreqAPITests(TestCase):
         pool_patcher = mock.patch('treq._utils.HTTPConnectionPool')
         self.HTTPConnectionPool = pool_patcher.start()
         self.addCleanup(pool_patcher.stop)
-
-        proxy_agent_patcher = mock.patch('treq.api.ProxyAgent')
-        self.ProxyAgent = proxy_agent_patcher.start()
-        self.addCleanup(proxy_agent_patcher.stop)
 
         tcp_endpoint = mock.patch('treq.api.clientFromString')
         self.TCPEndpoint = tcp_endpoint.start()
@@ -50,17 +47,12 @@ class TreqAPITests(TestCase):
         ProxyAgent just wraps agent with a similar interface, so
         this is a fairly safe assumption to make.
         """
-        resp = treq.get('http://test.com', proxy=('proxy', 8080))
+        agent = RequestTraversalAgent
+        resp = treq.get('http://test.com', proxy=('proxy', 8080), proxy_agent_cls=agent)
 
         self.TCPEndpoint.assert_called_once_with(
             mock.ANY,
             'tcp:host=proxy:8080'
-        )
-
-        endpoint = self.TCPEndpoint.return_value
-
-        self.ProxyAgent.assert_called_once_with(
-            endpoint
         )
 
         self.assertEqual(self.client.get.return_value, resp)

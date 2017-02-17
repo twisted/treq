@@ -1,5 +1,0 @@
--e .
-pyflakes
-pep8
-sphinx
-mock==1.0.1  # Can be removed once Python 2.6 is dropped.

@@ -36,6 +36,14 @@ if __name__ == "__main__":
             # Twisted[tls] 16.0.0 requires 0.13, which doesn't work on Python 3.
             "pyOpenSSL >= 0.15.1",
         ],
+        extras_require={
+            "dev": [
+                "pyflakes",
+                "pep8",
+                "sphinx",
+                "mock==1.0.1",
+            ],
+        },
         package_data={"treq": ["_version"]},
         author="David Reid",
         author_email="dreid@dreid.org",

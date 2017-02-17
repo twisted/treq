@@ -104,6 +104,9 @@ def request(method, url, **kwargs):
     :param proxy: If specified, send the request through a proxy.
     :type proxy: tuple of ``('host', port)``.
 
+    :param bool unbuffered: Pass ``True`` to to disable response buffering.  By
+        default treq buffers the entire response body in memory.
+
     :rtype: Deferred that fires with an IResponse provider.
 
     """

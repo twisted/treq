@@ -1,4 +1,4 @@
-include treq/_version README.rst LICENSE tox.ini tox2travis.py requirements-dev.txt
+include README.rst LICENSE tox.ini tox2travis.py requirements-dev.txt .coveragerc
 recursive-include docs *
 prune docs/_build
 exclude .travis.yml

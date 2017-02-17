@@ -5,9 +5,9 @@
 _build
 build
 dist
+/docs/html
 MANIFEST
 .coverage
-.coveragerc
 coverage
 htmlcov
 _trial_temp

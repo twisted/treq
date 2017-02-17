@@ -1,8 +1,9 @@
-from twisted.trial.unittest import TestCase
+from twisted.trial.unittest import SynchronousTestCase
 
 from twisted import version
+from twisted.python.failure import Failure
 from twisted.python.versions import Version
-
+from twisted.web.client import ResponseDone
 from twisted.web.http_headers import Headers
 
 from treq.response import _Response
@@ -15,16 +16,51 @@ if version < Version("twisted", 13, 1, 0):
 
 
 class FakeResponse(object):
-    def __init__(self, code, headers):
+    def __init__(self, code, headers, body=()):
         self.code = code
         self.headers = headers
         self.previousResponse = None
+        self._body = body
+        self.length = sum(len(c) for c in body)
 
     def setPreviousResponse(self, response):
         self.previousResponse = response
 
+    def deliverBody(self, protocol):
+        for chunk in self._body:
+            protocol.dataReceived(chunk)
+        protocol.connectionLost(Failure(ResponseDone()))
 
-class ResponseTests(TestCase):
+
+class ResponseTests(SynchronousTestCase):
+    def test_collect(self):
+        original = FakeResponse(200, Headers(), body=[b'foo', b'bar', b'baz'])
+        calls = []
+        _Response(original, None).collect(calls.append)
+        self.assertEqual([b'foo', b'bar', b'baz'], calls)
+
+    def test_content(self):
+        original = FakeResponse(200, Headers(), body=[b'foo', b'bar', b'baz'])
+        self.assertEqual(
+            b'foobarbaz',
+            self.successResultOf(_Response(original, None).content()),
+        )
+
+    def test_json(self):
+        original = FakeResponse(200, Headers(), body=[b'{"foo": ', b'"bar"}'])
+        self.assertEqual(
+            {'foo': 'bar'},
+            self.successResultOf(_Response(original, None).json()),
+        )
+
+    def test_text(self):
+        headers = Headers({b'content-type': [b'text/plain;charset=utf-8']})
+        original = FakeResponse(200, headers, body=[b'\xe2\x98', b'\x83'])
+        self.assertEqual(
+            u'\u2603',
+            self.successResultOf(_Response(original, None).text()),
+        )
+
     def test_history(self):
         redirect1 = FakeResponse(
             301,

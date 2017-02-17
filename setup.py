@@ -41,6 +41,7 @@ if __name__ == "__main__":
                 "pyflakes",
                 "pep8",
                 "sphinx",
+                # Can be removed once Python 2.6 is dropped.
                 "mock==1.0.1",
             ],
         },

@@ -2,5 +2,6 @@ include README.rst LICENSE tox.ini tox2travis.py .coveragerc
 recursive-include docs *
 prune docs/_build
 exclude .travis.yml
+exclude .rtd-requirements.txt
 
 global-exclude .DS_Store *.pyc

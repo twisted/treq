@@ -1,5 +1,0 @@
--e .
-pyflakes
-pep8
-sphinx
-mock

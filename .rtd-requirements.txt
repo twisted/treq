@@ -1,5 +1,0 @@
-# This pip requirements file is used by the ReadTheDocs build to force
-# installation of treq to go through pip instead of `setup.py install`.
-# The latter command fails to install pyasn1[1].
-# [1]: https://readthedocs.org/projects/treq/builds/4906698/
--e .

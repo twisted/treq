@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 In-memory version of treq for testing.
 """
@@ -366,10 +367,12 @@ class RequestSequence(object):
     :ivar list sequence: The sequence of expected request arguments mapped to
         stubbed responses
     :ivar async_failure_reporter: A callable that takes a single message
-        reporting failures - it's asynchronous because it cannot just raise
-        an exception - if it does, :obj:`Resource.render` will just convert
+        reporting failures—it's asynchronous because it cannot just raise
+        an exception—if it does, :obj:`Resource.render` will just convert
         that into a 500 response, and there will be no other failure reporting
-        mechanism.
+        mechanism. Under Trial, this may be
+        a :class:`twisted.logger.Logger.error`, as Trial fails the test when an
+        error is logged.
     """
     def __init__(self, sequence, async_failure_reporter):
         self._sequence = sequence
@@ -388,11 +391,14 @@ class RequestSequence(object):
         """
         Usage::
 
-            sequence_stubs = RequestSequence([...])
+            async_failures = []
+            sequence_stubs = RequestSequence([...], async_failures.append)
             stub_treq = StubTreq(StringStubbingResource(sequence_stubs))
             with sequence_stubs.consume(self.fail):  # self = unittest.TestCase
                 stub_treq.get('http://fakeurl.com')
                 stub_treq.get('http://another-fake-url.com')
+
+            self.assertEqual([], async_failures)
 
         If there are still remaining expected requests to be made in the
         sequence, fails the provided test case.

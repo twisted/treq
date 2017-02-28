@@ -12,7 +12,7 @@ log = Logger()
 @defer.inlineCallbacks
 def make_a_request(treq):
     """
-    Make a few requests using treq.
+    Make a request using treq.
     """
     response = yield treq.get('http://an.example/foo', params={'a': 'b'},
                               headers={b'Accept': b'application/json'})

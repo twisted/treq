@@ -20,7 +20,6 @@ And you can easily achieve custom responses by writing trivial resources yoursel
 
 However, those resources don't assert anything about the request.
 The :class:`~treq.testing.RequestSequence` and :class:`~treq.testing.StringStubbingResource` classes make it easy to construct a resource which encodes the expected request and response pairs.
-You may pass :class:`~treq.testing.HasHeaders` to make assertions about the headers present in the request.
 Do note that most parameters to these functions must be bytes—it's safest to use the ``b''`` string syntax, which works on both Python 2 and 3.
 
 For example:
@@ -30,6 +29,23 @@ For example:
 
 This may be run with ``trial testing_seq.py``.
 Download: :download:`testing_seq.py <examples/testing_seq.py>`.
+
+Loosely matching the request
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you don't care about certain parts of the request, you can pass :data:`mock.ANY`, which compares equal to anything.
+This sequence matches a single GET request with any parameters or headers:
+
+.. code-block:: python
+
+    RequestSequence([
+        ((b'get', mock.ANY, mock.ANY, b''), (200, {}, b'ok'))
+    ])
+
+
+If you care about headers, use :class:`~treq.testing.HasHeaders` to make assertions about the headers present in the request.
+It compares equal to a superset of the headers specified, which helps make your test robust to changes in treq or Agent.
+Right now treq adds the ``Accept-Encoding: gzip`` header, but as support for additional compression methods is added, this may change.
 
 Writing tests for Twisted Web resources
 ---------------------------------------

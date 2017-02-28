@@ -32,7 +32,7 @@ class MakeARequestTests(SynchronousTestCase):
     def test_200_ok(self):
         """On a 200 response, return the response's JSON."""
         req_seq = RequestSequence([
-            ((b'get', b'http://an.example/foo', {b'a': [b'b']},
+            ((b'get', 'http://an.example/foo', {b'a': [b'b']},
               HasHeaders({'Accept': ['application/json']}), b''),
              (http.OK, {b'Content-Type': b'application/json'}, b'{"status": "ok"}'))
         ], log.error)
@@ -46,7 +46,7 @@ class MakeARequestTests(SynchronousTestCase):
     def test_418_teapot(self):
         """On an unexpected response code, raise an exception"""
         req_seq = RequestSequence([
-            ((b'get', b'http://an.example/foo', {b'a': [b'b']},
+            ((b'get', 'http://an.example/foo', {b'a': [b'b']},
               HasHeaders({'Accept': ['application/json']}), b''),
              (418, {b'Content-Type': b'text/plain'}, b"I'm a teapot!"))
         ], log.error)

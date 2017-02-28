@@ -219,7 +219,7 @@ class StringStubbingResource(Resource):
     The parameters for the callable are:
 
     - ``method``, the HTTP method as `bytes`.
-    - ``url``, the the full URL of the request as `bytes`.
+    - ``url``, the full URL of the request as text.
     - ``params``, a dictionary of query parameters mapping query keys
       lists of values (sorted alphabetically).
     - ``headers``, a dictionary of headers mapping header keys to
@@ -336,17 +336,17 @@ class RequestSequence(object):
          ...]
 
     Expects the requests to arrive in sequence order.  If there are no more
-    responses, or the request's paramters do not match the next item's expected
-    request paramters, raises :obj:`AssertionError`.
+    responses, or the request's parameters do not match the next item's expected
+    request parameters, raises :obj:`AssertionError`.
 
     For the expected request arguments:
 
     - ``method`` should be `bytes` normalized to lowercase.
-    - ``url`` should be normalized as per the transformations in
+    - ``url`` should be a `str` normalized as per the transformations in
       https://en.wikipedia.org/wiki/URL_normalization that (usually) preserve
-      semantics.  A url to `http://something-that-looks-like-a-directory`
+      semantics.  A URL to `http://something-that-looks-like-a-directory`
       would be normalized to `http://something-that-looks-like-a-directory/`
-      and a url to `http://something-that-looks-like-a-page/page.html`
+      and a URL to `http://something-that-looks-like-a-page/page.html`
       remains unchanged.
     - ``params`` is a dictionary mapping `bytes` to `lists` of `bytes`
     - ``headers`` is a dictionary mapping `bytes` to `lists` of `bytes` - note

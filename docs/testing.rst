@@ -54,4 +54,4 @@ Since :class:`~treq.testing.StubTreq` wraps any resource, you can use it to test
 This is superior to calling your resource's methods directly or passing mock objects, since it uses a real :class:`~twisted.web.client.Agent` to generate the request and a real :class:`~twisted.web.server.Site` to process the response.
 Thus, the ``request`` object your code interacts with is a *real* :class:`twisted.web.server.Request` and behaves the same as it would in production.
 
-Note that if your resource returns :data:`~twisted.web.server.NOT_DONE` you must call the :class:`~treq.testing.StubTreq.flush()` method to spin the memory reactor once the server writes additional data before the client will receive it.
+Note that if your resource returns :data:`~twisted.web.server.NOT_DONE_YET` you must call the :meth:`~treq.testing.StubTreq.flush()` method to spin the memory reactor once the server writes additional data before the client will receive it.

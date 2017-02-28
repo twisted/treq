@@ -337,8 +337,8 @@ class RequestSequence(object):
          ...]
 
     Expects the requests to arrive in sequence order.  If there are no more
-    responses, or the request's parameters do not match the next item's expected
-    request parameters, raises :obj:`AssertionError`.
+    responses, or the request's parameters do not match the next item's
+    expected request parameters, raises :obj:`AssertionError`.
 
     For the expected request arguments:
 

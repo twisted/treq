@@ -421,7 +421,7 @@ class RequestSequence(object):
             self._async_reporter(
                 "No more requests expected, but request {0!r} made.".format(
                     (method, url, params, headers, data)))
-            return (500, {}, "StubbingError")
+            return (500, {}, b"StubbingError")
 
         expected, response = self._sequence[0]
         e_method, e_url, e_params, e_headers, e_data = expected
@@ -441,7 +441,7 @@ class RequestSequence(object):
                 "\nMismatches: {2!r}"
                 .format(expected, (method, url, params, headers, data),
                         mismatches))
-            return (500, {}, "StubbingError")
+            return (500, {}, b"StubbingError")
 
         self._sequence = self._sequence[1:]
 

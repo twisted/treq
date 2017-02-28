@@ -409,6 +409,7 @@ class RequestSequenceTests(TestCase):
         d = stub.get('https://anything', data=b'what', headers={b'1': b'1'})
         resp = self.successResultOf(d)
         self.assertEqual(500, resp.code)
+        self.assertEqual(b'StubbingError', self.successResultOf(resp.content()))
         self.assertEqual(1, len(self.async_failures))
         self.assertIn("No more requests expected, but request",
                       self.async_failures[0])

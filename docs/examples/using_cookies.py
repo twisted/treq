@@ -10,7 +10,7 @@ def main(reactor, *args):
     def _get_jar(resp):
         jar = resp.cookies()
 
-        print 'The server set our hello cookie to: {0}'.format(jar['hello'])
+        print('The server set our hello cookie to: {}'.format(jar['hello']))
 
         return treq.get('http://httpbin.org/cookies', cookies=jar)
 

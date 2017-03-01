@@ -6,34 +6,34 @@ import treq
 
 @inlineCallbacks
 def main(reactor):
-    print 'List of tuples'
+    print('List of tuples')
     resp = yield treq.get('http://httpbin.org/get',
                           params=[('foo', 'bar'), ('baz', 'bax')])
-    content = yield treq.content(resp)
-    print content
+    content = yield resp.text()
+    print(content)
 
-    print 'Single value dictionary'
+    print('Single value dictionary')
     resp = yield treq.get('http://httpbin.org/get',
                           params={'foo': 'bar', 'baz': 'bax'})
-    content = yield treq.content(resp)
-    print content
+    content = yield resp.text()
+    print(content)
 
-    print 'Multi value dictionary'
+    print('Multi value dictionary')
     resp = yield treq.get('http://httpbin.org/get',
                           params={'foo': ['bar', 'baz', 'bax']})
-    content = yield treq.content(resp)
-    print content
+    content = yield resp.text()
+    print(content)
 
-    print 'Mixed value dictionary'
+    print('Mixed value dictionary')
     resp = yield treq.get('http://httpbin.org/get',
                           params={'foo': ['bar', 'baz'], 'bax': 'quux'})
-    content = yield treq.content(resp)
-    print content
+    content = yield resp.text()
+    print(content)
 
-    print 'Preserved query parameters'
+    print('Preserved query parameters')
     resp = yield treq.get('http://httpbin.org/get?foo=bar',
                           params={'baz': 'bax'})
-    content = yield treq.content(resp)
-    print content
+    content = yield resp.text()
+    print(content)
 
 react(main, [])

@@ -143,6 +143,10 @@ class ContentTests(TestCase):
         self.assertEqual(self.successResultOf(d), {u'msg': u'hëlló!'})
 
     def test_json_content_utf16(self):
+        """
+        JSON received is decoded according to the charset given in the
+        Content-Type header.
+        """
         self.response.headers = Headers({
             b'Content-Type': [b"application/json; charset='UTF-16LE'"],
         })

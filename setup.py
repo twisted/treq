@@ -38,6 +38,7 @@ if __name__ == "__main__":
             "service_identity >= 14.0.0",
             # Twisted[tls] 16.0.0 requires 0.13, which doesn't work on Python 3.
             "pyOpenSSL >= 0.15.1",
+            "attr"
         ],
         extras_require={
             "dev": [

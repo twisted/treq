@@ -99,6 +99,7 @@ Table of Contents
     :maxdepth: 3
 
     howto
+    testing
     api
 
 Indices and tables

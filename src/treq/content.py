@@ -7,7 +7,6 @@ from twisted.python.compat import _PY3
 from twisted.internet.defer import Deferred, succeed
 
 from twisted.internet.protocol import Protocol
-from twisted.web.client import ResponseDone
 from twisted.web.http import PotentialDataLoss
 from twisted.web.http_headers import Headers
 
@@ -34,6 +33,7 @@ class _BodyCollector(Protocol):
         self.collector(data)
 
     def connectionLost(self, reason):
+        from twisted.web.client import ResponseDone
         if reason.check(ResponseDone):
             self.finished.callback(None)
         elif reason.check(PotentialDataLoss):

@@ -39,7 +39,7 @@ class _EndpointFactory(object):
     reactor = attr.ib()
 
     def endpointForURI(self, uri):
-        if uri.scheme not in {'http', 'https'}:
+        if uri.scheme not in {b'http', b'https'}:
             raise SchemeNotSupported("Unsupported scheme: %r" % (uri.scheme,))
         return TCP4ClientEndpoint(self.reactor, "127.0.0.1", uri.port)
 

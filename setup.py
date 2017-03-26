@@ -30,7 +30,7 @@ if __name__ == "__main__":
             "incremental",
             "requests >= 2.1.0",
             "six",
-            "Twisted[tls] >= 16.0.0",
+            "Twisted[tls] >= 16.4.0, < 17.1.0",
         ],
         extras_require={
             "dev": [

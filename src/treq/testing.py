@@ -36,9 +36,34 @@ import attr
 @implementer(IAgentEndpointFactory)
 @attr.s
 class _EndpointFactory(object):
+    """
+    An endpoint factory used by :class:`RequestTraversalAgent`.
+
+    :ivar reactor: The agent's reactor.
+    :type reactor: :class:`MemoryReactor`
+    """
+
     reactor = attr.ib()
 
     def endpointForURI(self, uri):
+        """
+        Create an endpoint that represents an in-memory connection to
+        a URI.
+
+        Note: This always creates a
+        :class:`~twisted.internet.endpoints.TCP4ClientEndpoint` on the
+        assumption :class:`RequestTraversalAgent` ignores everything
+        about the endpoint but its port.
+
+        :param uri: The URI to connect to.
+        :type uri: :class:`~twisted.web.client.URI`
+
+        :return: The endpoint.
+        :rtype: An
+                :class:`~twisted.internet.interfaces.IStreamClientEndpoint`
+                provider.
+        """
+
         if uri.scheme not in {b'http', b'https'}:
             raise SchemeNotSupported("Unsupported scheme: %r" % (uri.scheme,))
         return TCP4ClientEndpoint(self.reactor, "127.0.0.1", uri.port)

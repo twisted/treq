@@ -19,15 +19,54 @@ from twisted.internet.interfaces import ISSLTransport
 
 from twisted.python.urlpath import URLPath
 
+from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.web.client import Agent
+from twisted.web.error import SchemeNotSupported
+from twisted.web.iweb import IAgent, IAgentEndpointFactory, IBodyProducer
 from twisted.web.resource import Resource
 from twisted.web.server import Site
-from twisted.web.iweb import IAgent, IBodyProducer
 
 from zope.interface import directlyProvides, implementer
 
 import treq
 from treq.client import HTTPClient
+import attr
+
+
+@implementer(IAgentEndpointFactory)
+@attr.s
+class _EndpointFactory(object):
+    """
+    An endpoint factory used by :class:`RequestTraversalAgent`.
+
+    :ivar reactor: The agent's reactor.
+    :type reactor: :class:`MemoryReactor`
+    """
+
+    reactor = attr.ib()
+
+    def endpointForURI(self, uri):
+        """
+        Create an endpoint that represents an in-memory connection to
+        a URI.
+
+        Note: This always creates a
+        :class:`~twisted.internet.endpoints.TCP4ClientEndpoint` on the
+        assumption :class:`RequestTraversalAgent` ignores everything
+        about the endpoint but its port.
+
+        :param uri: The URI to connect to.
+        :type uri: :class:`~twisted.web.client.URI`
+
+        :return: The endpoint.
+        :rtype: An
+                :class:`~twisted.internet.interfaces.IStreamClientEndpoint`
+                provider.
+        """
+
+        if uri.scheme not in {b'http', b'https'}:
+            raise SchemeNotSupported("Unsupported scheme: %r" % (uri.scheme,))
+        return TCP4ClientEndpoint(self.reactor, "127.0.0.1", uri.port)
 
 
 @implementer(IAgent)
@@ -43,7 +82,9 @@ class RequestTraversalAgent(object):
             resource tree.
         """
         self._memoryReactor = MemoryReactor()
-        self._realAgent = Agent(reactor=self._memoryReactor)
+        self._realAgent = Agent.usingEndpointFactory(
+            reactor=self._memoryReactor,
+            endpointFactory=_EndpointFactory(self._memoryReactor))
         self._rootResource = rootResource
         self._pumps = set()
 
@@ -77,12 +118,8 @@ class RequestTraversalAgent(object):
         else:
             scheme = URLPath.fromString(uri).scheme
 
-        if scheme == b"https":
-            host, port, factory, context_factory, timeout, bindAddress = (
-                self._memoryReactor.sslClients[-1])
-        else:
-            host, port, factory, timeout, bindAddress = (
-                self._memoryReactor.tcpClients[-1])
+        host, port, factory, timeout, bindAddress = (
+            self._memoryReactor.tcpClients[-1])
 
         serverAddress = IPv4Address('TCP', '127.0.0.1', port)
         clientAddress = IPv4Address('TCP', '127.0.0.1', 31337)

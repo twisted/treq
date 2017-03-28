@@ -7,5 +7,5 @@ Provides Treq version information.
 
 from incremental import Version
 
-__version__ = Version('Treq', 17, 3, 0)
+__version__ = Version('Treq', 17, 3, 1)
 __all__ = ["__version__"]

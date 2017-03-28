@@ -6,6 +6,7 @@ _build
 build
 dist
 /docs/html
+/.eggs
 MANIFEST
 .coverage
 coverage

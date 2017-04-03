@@ -82,7 +82,7 @@ def request(method, url, **kwargs):
     :type data: str, file-like, IBodyProducer, or None
 
     :param json: Optional JSON-serializable content to pass in body.
-    :type json: dict, list/tuple, int, string/unicode/bytearray, bool, or None
+    :type json: dict, list/tuple, int, string/unicode, bool, or None
 
     :param reactor: Optional twisted reactor.
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 In-memory version of treq for testing.
 """
@@ -18,15 +19,54 @@ from twisted.internet.interfaces import ISSLTransport
 
 from twisted.python.urlpath import URLPath
 
+from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.web.client import Agent
+from twisted.web.error import SchemeNotSupported
+from twisted.web.iweb import IAgent, IAgentEndpointFactory, IBodyProducer
 from twisted.web.resource import Resource
 from twisted.web.server import Site
-from twisted.web.iweb import IAgent, IBodyProducer
 
 from zope.interface import directlyProvides, implementer
 
 import treq
 from treq.client import HTTPClient
+import attr
+
+
+@implementer(IAgentEndpointFactory)
+@attr.s
+class _EndpointFactory(object):
+    """
+    An endpoint factory used by :class:`RequestTraversalAgent`.
+
+    :ivar reactor: The agent's reactor.
+    :type reactor: :class:`MemoryReactor`
+    """
+
+    reactor = attr.ib()
+
+    def endpointForURI(self, uri):
+        """
+        Create an endpoint that represents an in-memory connection to
+        a URI.
+
+        Note: This always creates a
+        :class:`~twisted.internet.endpoints.TCP4ClientEndpoint` on the
+        assumption :class:`RequestTraversalAgent` ignores everything
+        about the endpoint but its port.
+
+        :param uri: The URI to connect to.
+        :type uri: :class:`~twisted.web.client.URI`
+
+        :return: The endpoint.
+        :rtype: An
+                :class:`~twisted.internet.interfaces.IStreamClientEndpoint`
+                provider.
+        """
+
+        if uri.scheme not in {b'http', b'https'}:
+            raise SchemeNotSupported("Unsupported scheme: %r" % (uri.scheme,))
+        return TCP4ClientEndpoint(self.reactor, "127.0.0.1", uri.port)
 
 
 @implementer(IAgent)
@@ -42,7 +82,9 @@ class RequestTraversalAgent(object):
             resource tree.
         """
         self._memoryReactor = MemoryReactor()
-        self._realAgent = Agent(reactor=self._memoryReactor)
+        self._realAgent = Agent.usingEndpointFactory(
+            reactor=self._memoryReactor,
+            endpointFactory=_EndpointFactory(self._memoryReactor))
         self._rootResource = rootResource
         self._pumps = set()
 
@@ -76,12 +118,8 @@ class RequestTraversalAgent(object):
         else:
             scheme = URLPath.fromString(uri).scheme
 
-        if scheme == b"https":
-            host, port, factory, context_factory, timeout, bindAddress = (
-                self._memoryReactor.sslClients[-1])
-        else:
-            host, port, factory, timeout, bindAddress = (
-                self._memoryReactor.tcpClients[-1])
+        host, port, factory, timeout, bindAddress = (
+            self._memoryReactor.tcpClients[-1])
 
         serverAddress = IPv4Address('TCP', '127.0.0.1', port)
         clientAddress = IPv4Address('TCP', '127.0.0.1', 31337)
@@ -215,7 +253,7 @@ class StringStubbingResource(Resource):
     The parameters for the callable are:
 
     - ``method``, the HTTP method as `bytes`.
-    - ``url``, the the full URL of the request as `bytes`.
+    - ``url``, the full URL of the request as text.
     - ``params``, a dictionary of query parameters mapping query keys
       lists of values (sorted alphabetically).
     - ``headers``, a dictionary of headers mapping header keys to
@@ -332,17 +370,17 @@ class RequestSequence(object):
          ...]
 
     Expects the requests to arrive in sequence order.  If there are no more
-    responses, or the request's paramters do not match the next item's expected
-    request paramters, raises :obj:`AssertionError`.
+    responses, or the request's parameters do not match the next item's
+    expected request parameters, raises :obj:`AssertionError`.
 
     For the expected request arguments:
 
     - ``method`` should be `bytes` normalized to lowercase.
-    - ``url`` should be normalized as per the transformations in
+    - ``url`` should be a `str` normalized as per the transformations in
       https://en.wikipedia.org/wiki/URL_normalization that (usually) preserve
-      semantics.  A url to `http://something-that-looks-like-a-directory`
+      semantics.  A URL to `http://something-that-looks-like-a-directory`
       would be normalized to `http://something-that-looks-like-a-directory/`
-      and a url to `http://something-that-looks-like-a-page/page.html`
+      and a URL to `http://something-that-looks-like-a-page/page.html`
       remains unchanged.
     - ``params`` is a dictionary mapping `bytes` to `lists` of `bytes`
     - ``headers`` is a dictionary mapping `bytes` to `lists` of `bytes` - note
@@ -362,10 +400,12 @@ class RequestSequence(object):
     :ivar list sequence: The sequence of expected request arguments mapped to
         stubbed responses
     :ivar async_failure_reporter: A callable that takes a single message
-        reporting failures - it's asynchronous because it cannot just raise
-        an exception - if it does, :obj:`Resource.render` will just convert
+        reporting failures—it's asynchronous because it cannot just raise
+        an exception—if it does, :obj:`Resource.render` will just convert
         that into a 500 response, and there will be no other failure reporting
-        mechanism.
+        mechanism. Under Trial, this may be
+        a :class:`twisted.logger.Logger.error`, as Trial fails the test when an
+        error is logged.
     """
     def __init__(self, sequence, async_failure_reporter):
         self._sequence = sequence
@@ -384,11 +424,14 @@ class RequestSequence(object):
         """
         Usage::
 
-            sequence_stubs = RequestSequence([...])
+            async_failures = []
+            sequence_stubs = RequestSequence([...], async_failures.append)
             stub_treq = StubTreq(StringStubbingResource(sequence_stubs))
             with sequence_stubs.consume(self.fail):  # self = unittest.TestCase
                 stub_treq.get('http://fakeurl.com')
                 stub_treq.get('http://another-fake-url.com')
+
+            self.assertEqual([], async_failures)
 
         If there are still remaining expected requests to be made in the
         sequence, fails the provided test case.
@@ -417,7 +460,7 @@ class RequestSequence(object):
             self._async_reporter(
                 "No more requests expected, but request {0!r} made.".format(
                     (method, url, params, headers, data)))
-            return (500, {}, "StubbingError")
+            return (500, {}, b"StubbingError")
 
         expected, response = self._sequence[0]
         e_method, e_url, e_params, e_headers, e_data = expected
@@ -437,7 +480,7 @@ class RequestSequence(object):
                 "\nMismatches: {2!r}"
                 .format(expected, (method, url, params, headers, data),
                         mismatches))
-            return (500, {}, "StubbingError")
+            return (500, {}, b"StubbingError")
 
         self._sequence = self._sequence[1:]
 

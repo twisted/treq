@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+"""
+Generate a Travis CI configuration based on Tox's configured environments.
+Usage:
+
+    tox -l | ./tox2travis.py > .travis.yml
+"""
+
 from __future__ import absolute_import, print_function
 
 import re

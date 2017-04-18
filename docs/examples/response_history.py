@@ -8,7 +8,8 @@ def main(reactor, *args):
     d = treq.get('http://httpbin.org/redirect/1')
 
     def cb(response):
-        print 'Response history:', response.history()
+        print('Response history:')
+        print(response.history())
         return print_response(response)
 
     d.addCallback(cb)

@@ -14,7 +14,6 @@ from twisted.python.url import URL
 
 from twisted.web.http import urlparse
 
-
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer, IResponse
 
@@ -28,6 +27,7 @@ from twisted.web.client import (
 )
 
 from twisted.python.components import registerAdapter
+from json import dumps as json_dumps
 
 from treq._utils import default_reactor
 from treq.auth import add_auth
@@ -156,6 +156,10 @@ class HTTPClient(object):
         bodyProducer = None
         data = kwargs.get('data')
         files = kwargs.get('files')
+        # since json=None needs to be serialized as 'null', we need to
+        # explicitly check kwargs for this key
+        has_json = 'json' in kwargs
+
         if files:
             # If the files keyword is present we will issue a
             # multipart/form-data request as it suits better for cases
@@ -180,6 +184,13 @@ class HTTPClient(object):
                     b'content-type', [b'application/x-www-form-urlencoded'])
                 data = urlencode(data, doseq=True)
             bodyProducer = self._data_to_body_producer(data)
+        elif has_json:
+            # If data is sent as json, set Content-Type as 'application/json'
+            headers.setRawHeaders(
+                b'content-type', [b'application/json; charset=UTF-8'])
+            content = kwargs['json']
+            json = json_dumps(content, separators=(u',', u':')).encode('utf-8')
+            bodyProducer = self._data_to_body_producer(json)
 
         cookies = kwargs.get('cookies', {})
 

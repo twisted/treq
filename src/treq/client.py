@@ -142,23 +142,9 @@ class HTTPClient(object):
             if isinstance(headers, dict):
                 h = Headers({})
                 for k, v in headers.items():
-
-                    if isinstance(k, unicode):
-                        k = k.encode('ascii')
-
-                    if isinstance(v, bytes):
+                    if isinstance(v, (bytes, unicode)):
                         h.addRawHeader(k, v)
-                    elif isinstance(v, unicode):
-                        h.addRawHeader(k, v.encode('ascii'))
                     elif isinstance(v, list):
-                        cleanHeaders = []
-                        for item in v:
-                            if isinstance(item, unicode):
-                                cleanHeaders.append(item.encode('ascii'))
-                            else:
-                                cleanHeaders.append(item)
-                        h.setRawHeaders(k, cleanHeaders)
-                    else:
                         h.setRawHeaders(k, v)
 
                 headers = h

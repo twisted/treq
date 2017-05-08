@@ -8,6 +8,7 @@ from mock import ANY
 
 from six import text_type, binary_type
 
+from twisted.trial.unittest import TestCase
 from twisted.web.client import ResponseFailed
 from twisted.web.error import SchemeNotSupported
 from twisted.web.resource import Resource
@@ -16,7 +17,6 @@ from twisted.python.compat import _PY3
 
 import treq
 
-from treq.test.util import TestCase
 from treq.testing import (
     HasHeaders,
     RequestSequence,

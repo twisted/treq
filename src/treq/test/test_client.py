@@ -8,10 +8,12 @@ from twisted.internet.protocol import Protocol
 
 from twisted.python.failure import Failure
 
+from twisted.trial.unittest import TestCase
+
 from twisted.web.client import Agent, ResponseFailed
 from twisted.web.http_headers import Headers
 
-from treq.test.util import TestCase, with_clock
+from treq.test.util import with_clock
 
 from treq.client import (
     HTTPClient, _BodyBufferingProtocol, _BufferedResponse

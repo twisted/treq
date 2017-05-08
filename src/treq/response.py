@@ -67,10 +67,6 @@ class _Response(proxyForInterface(IResponse)):
 
         :returns: A `list` of :class:`~treq.response._Response` objects
         """
-        if not hasattr(self, "previousResponse"):
-            raise NotImplementedError(
-                "Twisted < 13.1.0 does not support response history.")
-
         response = self
         history = []
 

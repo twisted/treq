@@ -35,11 +35,10 @@ if __name__ == "__main__":
         ],
         extras_require={
             "dev": [
-                "pyflakes",
+                "mock",
                 "pep8",
+                "pyflakes",
                 "sphinx",
-                # Can be removed once Python 2.6 is dropped.
-                "mock==1.0.1",
             ],
         },
         package_data={"treq": ["_version"]},

@@ -1,18 +1,10 @@
 from twisted.trial.unittest import SynchronousTestCase
 
-from twisted import version
 from twisted.python.failure import Failure
-from twisted.python.versions import Version
 from twisted.web.client import ResponseDone
 from twisted.web.http_headers import Headers
 
 from treq.response import _Response
-
-
-skip_history = None
-
-if version < Version("twisted", 13, 1, 0):
-    skip_history = "Response history not supported on Twisted < 13.1.0."
 
 
 class FakeResponse(object):
@@ -87,14 +79,3 @@ class ResponseTests(SynchronousTestCase):
     def test_no_history(self):
         wrapper = _Response(FakeResponse(200, Headers({})), None)
         self.assertEqual(wrapper.history(), [])
-
-    if skip_history:
-        test_history.skip = skip_history
-        test_no_history.skip = skip_history
-
-    def test_history_notimplemented(self):
-        wrapper = _Response(FakeResponse(200, Headers({})), None)
-        self.assertRaises(NotImplementedError, wrapper.history)
-
-    if not skip_history:
-        test_history_notimplemented.skip = "History supported."

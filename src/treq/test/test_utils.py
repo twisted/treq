@@ -1,6 +1,6 @@
 import mock
 
-from treq.test.util import TestCase
+from twisted.trial.unittest import TestCase
 
 from treq._utils import default_reactor, default_pool, set_global_pool
 

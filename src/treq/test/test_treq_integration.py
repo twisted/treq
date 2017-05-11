@@ -285,7 +285,7 @@ class TreqIntegrationTests(TestCase):
         )
         headers_for_second_request = agent_request_call_storage['i'][1][0][3]
         self.assertIn(
-            'Authorization',
+            b'Authorization',
             dict(headers_for_second_request.getAllRawHeaders())
         )
 

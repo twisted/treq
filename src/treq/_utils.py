@@ -4,8 +4,6 @@ Strictly internal utilities.
 
 from __future__ import absolute_import, division, print_function
 
-from twisted.web.client import HTTPConnectionPool
-
 
 def default_reactor(reactor):
     """
@@ -33,6 +31,7 @@ def default_pool(reactor, pool, persistent):
     Return the specified pool or a a pool with the specified reactor and
     persistence.
     """
+    from twisted.web.client import HTTPConnectionPool
     reactor = default_reactor(reactor)
 
     if pool is not None:

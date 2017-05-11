@@ -1,8 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-from twisted.web.client import Agent
-
-from treq.client import HTTPClient
 from treq._utils import default_pool, default_reactor
 
 
@@ -124,5 +121,8 @@ def _client(*args, **kwargs):
         pool = default_pool(reactor,
                             kwargs.get('pool'),
                             kwargs.get('persistent'))
+        from twisted.web.client import Agent
         agent = Agent(reactor, pool=pool)
+
+    from treq.client import HTTPClient
     return HTTPClient(agent)

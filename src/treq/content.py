@@ -3,17 +3,15 @@ from __future__ import absolute_import, division, print_function
 import cgi
 import json
 
-from twisted.python.compat import _PY3
 from twisted.internet.defer import Deferred, succeed
 
 from twisted.internet.protocol import Protocol
 from twisted.web.client import ResponseDone
 from twisted.web.http import PotentialDataLoss
-from twisted.web.http_headers import Headers
 
 
 def _encoding_from_headers(headers):
-    content_types = headers.getRawHeaders('content-type')
+    content_types = headers.getRawHeaders(u'content-type')
     if content_types is None:
         return None
 
@@ -92,10 +90,8 @@ def json_content(response):
 
     :rtype: Deferred that fires with the decoded JSON.
     """
-    if _PY3:
-        d = text_content(response)
-    else:
-        d = content(response)
+    # RFC7159 (8.1): Default JSON character encoding is UTF-8
+    d = text_content(response, encoding='utf-8')
 
     d.addCallback(json.loads)
     return d
@@ -107,20 +103,14 @@ def text_content(response, encoding='ISO-8859-1'):
     charset, which may be guessed from the ``Content-Type`` header.
 
     :param IResponse response: The HTTP Response to get the contents of.
-    :param str encoding: An valid charset, such as ``UTF-8`` or ``ISO-8859-1``.
+    :param str encoding: A charset, such as ``UTF-8`` or ``ISO-8859-1``,
+        used if the response does not specify an encoding.
 
-    :rtype: Deferred that fires with a unicode.
+    :rtype: Deferred that fires with a unicode string.
     """
     def _decode_content(c):
 
-        if _PY3:
-            headers = Headers({
-                key.decode('ascii'): [y.decode('ascii') for y in val]
-                for key, val in response.headers.getAllRawHeaders()})
-        else:
-            headers = response.headers
-
-        e = _encoding_from_headers(headers)
+        e = _encoding_from_headers(response.headers)
 
         if e is not None:
             return c.decode(e)

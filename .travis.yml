@@ -2,71 +2,81 @@
 
 sudo: false
 language: python
-python: 2.7
 
-cache: false
+cache: pip
 
-env:
-  - TOX_ENV=pypy-twisted_14.0-pyopenssl_0.13.1
-  - TOX_ENV=pypy-twisted_14.0-pyopenssl_0.14
-  - TOX_ENV=pypy-twisted_14.0-pyopenssl_0.15.1
-  - TOX_ENV=pypy-twisted_15.1-pyopenssl_0.13.1
-  - TOX_ENV=pypy-twisted_15.1-pyopenssl_0.14
-  - TOX_ENV=pypy-twisted_15.1-pyopenssl_0.15.1
-  - TOX_ENV=pypy-twisted_15.3-pyopenssl_0.13.1
-  - TOX_ENV=pypy-twisted_15.3-pyopenssl_0.14
-  - TOX_ENV=pypy-twisted_15.3-pyopenssl_0.15.1
-  - TOX_ENV=pypy-twisted_15.5-pyopenssl_0.13.1
-  - TOX_ENV=pypy-twisted_15.5-pyopenssl_0.14
-  - TOX_ENV=pypy-twisted_15.5-pyopenssl_0.15.1
-  - TOX_ENV=py27-twisted_14.0-pyopenssl_0.13.1
-  - TOX_ENV=py27-twisted_14.0-pyopenssl_0.14
-  - TOX_ENV=py27-twisted_14.0-pyopenssl_0.15.1
-  - TOX_ENV=py27-twisted_15.1-pyopenssl_0.13.1
-  - TOX_ENV=py27-twisted_15.1-pyopenssl_0.14
-  - TOX_ENV=py27-twisted_15.1-pyopenssl_0.15.1
-  - TOX_ENV=py27-twisted_15.3-pyopenssl_0.13.1
-  - TOX_ENV=py27-twisted_15.3-pyopenssl_0.14
-  - TOX_ENV=py27-twisted_15.3-pyopenssl_0.15.1
-  - TOX_ENV=py27-twisted_15.5-pyopenssl_0.13.1
-  - TOX_ENV=py27-twisted_15.5-pyopenssl_0.14
-  - TOX_ENV=py27-twisted_15.5-pyopenssl_0.15.1
-  - TOX_ENV=py33-twisted_15.5-pyopenssl_0.15.1
-  - TOX_ENV=py34-twisted_15.5-pyopenssl_0.15.1
-  - TOX_ENV=pypy-twisted_trunk-pyopenssl_trunk
-  - TOX_ENV=py27-twisted_trunk-pyopenssl_trunk
-  - TOX_ENV=py33-twisted_trunk-pyopenssl_trunk
-  - TOX_ENV=py34-twisted_trunk-pyopenssl_trunk
-  - TOX_ENV=pypi-readme
-  - TOX_ENV=check-manifest
-  - TOX_ENV=flake8
+matrix:
+  include:
+    - python: pypy
+      env: TOXENV=pypy-twisted_lowest
+    - python: pypy
+      env: TOXENV=pypy-twisted_latest
+    - python: '2.7'
+      env: TOXENV=py27-twisted_lowest
+    - python: '2.7'
+      env: TOXENV=py27-twisted_latest
+    - python: '3.3'
+      env: TOXENV=py33-twisted_lowest
+    - python: '3.3'
+      env: TOXENV=py33-twisted_latest
+    - python: '3.4'
+      env: TOXENV=py34-twisted_lowest
+    - python: '3.4'
+      env: TOXENV=py34-twisted_latest
+    - python: '3.5'
+      env: TOXENV=py35-twisted_lowest
+    - python: '3.5'
+      env: TOXENV=py35-twisted_latest
+    - python: pypy
+      env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
+    - python: '2.7'
+      env: TOXENV=py27-twisted_trunk-pyopenssl_trunk
+    - python: '3.3'
+      env: TOXENV=py33-twisted_trunk-pyopenssl_trunk
+    - python: '3.4'
+      env: TOXENV=py34-twisted_trunk-pyopenssl_trunk
+    - python: '3.5'
+      env: TOXENV=py35-twisted_trunk-pyopenssl_trunk
+    - python: '2.7'
+      env: TOXENV=pypi-readme
+    - python: '2.7'
+      env: TOXENV=check-manifest
+    - python: '2.7'
+      env: TOXENV=flake8
+    - python: '2.7'
+      env: TOXENV=docs
 
+  # Don't fail on trunk versions.
+  allow_failures:
+    - env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=py27-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=py33-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=py34-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=py35-twisted_trunk-pyopenssl_trunk
+
+before_install:
+  - |
+    if [[ "${TOXENV::5}" == "pypy-" ]]; then
+      PYENV_ROOT="$HOME/.pyenv"
+      git clone --depth 1 https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
+      PATH="$PYENV_ROOT/bin:$PATH"
+      eval "$(pyenv init -)"
+      pyenv install pypy-5.4.1
+      pyenv global pypy-5.4.1
+    fi
+  - pip install --upgrade pip
 
 install:
   - pip install tox codecov
 
 script:
-  - tox -e $TOX_ENV
+  - tox
 
 after_success:
   - codecov
 
 notifications:
   email: false
-
-# Don't fail on trunk versions.
-matrix:
-  allow_failures:
-    - env: TOX_ENV=pypy-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py27-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py33-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py34-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py35-twisted_trunk-pyopenssl_trunk
-  include:
-    - python: 3.5
-      env: TOX_ENV=py35-twisted_15.5-pyopenssl_0.15.1
-    - python: 3.5
-      env: TOX_ENV=py35-twisted_trunk-pyopenssl_trunk
 
 branches:
   only:

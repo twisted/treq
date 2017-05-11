@@ -43,13 +43,7 @@ Install dependencies:
 
 ::
 
-    pip install -r requirements-dev.txt
-
-Optionally install PyOpenSSL:
-
-::
-
-    pip install PyOpenSSL
+    pip install treq[dev]
 
 Run Tests (unit & integration):
 
@@ -64,17 +58,15 @@ Lint:
     pep8 treq
     pyflakes treq
 
-Build docs:
+Build docs::
 
-::
+    tox -e docs
 
-    cd docs; make html
-
-.. |build| image:: https://secure.travis-ci.org/twisted/treq.svg?branch=master
-.. _build: http://travis-ci.org/twisted/treq
+.. |build| image:: https://api.travis-ci.org/twisted/treq.svg?branch=master
+.. _build: https://travis-ci.org/twisted/treq
 
 .. |coverage| image:: https://codecov.io/github/twisted/treq/coverage.svg?branch=master
 .. _coverage: https://codecov.io/github/twisted/treq
 
-.. |pypi| image:: http://img.shields.io/pypi/v/treq.svg
+.. |pypi| image:: https://img.shields.io/pypi/v/treq.svg
 .. _pypi: https://pypi.python.org/pypi/treq

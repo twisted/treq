@@ -1,12 +1,12 @@
+# -*- coding: utf-8 -*-
 import mock
 
 from twisted.python.failure import Failure
 
+from twisted.trial.unittest import TestCase
 from twisted.web.http_headers import Headers
 from twisted.web.client import ResponseDone, ResponseFailed
 from twisted.web.http import PotentialDataLoss
-
-from treq.test.util import TestCase
 
 from treq import collect, content, json_content, text_content
 from treq.client import _BufferedResponse
@@ -126,6 +126,36 @@ class ContentTests(TestCase):
 
         self.assertEqual(self.successResultOf(d), {"msg": "hello!"})
 
+    def test_json_content_unicode(self):
+        """
+        When Unicode JSON content is received, the JSON text should be
+        correctly decoded.
+        RFC7159 (8.1): "JSON text SHALL be encoded in UTF-8, UTF-16, or UTF-32.
+        The default encoding is UTF-8"
+        """
+        self.response.headers = Headers()
+        d = json_content(self.response)
+
+        self.protocol.dataReceived(u'{"msg":"hëlló!"}'.encode('utf-8'))
+        self.protocol.connectionLost(Failure(ResponseDone()))
+
+        self.assertEqual(self.successResultOf(d), {u'msg': u'hëlló!'})
+
+    def test_json_content_utf16(self):
+        """
+        JSON received is decoded according to the charset given in the
+        Content-Type header.
+        """
+        self.response.headers = Headers({
+            b'Content-Type': [b"application/json; charset='UTF-16LE'"],
+        })
+        d = json_content(self.response)
+
+        self.protocol.dataReceived(u'{"msg":"hëlló!"}'.encode('UTF-16LE'))
+        self.protocol.connectionLost(Failure(ResponseDone()))
+
+        self.assertEqual(self.successResultOf(d), {u'msg': u'hëlló!'})
+
     def test_text_content(self):
         self.response.headers = Headers(
             {b'Content-Type': [b'text/plain; charset=utf-8']})
@@ -157,3 +187,21 @@ class ContentTests(TestCase):
         self.protocol.connectionLost(Failure(ResponseDone()))
 
         self.assertEqual(self.successResultOf(d), u'\xa1')
+
+    def test_text_content_unicode_headers(self):
+        """
+        Header parsing is robust against unicode header names and values.
+        """
+        self.response.headers = Headers({
+            b'Content-Type': [
+                u'text/plain; charset="UTF-16BE"; u=ᛃ'.encode('utf-8')],
+            u'Coördination'.encode('iso-8859-1'): [
+                u'koʊˌɔrdɪˈneɪʃən'.encode('utf-8')],
+        })
+
+        d = text_content(self.response)
+
+        self.protocol.dataReceived(u'ᚠᚡ'.encode('UTF-16BE'))
+        self.protocol.connectionLost(Failure(ResponseDone()))
+
+        self.assertEqual(self.successResultOf(d), u'ᚠᚡ')

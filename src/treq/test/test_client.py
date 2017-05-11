@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 from io import BytesIO
 
 import mock
@@ -7,10 +8,12 @@ from twisted.internet.protocol import Protocol
 
 from twisted.python.failure import Failure
 
+from twisted.trial.unittest import TestCase
+
 from twisted.web.client import Agent, ResponseFailed
 from twisted.web.http_headers import Headers
 
-from treq.test.util import TestCase, with_clock
+from treq.test.util import with_clock
 
 from treq.client import (
     HTTPClient, _BodyBufferingProtocol, _BufferedResponse
@@ -33,6 +36,18 @@ class HTTPClientTests(TestCase):
     def assertBody(self, expected):
         body = self.FileBodyProducer.mock_calls[0][1][0]
         self.assertEqual(body.read(), expected)
+
+    def test_post(self):
+        self.client.post('http://example.com/')
+        self.agent.request.assert_called_once_with(
+            b'POST', b'http://example.com/',
+            Headers({b'accept-encoding': [b'gzip']}), None)
+
+    def test_request_uri_idn(self):
+        self.client.request('GET', u'http://‽.net')
+        self.agent.request.assert_called_once_with(
+            b'GET', b'http://xn--fwg.net',
+            Headers({b'accept-encoding': [b'gzip']}), None)
 
     def test_request_case_insensitive_methods(self):
         self.client.request('gEt', 'http://example.com/')
@@ -131,6 +146,60 @@ class HTTPClientTests(TestCase):
             self.FileBodyProducer.return_value)
 
         self.assertBody(b'hello')
+
+    def test_request_json_dict(self):
+        self.client.request('POST', 'http://example.com/', json={'foo': 'bar'})
+        self.agent.request.assert_called_once_with(
+            b'POST', b'http://example.com/',
+            Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
+                     b'accept-encoding': [b'gzip']}),
+            self.FileBodyProducer.return_value)
+        self.assertBody(b'{"foo":"bar"}')
+
+    def test_request_json_tuple(self):
+        self.client.request('POST', 'http://example.com/', json=('foo', 1))
+        self.agent.request.assert_called_once_with(
+            b'POST', b'http://example.com/',
+            Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
+                     b'accept-encoding': [b'gzip']}),
+            self.FileBodyProducer.return_value)
+        self.assertBody(b'["foo",1]')
+
+    def test_request_json_number(self):
+        self.client.request('POST', 'http://example.com/', json=1.)
+        self.agent.request.assert_called_once_with(
+            b'POST', b'http://example.com/',
+            Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
+                     b'accept-encoding': [b'gzip']}),
+            self.FileBodyProducer.return_value)
+        self.assertBody(b'1.0')
+
+    def test_request_json_string(self):
+        self.client.request('POST', 'http://example.com/', json='hello')
+        self.agent.request.assert_called_once_with(
+            b'POST', b'http://example.com/',
+            Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
+                     b'accept-encoding': [b'gzip']}),
+            self.FileBodyProducer.return_value)
+        self.assertBody(b'"hello"')
+
+    def test_request_json_bool(self):
+        self.client.request('POST', 'http://example.com/', json=True)
+        self.agent.request.assert_called_once_with(
+            b'POST', b'http://example.com/',
+            Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
+                     b'accept-encoding': [b'gzip']}),
+            self.FileBodyProducer.return_value)
+        self.assertBody(b'true')
+
+    def test_request_json_none(self):
+        self.client.request('POST', 'http://example.com/', json=None)
+        self.agent.request.assert_called_once_with(
+            b'POST', b'http://example.com/',
+            Headers({b'Content-Type': [b'application/json; charset=UTF-8'],
+                     b'accept-encoding': [b'gzip']}),
+            self.FileBodyProducer.return_value)
+        self.assertBody(b'null')
 
     @mock.patch('treq.client.uuid.uuid4', mock.Mock(return_value="heyDavid"))
     def test_request_no_name_attachment(self):

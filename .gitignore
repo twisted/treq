@@ -5,9 +5,10 @@
 _build
 build
 dist
+/docs/html
+/.eggs
 MANIFEST
 .coverage
-.coveragerc
 coverage
 htmlcov
 _trial_temp

@@ -5,9 +5,6 @@ from twisted.internet.defer import CancelledError, inlineCallbacks
 from twisted.internet.task import deferLater
 from twisted.internet import reactor
 from twisted.internet.tcp import Client
-
-from twisted import version as current_version
-from twisted.python.versions import Version
 from twisted.python.monkey import MonkeyPatcher
 
 from twisted.web.client import HTTPConnectionPool, ResponseFailed, Agent
@@ -19,16 +16,6 @@ from treq.auth import HTTPDigestAuth
 
 HTTPBIN_URL = "http://httpbin.org"
 HTTPSBIN_URL = "https://httpbin.org"
-
-
-def todo_relative_redirect(test_method):
-    expected_version = Version('twisted', 13, 1, 0)
-    if current_version < expected_version:
-        test_method.todo = (
-            "Relative Redirects are not supported in Twisted versions "
-            "prior to: {0}").format(expected_version.short())
-
-    return test_method
 
 
 @inlineCallbacks
@@ -114,7 +101,6 @@ class TreqIntegrationTests(TestCase):
         self.assertEqual(response.code, 200)
         yield print_response(response)
 
-    @todo_relative_redirect
     @inlineCallbacks
     def test_get_302_relative_redirect(self):
         response = yield self.get('/relative-redirect/1')
@@ -141,7 +127,6 @@ class TreqIntegrationTests(TestCase):
         self.assertEqual(response.code, 200)
         yield print_response(response)
 
-    @todo_relative_redirect
     @inlineCallbacks
     def test_head_302_relative_redirect(self):
         response = yield self.head('/relative-redirect/1')

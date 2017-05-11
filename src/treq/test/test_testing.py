@@ -8,6 +8,7 @@ from mock import ANY
 
 from six import text_type, binary_type
 
+from twisted.trial.unittest import TestCase
 from twisted.web.client import ResponseFailed
 from twisted.web.error import SchemeNotSupported
 from twisted.web.resource import Resource
@@ -16,7 +17,6 @@ from twisted.python.compat import _PY3
 
 import treq
 
-from treq.test.util import TestCase
 from treq.testing import (
     HasHeaders,
     RequestSequence,
@@ -294,6 +294,15 @@ class HasHeadersTests(TestCase):
         """
         self.assertNotEqual(HasHeaders({b'a': [b'a']}), {b'a': [b'A']})
 
+    def test_bytes_encoded_forms(self):
+        """
+        The :obj:`HasHeaders` equality function compares the bytes-encoded
+        forms of both sets of headers.
+        """
+        self.assertEqual(HasHeaders({b'a': [b'a']}), {u'a': [u'a']})
+
+        self.assertEqual(HasHeaders({u'b': [u'b']}), {b'b': [b'b']})
+
     def test_repr(self):
         """
         :obj:`HasHeaders` returns a nice string repr.
@@ -400,6 +409,8 @@ class RequestSequenceTests(TestCase):
         d = stub.get('https://anything', data=b'what', headers={b'1': b'1'})
         resp = self.successResultOf(d)
         self.assertEqual(500, resp.code)
+        self.assertEqual(b'StubbingError',
+                         self.successResultOf(resp.content()))
         self.assertEqual(1, len(self.async_failures))
         self.assertIn("No more requests expected, but request",
                       self.async_failures[0])

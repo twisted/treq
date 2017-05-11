@@ -81,6 +81,9 @@ def request(method, url, **kwargs):
     :param data: Optional request body.
     :type data: str, file-like, IBodyProducer, or None
 
+    :param json: Optional JSON-serializable content to pass in body.
+    :type json: dict, list/tuple, int, string/unicode, bool, or None
+
     :param reactor: Optional twisted reactor.
 
     :param bool persistent: Use persistent HTTP connections.  Default: ``True``
@@ -100,6 +103,9 @@ def request(method, url, **kwargs):
     :param bool browser_like_redirects: Use browser like redirects
         (i.e. Ignore  RFC2616 section 10.3 and follow redirects from
         POST requests).  Default: ``False``
+
+    :param bool unbuffered: Pass ``True`` to to disable response buffering.  By
+        default treq buffers the entire response body in memory.
 
     :rtype: Deferred that fires with an IResponse provider.
 

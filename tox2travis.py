@@ -1,7 +1,15 @@
 #!/usr/bin/env python
 
+"""
+Generate a Travis CI configuration based on Tox's configured environments.
+Usage:
+
+    tox -l | ./tox2travis.py > .travis.yml
+"""
+
 from __future__ import absolute_import, print_function
 
+import re
 import sys
 
 
@@ -10,33 +18,44 @@ travis_template = """\
 
 sudo: false
 language: python
-python: 2.7
 
-cache: false
+cache: pip
 
-env:
-  {envs}
+matrix:
+  include:
+    {includes}
+
+  # Don't fail on trunk versions.
+  allow_failures:
+    - env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=py27-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=py33-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=py34-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=py35-twisted_trunk-pyopenssl_trunk
+
+before_install:
+  - |
+    if [[ "${{TOXENV::5}}" == "pypy-" ]]; then
+      PYENV_ROOT="$HOME/.pyenv"
+      git clone --depth 1 https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
+      PATH="$PYENV_ROOT/bin:$PATH"
+      eval "$(pyenv init -)"
+      pyenv install pypy-5.4.1
+      pyenv global pypy-5.4.1
+    fi
+  - pip install --upgrade pip
 
 install:
   - pip install tox codecov
 
 script:
-  - tox -e $TOX_ENV
+  - tox
 
 after_success:
   - codecov
 
 notifications:
   email: false
-
-# Don't fail on trunk versions.
-matrix:
-  allow_failures:
-    - env: TOX_ENV=pypy-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py27-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py33-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py34-twisted_trunk-pyopenssl_trunk
-    - env: TOX_ENV=py35-twisted_trunk-pyopenssl_trunk
 
 branches:
   only:
@@ -49,9 +68,25 @@ if __name__ == "__main__":
     line = sys.stdin.readline()
     tox_envs = []
     while line:
-        tox_envs.append(line)
+        tox_envs.append(line.strip())
         line = sys.stdin.readline()
 
-    print(travis_template.format(
-        envs='  '.join(
-            '- TOX_ENV={0}'.format(env) for env in tox_envs)))
+    includes = []
+    for tox_env in tox_envs:
+        # Parse the Python version from the tox environment name
+        python_match = re.match(r'^py(?:(\d{2})|py)-', tox_env)
+        if python_match is not None:
+            version = python_match.group(1)
+            if version is not None:
+                python = "'{0}.{1}'".format(version[0], version[1])
+            else:
+                python = 'pypy'
+        else:
+            python = "'2.7'"  # Default to Python 2.7 if a version isn't found
+
+        includes.extend([
+            '- python: {0}'.format(python),
+            '  env: TOXENV={0}'.format(tox_env)
+        ])
+
+    print(travis_template.format(includes='\n    '.join(includes)))

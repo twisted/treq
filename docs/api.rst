@@ -1,5 +1,10 @@
+API Reference
+=============
+
+This page lists all of the interfaces exposed by the `treq` package.
+
 Making Requests
-===============
+---------------
 
 .. module:: treq
 
@@ -12,73 +17,63 @@ Making Requests
 .. autofunction:: delete
 
 Accessing Content
-=================
+-----------------
 
 .. autofunction:: collect
 .. autofunction:: content
 .. autofunction:: text_content
 .. autofunction:: json_content
 
-Responses
-=========
+HTTPClient Objects
+------------------
+
+.. module:: treq.client
+
+The :class:`treq.client.HTTPClient` class provides the same interface as the :mod:`treq` module itself.
+
+.. autoclass:: HTTPClient
+    :members:
+    :undoc-members:
+
+Augmented Response Objects
+--------------------------
+
+:func:`treq.request`, :func:`treq.get`, etc. return an object which implements :class:`twisted.web.iweb.IResponse`, plus a few additional convenience methods:
 
 .. module:: treq.response
 
-.. class:: Response
+.. class:: _Response
 
-    .. method:: collect(collector)
+    .. automethod:: collect
+    .. automethod:: content
+    .. automethod:: json
+    .. automethod:: text
+    .. automethod:: history
+    .. automethod:: cookies
 
-        Incrementally collect the body of the response.
+    Inherited from :class:`twisted.web.iweb.IResponse`:
 
-        :param collector: A single argument callable that will be called
-            with chunks of body data as it is received.
-
-        :returns: A `Deferred` that fires when the entire body has been
-            received.
-
-    .. method:: content()
-
-        Read the entire body all at once.
-
-        :returns: A `Deferred` that fires with a `bytes` object when the entire
-            body has been received.
-
-    .. method:: text(encoding='ISO-8859-1')
-
-        Read the entire body all at once as text.
-        :param encoding: An encoding for the body, if none is given the
-            encoding will be guessed, defaulting to this argument.
-
-        :returns: A `Deferred` that fires with a `unicode` object when the
-            entire body has been received.
-
-    .. method:: json()
-
-        Read the entire body all at once and decode it as JSON.
-
-        :returns: A `Deferred` that fires with the result of `json.loads` on
-            the body after it has been received.
-
-    .. method:: history()
-
-        Get a list of all responses that (such as intermediate redirects),
-        that ultimately ended in the current response.
-
-        :returns: A `list` of :class:`treq.response.Response` objects.
-
-    .. method:: cookies()
-
-        :returns: A `CookieJar`.
-
-    Inherited from twisted.web.iweb.IResponse.
-
-    .. attribute:: version
-    .. attribute:: code
-    .. attribute:: phrase
-    .. attribute:: headers
-    .. attribute:: length
-    .. attribute:: request
-    .. attribute:: previousResponse
+    :ivar version:
+    :ivar code:
+    :ivar phrase:
+    :ivar headers:
+    :ivar length:
+    :ivar request:
+    :ivar previousResponse:
 
     .. method:: deliverBody(protocol)
     .. method:: setPreviousResponse(response)
+
+Test Helpers
+------------
+
+.. automodule:: treq.testing
+    :members:
+
+MultiPartProducer Objects
+-------------------------
+
+:class:`treq.multipart.MultiPartProducer` is used internally when making requests which involve files.
+
+.. automodule:: treq.multipart
+    :members:

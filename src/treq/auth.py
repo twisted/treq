@@ -266,7 +266,7 @@ class _RequestDigestAuthenticationAgent(object):
             digest_authentication_params[b'nonce'],
             digest_authentication_params[b'realm'],
             qop=digest_authentication_params[b'qop'],
-            algorithm=digest_authentication_params[b'algorithm']
+            algorithm=digest_authentication_params.get(b'algorithm', b'MD5')
         )
         return self._perform_request(
             digest_authentication_header, method, uri, headers, bodyProducer

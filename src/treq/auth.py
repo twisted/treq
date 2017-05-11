@@ -29,6 +29,10 @@ def _sha1_utf_digest(x):
     return hashlib.sha1(x).hexdigest()
 
 
+def _sha256_utf_digest(x):
+    return hashlib.sha256(x).hexdigest()
+
+
 class HTTPDigestAuth(object):
     """
     The container for HTTP Digest authentication credentials
@@ -138,6 +142,8 @@ class _RequestDigestAuthenticationAgent(object):
             digest_hash_func = _md5_utf_digest
         elif algo == b'SHA':
             digest_hash_func = _sha1_utf_digest
+        elif algo == b'SHA-256':
+            digest_hash_func = _sha256_utf_digest
         else:
             raise UnknownDigestAuthAlgorithm(algo)
 

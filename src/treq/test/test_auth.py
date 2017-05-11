@@ -7,6 +7,7 @@ from twisted.web.http_headers import Headers
 from treq.auth import _RequestHeaderSettingAgent, add_auth, \
     UnknownAuthConfig, HTTPDigestAuth, add_digest_auth
 
+
 class RequestHeaderSettingAgentTests(TestCase):
     def setUp(self):
         self.agent = mock.Mock(Agent)

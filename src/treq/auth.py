@@ -89,8 +89,10 @@ class _RequestDigestAuthenticationAgent(object):
         self._username = username.encode('utf-8')
         self._password = password.encode('utf-8')
 
-    def _build_digest_authentication_header(self, path, method, cached,
-        nonce, realm, qop=None, algorithm=b'MD5', opaque=None):
+    def _build_digest_authentication_header(
+            self, path, method, cached, nonce, realm, qop=None,
+            algorithm=b'MD5', opaque=None
+            ):
         """
         Build the authorization header for credentials got from the server.
         Algorithm is accurately ported from http://python-requests.org
@@ -252,22 +254,26 @@ class _RequestDigestAuthenticationAgent(object):
         digest_authentication_params_str = parse_dict_header(
             digest_header.decode("utf-8")
         )
-        digest_authentication_params = {k.encode('utf8'): v.encode('utf8') \
+        digest_authentication_params = {
+            k.encode('utf8'): v.encode('utf8')
             for k, v in digest_authentication_params_str.items()}
         if digest_authentication_params.get(b'qop', None) is not None and \
             digest_authentication_params[b'qop'] != b'auth' and \
-                b'auth' not in digest_authentication_params[b'qop'].split(b','):
+                b'auth' not in \
+                digest_authentication_params[b'qop'].split(b','):
             # We support only "auth" QoP as defined in rfc-2617 or rfc-2069
             raise UnknownQopForDigestAuth(digest_authentication_params[b'qop'])
-        digest_authentication_header = self._build_digest_authentication_header(
-            uri,
-            method,
-            False,
-            digest_authentication_params[b'nonce'],
-            digest_authentication_params[b'realm'],
-            qop=digest_authentication_params[b'qop'],
-            algorithm=digest_authentication_params.get(b'algorithm', b'MD5')
-        )
+        digest_authentication_header = \
+            self._build_digest_authentication_header(
+                uri,
+                method,
+                False,
+                digest_authentication_params[b'nonce'],
+                digest_authentication_params[b'realm'],
+                qop=digest_authentication_params[b'qop'],
+                algorithm=digest_authentication_params.get(b'algorithm',
+                                                           b'MD5')
+            )
         return self._perform_request(
             digest_authentication_header, method, uri, headers, bodyProducer
         )
@@ -289,7 +295,8 @@ class _RequestDigestAuthenticationAgent(object):
         if not headers:
             headers = Headers({b'Authorization': digest_authentication_header})
         else:
-            headers.addRawHeader(b'Authorization', digest_authentication_header)
+            headers.addRawHeader(b'Authorization',
+                                 digest_authentication_header)
         return self._agent.request(
             method, uri, headers=headers, bodyProducer=bodyProducer
         )
@@ -317,16 +324,17 @@ class _RequestDigestAuthenticationAgent(object):
                 (method, uri)
             )['p']
             digest_params_from_cache['cached'] = True
-            digest_authentication_header = self._build_digest_authentication_header(
-                digest_params_from_cache['path'],
-                digest_params_from_cache['method'],
-                digest_params_from_cache['cached'],
-                digest_params_from_cache['nonce'],
-                digest_params_from_cache['realm'],
-                qop=digest_params_from_cache['qop'],
-                algorithm=digest_params_from_cache['algorithm'],
-                opaque=digest_params_from_cache['opaque']
-            )
+            digest_authentication_header = \
+                self._build_digest_authentication_header(
+                    digest_params_from_cache['path'],
+                    digest_params_from_cache['method'],
+                    digest_params_from_cache['cached'],
+                    digest_params_from_cache['nonce'],
+                    digest_params_from_cache['realm'],
+                    qop=digest_params_from_cache['qop'],
+                    algorithm=digest_params_from_cache['algorithm'],
+                    opaque=digest_params_from_cache['opaque']
+                )
             d = self._perform_request(
                 digest_authentication_header, method,
                 uri, headers, bodyProducer

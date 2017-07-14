@@ -81,16 +81,6 @@ class ResponseTests(TestCase):
         wrapper = _Response(FakeResponse(200, Headers({})), None)
         self.assertEqual(wrapper.history(), [])
 
-    if skip_history:
-        test_history.skip = skip_history
-        test_no_history.skip = skip_history
-
-    def test_history_notimplemented(self):
-        wrapper = _Response(FakeResponse(200, Headers({})), None)
-        self.assertRaises(NotImplementedError, wrapper.history)
-
-    if not skip_history:
-        test_history_notimplemented.skip = "History supported."
 
     def test_check_status_ok(self):
         original = FakeResponse(200, Headers(), body=[b''])

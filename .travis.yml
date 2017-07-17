@@ -75,6 +75,14 @@ script:
 after_success:
   - codecov
 
+after_failure:
+  - |
+    if [[ -f "_trial_temp/httpbin-server-error.log" ]]
+    then
+        echo "httpbin-server-error.log:"
+        cat "_trial_temp/httpbin-server-error.log"
+    fi
+
 notifications:
   email: false
 

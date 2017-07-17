@@ -39,6 +39,7 @@ if __name__ == "__main__":
                 "pep8",
                 "pyflakes",
                 "sphinx",
+                "httpbin",
             ],
         },
         package_data={"treq": ["_version"]},

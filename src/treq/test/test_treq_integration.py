@@ -220,7 +220,7 @@ class TreqIntegrationTests(TestCase):
             reactor)
         self.baseurl = URL(scheme=u"http",
                            host=processDescription.host,
-                           port=processDescription.port).to_text()
+                           port=processDescription.port).asText()
         self.agent = Agent(reactor)
         self.pool = HTTPConnectionPool(reactor, False)
 
@@ -435,7 +435,7 @@ class HTTPSTreqIntegrationTests(TreqIntegrationTests):
             reactor)
         self.baseurl = URL(scheme=u"https",
                            host=processDescription.host,
-                           port=processDescription.port).to_text()
+                           port=processDescription.port).asText()
 
         root = trustRootFromCertificates(
             [Certificate.loadPEM(processDescription.cacert)],

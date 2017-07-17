@@ -211,9 +211,10 @@ def forever_httpbin(reactor, argv):
     def whenListening(port):
         address = port.getHost()
         if arguments.https:
+            cacert = caCert.dumpPEM().decode('ascii')
             description = _HTTPBinDescription(host=arguments.host,
                                               port=address.port,
-                                              cacert=caCert.dumpPEM())
+                                              cacert=cacert)
         else:
             description = _HTTPBinDescription(host=arguments.host,
                                               port=address.port)

@@ -58,18 +58,24 @@ class _HTTPBinDescription(object):
         return cls(**dictionary)
 
 
-def certificatesForAuthorityAndServer(serviceIdentity):
+def certificatesForAuthorityAndServer(serviceIdentity, keySize=1024):
     """
     Create a self-signed CA certificate and server certificate signed
     by the CA.
 
-    @param serviceIdentity: The identity (hostname) of the server.
-    @type serviceIdentity: L{unicode}
+    :param serviceIdentity: The identity (hostname) of the server.
+    :type serviceIdentity: :py:class:`unicode`
 
-    @return: a 3-tuple of C{(certificate_authority_certificate,
-        server_private_key, server_certificate)}
-    @rtype: L{tuple} of (L{sslverify.Certificate},
-        L{OpenSSL.crypto.PKey, OpenSSL.crypto.X509})
+    :param keySize: (optional) The size of CA's and server's private
+        RSA keys.  Defaults to 1024 bits, which is the minimum allowed
+        by OpenSSL Contexts at the default security level as of 1.1.
+    :type keySize: :py:class:`int`
+
+    :return: a 3-tuple of ``(certificate_authority_certificate,
+             server_private_key, server_certificate)``.
+    :rtype: :py:class:`tuple` of (:py:class:`sslverify.Certificate`,
+            :py:class:`OpenSSL.crypto.PKey`,
+            :py:class:`OpenSSL.crypto.X509`})
     """
     commonNameForCA = x509.Name(
         [x509.NameAttribute(NameOID.COMMON_NAME, u'Testing Example CA')]
@@ -80,7 +86,7 @@ def certificatesForAuthorityAndServer(serviceIdentity):
     oneDay = datetime.timedelta(1, 0, 0)
     privateKeyForCA = rsa.generate_private_key(
         public_exponent=65537,
-        key_size=1024,
+        key_size=keySize,
         backend=default_backend()
     )
     publicKeyForCA = privateKeyForCA.public_key()
@@ -102,7 +108,7 @@ def certificatesForAuthorityAndServer(serviceIdentity):
     )
     privateKeyForServer = rsa.generate_private_key(
         public_exponent=65537,
-        key_size=1024,
+        key_size=keySize,
         backend=default_backend()
     )
     publicKeyForServer = privateKeyForServer.public_key()

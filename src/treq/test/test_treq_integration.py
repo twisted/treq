@@ -1,19 +1,11 @@
-import attr
 from io import BytesIO
-import os
-import json
-import platform
-import signal
-import sys
 
 from twisted.python.url import URL
 
 from twisted.trial.unittest import TestCase
-from twisted.internet.defer import (Deferred, succeed, CancelledError,
-                                    inlineCallbacks)
+from twisted.internet.defer import CancelledError, inlineCallbacks
 from twisted.internet.task import deferLater
-from twisted.protocols import basic, policies
-from twisted.internet import protocol, endpoints, error, reactor
+from twisted.internet import reactor
 from twisted.internet.tcp import Client
 from twisted.internet.ssl import Certificate, trustRootFromCertificates
 
@@ -21,171 +13,10 @@ from twisted.web.client import (Agent, BrowserLikePolicyForHTTPS,
                                 HTTPConnectionPool, ResponseFailed)
 
 from treq.test.util import DEBUG
-from treq.test.httpbin_server import _HTTPBinDescription
+
+from .local_httpbin.parent import _HTTPBinProcess
 
 import treq
-
-HTTPBIN_URL = "http://httpbin.org"
-HTTPSBIN_URL = "https://httpbin.org"
-
-
-class _HTTPBinServerProcessProtocol(basic.LineOnlyReceiver):
-    """
-    Manage the lifecycle of an ``httpbin`` process.
-    """
-    delimiter = os.linesep.encode('ascii')
-
-    def __init__(self, https, allDataReceived, terminated):
-        """
-        Manage the lifecycle of an ``httpbin`` process.
-
-        :param https: Should this process serve HTTPS?
-        :type https: :py:class:`bool`
-
-        :param allDataReceived: A Deferred that will be called back
-            with an :py:class:`_HTTPBinDescription` object
-        :type allDataReceived: :py:class:`Deferred`
-
-        :param terminated: A Deferred that will be called back when
-            the process has ended.
-        :type terminated: :py:class:`Deferred`
-        """
-        self._https = https
-        self._allDataReceived = allDataReceived
-        self._fired = False
-        self._terminated = terminated
-
-    def lineReceived(self, line):
-        deserialized = json.loads(line.decode('ascii'))
-        self._fired = True
-
-        # Remove readers that leave the reactor in a dirty state after
-        # a test.
-        self.transport.closeStdin()
-        self.transport.closeStdout()
-        self.transport.closeStderr()
-
-        self._allDataReceived.callback(
-            _HTTPBinDescription.from_dictionary(deserialized)
-        )
-
-    def connectionLost(self, reason):
-        if not self._fired:
-            self._allDataReceived.errback(reason)
-        self._terminated.errback(reason)
-
-
-@attr.s
-class _HTTPBinProcess(object):
-    """
-    Manage an ``httpbin`` server process.
-
-    :ivar _allDataReceived: See
-        :py:attr:`_HTTPBinServerProcessProtocol.allDataReceived`
-    :ivar _terminated: See
-        :py:attr:`_HTTPBinServerProcessProtocol.terminated`
-    """
-    _https = attr.ib()
-
-    _errorLogPath = attr.ib(default='httpbin-server-error.log')
-
-    _allDataReceived = attr.ib(init=False, default=attr.Factory(Deferred))
-    _terminated = attr.ib(init=False, default=attr.Factory(Deferred))
-
-    _process = attr.ib(init=False, default=None)
-    _processDescription = attr.ib(init=False, default=None)
-
-    def _spawnHTTPBinProcess(self, reactor):
-        """
-        Spawn an ``httpbin`` process, returning a :py:class:`Deferred`
-        that fires with the process transport and result.
-        """
-        server = _HTTPBinServerProcessProtocol(
-            self._https,
-            allDataReceived=self._allDataReceived,
-            terminated=self._terminated
-        )
-
-        argv = [
-            sys.executable,
-            '-m',
-            'treq.test.httpbin_server',
-        ]
-
-        if self._https:
-            argv.append('--https')
-
-        with open(self._errorLogPath, 'w') as errorLog:
-            endpoint = endpoints.ProcessEndpoint(
-                reactor,
-                sys.executable,
-                argv,
-                childFDs={
-                    1: 'r',
-                    2: errorLog.fileno(),
-                },
-            )
-            # Processes are spawned synchronously.
-            spawned = endpoint.connect(
-                # ProtocolWrapper, WrappingFactory's protocol, has a
-                # disconnecting attribute.  See
-                # https://twistedmatrix.com/trac/ticket/6606
-                policies.WrappingFactory(
-                    protocol.Factory.forProtocol(lambda: server),
-                ),
-            )
-
-        def waitForProtocol(connectedProtocol):
-            process = connectedProtocol.transport
-            return self._allDataReceived.addCallback(
-                returnResultAndProcess, process,
-            )
-
-        def returnResultAndProcess(description, process):
-            return description, process
-
-        return spawned.addCallback(waitForProtocol)
-
-    def serverDescription(self, reactor):
-        """
-        Return a :py:class:`Deferred` that fires with the the process'
-        :py:class:`_HTTPBinDescription`, spawning the process if
-        necessary.
-        """
-        if self._process is None:
-            ready = self._spawnHTTPBinProcess(reactor)
-
-            def storeAndScheduleTermination(descriptionAndProcess):
-                description, process = descriptionAndProcess
-
-                self._process = process
-                self._processDescription = description
-
-                reactor.addSystemEventTrigger("before", "shutdown", self.kill)
-
-                return self._processDescription
-
-            return ready.addCallback(storeAndScheduleTermination)
-        else:
-            return succeed(self._processDescription)
-
-    def kill(self):
-        """
-        Kill the ``httpbin`` process.
-        """
-        if platform.system() == "Windows":
-            signo = signal.SIGTERM
-            self._process.signalProcess("TERMINATE")
-        else:
-            signo = signal.SIGKILL
-            self._process.signalProcess("KILL")
-
-        def suppressProcessTerminated(exitFailure):
-            exitFailure.trap(error.ProcessTerminated)
-            if exitFailure.value.signal != signo:
-                return exitFailure
-
-        return self._terminated.addErrback(suppressProcessTerminated)
 
 
 @inlineCallbacks
@@ -219,15 +50,15 @@ class TreqIntegrationTests(TestCase):
     patch = with_baseurl(treq.patch)
     delete = with_baseurl(treq.delete)
 
-    _httpbinProcess = _HTTPBinProcess(https=False)
+    _httpbin_process = _HTTPBinProcess(https=False)
 
     @inlineCallbacks
     def setUp(self):
-        processDescription = yield self._httpbinProcess.serverDescription(
+        description = yield self._httpbin_process.server_description(
             reactor)
         self.baseurl = URL(scheme=u"http",
-                           host=processDescription.host,
-                           port=processDescription.port).asText()
+                           host=description.host,
+                           port=description.port).asText()
         self.agent = Agent(reactor)
         self.pool = HTTPConnectionPool(reactor, False)
 
@@ -434,18 +265,18 @@ class TreqIntegrationTests(TestCase):
 
 
 class HTTPSTreqIntegrationTests(TreqIntegrationTests):
-    _httpbinProcess = _HTTPBinProcess(https=True)
+    _httpbin_process = _HTTPBinProcess(https=True)
 
     @inlineCallbacks
     def setUp(self):
-        processDescription = yield self._httpbinProcess.serverDescription(
+        description = yield self._httpbin_process.server_description(
             reactor)
         self.baseurl = URL(scheme=u"https",
-                           host=processDescription.host,
-                           port=processDescription.port).asText()
+                           host=description.host,
+                           port=description.port).asText()
 
         root = trustRootFromCertificates(
-            [Certificate.loadPEM(processDescription.cacert)],
+            [Certificate.loadPEM(description.cacert)],
         )
         self.agent = Agent(
             reactor,

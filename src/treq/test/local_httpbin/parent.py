@@ -5,6 +5,7 @@ import attr
 
 import signal
 import sys
+import os
 
 
 from twisted.protocols import basic, policies
@@ -103,6 +104,7 @@ class _HTTPBinProcess(object):
                 reactor,
                 sys.executable,
                 argv,
+                env=os.environ,
                 childFDs={
                     1: 'r',
                     2: error_log.fileno(),

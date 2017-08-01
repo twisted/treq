@@ -77,10 +77,10 @@ after_success:
 
 after_failure:
   - |
-    if [[ -f "_trial_temp/httpbin-server-error.log" ]]
+    if [[ -f "_trial_temp/test.log" ]]
     then
-        echo "httpbin-server-error.log:"
-        cat "_trial_temp/httpbin-server-error.log"
+        echo "Last 50 lines of test.log:"
+        tail -50 "_trial_temp/test.log"
     fi
 
 notifications:

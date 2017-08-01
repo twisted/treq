@@ -15,7 +15,7 @@ from twisted.internet.interfaces import (IProcessTransport,
                                          IReactorProcess)
 from twisted.python.failure import Failure
 
-from twisted.python.runtime import platform
+from treq.test.util import skip_on_windows_because_of_199
 
 from twisted.internet.error import ProcessTerminated, ConnectionDone
 
@@ -27,9 +27,7 @@ from zope.interface import implementer, verify
 from .. import parent, shared
 
 
-if platform.isWindows():
-    skip = ("HTTPBin process cannot run under Windows."
-            " See https://github.com/twisted/treq/issues/199")
+skip = skip_on_windows_because_of_199()
 
 
 @attr.s

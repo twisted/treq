@@ -14,7 +14,7 @@ from twisted.test.proto_helpers import MemoryReactor
 
 from twisted.internet import defer
 
-from twisted.python.runtime import platform
+from treq.test.util import skip_on_windows_because_of_199
 
 from twisted.web.server import Site
 from twisted.web.resource import Resource
@@ -25,9 +25,8 @@ import six
 
 from .. import child, shared
 
-if platform.isWindows():
-    skip = ("HTTPBin process cannot run under Windows."
-            " See https://github.com/twisted/treq/issues/199")
+
+skip = skip_on_windows_because_of_199()
 
 
 class CertificatesForAuthorityAndServerTests(SynchronousTestCase):

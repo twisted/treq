@@ -9,20 +9,17 @@ from twisted.internet import reactor
 from twisted.internet.tcp import Client
 from twisted.internet.ssl import Certificate, trustRootFromCertificates
 
-from twisted.python.runtime import platform
-
 from twisted.web.client import (Agent, BrowserLikePolicyForHTTPS,
                                 HTTPConnectionPool, ResponseFailed)
 
-from treq.test.util import DEBUG
+from treq.test.util import DEBUG, skip_on_windows_because_of_199
 
 from .local_httpbin.parent import _HTTPBinProcess
 
 import treq
 
-if platform.isWindows():
-    skip = ("HTTPBin process cannot run under Windows."
-            " See https://github.com/twisted/treq/issues/199")
+
+skip = skip_on_windows_because_of_199()
 
 
 @inlineCallbacks

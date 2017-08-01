@@ -6,7 +6,6 @@ This ensures tests do not depend on `httpbin <https://httpbin.org/>`_.
 from __future__ import print_function
 import argparse
 import datetime
-import os
 import sys
 
 import httpbin
@@ -222,7 +221,7 @@ def _output_process_description(description, stdout=sys.stdout):
         write = stdout.buffer.write
         flush = stdout.buffer.flush
 
-    write(description.to_json_bytes() + os.linesep.encode('ascii'))
+    write(description.to_json_bytes() + b'\n')
     flush()
 
 

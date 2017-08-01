@@ -3,8 +3,6 @@ Spawn and monitor an ``httpbin`` child process.
 """
 import attr
 
-import os
-import platform
 import signal
 import sys
 
@@ -20,7 +18,7 @@ class _HTTPBinServerProcessProtocol(basic.LineOnlyReceiver):
     """
     Manage the lifecycle of an ``httpbin`` process.
     """
-    delimiter = os.linesep.encode('ascii')
+    delimiter = b'\n'
 
     def __init__(self, all_data_received, terminated):
         """
@@ -71,15 +69,11 @@ class _HTTPBinProcess(object):
     """
     _https = attr.ib()
 
-    _error_log_path = attr.ib(default='httpbin-server-error.log')
-
     _all_data_received = attr.ib(init=False, default=attr.Factory(Deferred))
     _terminated = attr.ib(init=False, default=attr.Factory(Deferred))
 
     _process = attr.ib(init=False, default=None)
     _process_description = attr.ib(init=False, default=None)
-
-    _open = staticmethod(open)
 
     def _spawn_httpbin_process(self, reactor):
         """
@@ -100,25 +94,20 @@ class _HTTPBinProcess(object):
         if self._https:
             argv.append('--https')
 
-        with self._open(self._error_log_path, 'wb') as error_log:
-            endpoint = endpoints.ProcessEndpoint(
-                reactor,
-                sys.executable,
-                argv,
-                childFDs={
-                    1: 'r',
-                    2: error_log.fileno(),
-                },
-            )
-            # Processes are spawned synchronously.
-            spawned = endpoint.connect(
-                # ProtocolWrapper, WrappingFactory's protocol, has a
-                # disconnecting attribute.  See
-                # https://twistedmatrix.com/trac/ticket/6606
-                policies.WrappingFactory(
-                    protocol.Factory.forProtocol(lambda: server),
-                ),
-            )
+        endpoint = endpoints.ProcessEndpoint(
+            reactor,
+            sys.executable,
+            argv,
+        )
+        # Processes are spawned synchronously.
+        spawned = endpoint.connect(
+            # ProtocolWrapper, WrappingFactory's protocol, has a
+            # disconnecting attribute.  See
+            # https://twistedmatrix.com/trac/ticket/6606
+            policies.WrappingFactory(
+                protocol.Factory.forProtocol(lambda: server),
+            ),
+        )
 
         def wait_for_protocol(connected_protocol):
             process = connected_protocol.transport
@@ -161,16 +150,11 @@ class _HTTPBinProcess(object):
         if not self._process:
             return
 
-        if platform.system() == "Windows":
-            signo = signal.SIGTERM
-            self._process.signalProcess("TERMINATE")
-        else:
-            signo = signal.SIGKILL
-            self._process.signalProcess("KILL")
+        self._process.signalProcess("KILL")
 
         def suppress_process_terminated(exit_failure):
             exit_failure.trap(error.ProcessTerminated)
-            if exit_failure.value.signal != signo:
+            if exit_failure.value.signal != signal.SIGKILL:
                 return exit_failure
 
         return self._terminated.addErrback(suppress_process_terminated)

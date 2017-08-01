@@ -9,12 +9,12 @@ import functools
 
 import io
 
-import os
-
 from twisted.trial.unittest import SynchronousTestCase
 from twisted.test.proto_helpers import MemoryReactor
 
 from twisted.internet import defer
+
+from twisted.python.runtime import platform
 
 from twisted.web.server import Site
 from twisted.web.resource import Resource
@@ -24,6 +24,10 @@ from service_identity.cryptography import verify_certificate_hostname
 import six
 
 from .. import child, shared
+
+if platform.isWindows():
+    skip = ("HTTPBin process cannot run under Windows."
+            " See https://github.com/twisted/treq/issues/199")
 
 
 class CertificatesForAuthorityAndServerTests(SynchronousTestCase):
@@ -290,11 +294,9 @@ class OutputProcessDescriptionTests(SynchronousTestCase):
 
         written = self.stdout_state.bio.getvalue()
 
-        ending = os.linesep.encode('ascii')
-
         self.assertEqual(
             written,
-            b'{"cacert": "cacert", "host": "host", "port": 123}' + ending,
+            b'{"cacert": "cacert", "host": "host", "port": 123}' + b'\n',
         )
 
         self.assertEqual(self.stdout_state.flush_count, 1)

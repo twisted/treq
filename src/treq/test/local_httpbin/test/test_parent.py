@@ -319,6 +319,18 @@ class HTTPBinProcessTests(SynchronousTestCase):
 
     def setUp(self):
         self.reactor = MemoryProcessReactor()
+        self.opened_file_descriptors = []
+
+    def fd_recording_open(self, *args, **kwargs):
+        """
+        Record the file descriptors of files opened by
+        :py:func:`open`.
+
+        :return: A file object.
+        """
+        fobj = open(*args, **kwargs)
+        self.opened_file_descriptors.append(fobj.fileno())
+        return fobj
 
     def spawned_process(self):
         """
@@ -333,9 +345,9 @@ class HTTPBinProcessTests(SynchronousTestCase):
     def assertSpawnAndDescription(self, process, args, description):
         """
         Assert that spawning the given process invokes the command
-        with the given args, that it is killed at reactor shutdown,
-        and that it returns a description that matches the provided
-        one.
+        with the given args, that standard error is redirected, that
+        it is killed at reactor shutdown, and that it returns a
+        description that matches the provided one.
 
         :param process: :py:class:`_HTTPBinProcesss` instance.
         :param args: The arguments with which to execute the child
@@ -347,11 +359,18 @@ class HTTPBinProcessTests(SynchronousTestCase):
 
         :return: The returned :py:class:`_HTTPBinDescription`
         """
+        process._open = self.fd_recording_open
+
         description_deferred = process.server_description(self.reactor)
 
         spawned_process = self.spawned_process()
 
         self.assertEqual(spawned_process.args, args)
+
+        self.assertEqual(len(self.opened_file_descriptors), 1)
+        [error_log_fd] = self.opened_file_descriptors
+
+        self.assertEqual(spawned_process.child_fds.get(2), error_log_fd)
 
         self.assertNoResult(description_deferred)
 
@@ -370,7 +389,8 @@ class HTTPBinProcessTests(SynchronousTestCase):
         """
         :py:class:`_HTTPBinProcess.server_description` spawns an
         ``httpbin`` child process that it monitors with
-        :py:class:`_HTTPBinServerProcessProtocol`.
+        :py:class:`_HTTPBinServerProcessProtocol`, and redirects its
+        standard error to a log file.
         """
         httpbin_process = parent._HTTPBinProcess(https=False)
         description = shared._HTTPBinDescription(host="host", port=1234)
@@ -388,7 +408,8 @@ class HTTPBinProcessTests(SynchronousTestCase):
         """
         :py:class:`_HTTPBinProcess.server_description` spawns an
         ``httpbin`` child process that listens over HTTPS, that it
-        monitors with :py:class:`_HTTPBinServerProcessProtocol`.
+        monitors with :py:class:`_HTTPBinServerProcessProtocol`, and
+        redirects the process' standard error to a log file.
         """
         httpbin_process = parent._HTTPBinProcess(https=True)
         description = shared._HTTPBinDescription(host="host",

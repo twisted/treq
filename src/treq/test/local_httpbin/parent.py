@@ -69,11 +69,15 @@ class _HTTPBinProcess(object):
     """
     _https = attr.ib()
 
+    _error_log_path = attr.ib(default='httpbin-server-error.log')
+
     _all_data_received = attr.ib(init=False, default=attr.Factory(Deferred))
     _terminated = attr.ib(init=False, default=attr.Factory(Deferred))
 
     _process = attr.ib(init=False, default=None)
     _process_description = attr.ib(init=False, default=None)
+
+    _open = staticmethod(open)
 
     def _spawn_httpbin_process(self, reactor):
         """
@@ -94,20 +98,25 @@ class _HTTPBinProcess(object):
         if self._https:
             argv.append('--https')
 
-        endpoint = endpoints.ProcessEndpoint(
-            reactor,
-            sys.executable,
-            argv,
-        )
-        # Processes are spawned synchronously.
-        spawned = endpoint.connect(
-            # ProtocolWrapper, WrappingFactory's protocol, has a
-            # disconnecting attribute.  See
-            # https://twistedmatrix.com/trac/ticket/6606
-            policies.WrappingFactory(
-                protocol.Factory.forProtocol(lambda: server),
-            ),
-        )
+        with self._open(self._error_log_path, 'wb') as error_log:
+            endpoint = endpoints.ProcessEndpoint(
+                reactor,
+                sys.executable,
+                argv,
+                childFDs={
+                    1: 'r',
+                    2: error_log.fileno(),
+                },
+            )
+            # Processes are spawned synchronously.
+            spawned = endpoint.connect(
+                # ProtocolWrapper, WrappingFactory's protocol, has a
+                # disconnecting attribute.  See
+                # https://twistedmatrix.com/trac/ticket/6606
+                policies.WrappingFactory(
+                    protocol.Factory.forProtocol(lambda: server),
+                ),
+            )
 
         def wait_for_protocol(connected_protocol):
             process = connected_protocol.transport

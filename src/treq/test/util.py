@@ -17,3 +17,15 @@ def with_clock(fn):
         with mock.patch.object(reactor, 'callLater', clock.callLater):
             return fn(*(args + (clock,)), **kwargs)
     return wrapper
+
+
+def skip_on_windows_because_of_199():
+    """
+    Return a skip describing issue #199 under Windows.
+
+    :return: A :py:class:`str` skip reason.
+    """
+    if platform.system() == 'Windows':
+        return ("HTTPBin process cannot run under Windows."
+                " See https://github.com/twisted/treq/issues/199")
+    return None

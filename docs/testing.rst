@@ -1,12 +1,12 @@
 Testing Helpers
 ===============
 
-The :mod:`treq.testing` module provides some tools for testing both HTTP clients which use the treq API and implementations of the `Twisted Web resource model <https://twistedmatrix.com/documents/current/api/twisted.web.resource.IResource.html>`.
+The :mod:`treq.testing` module provides some tools for testing both HTTP clients which use the treq API and implementations of the `Twisted Web resource model <https://twistedmatrix.com/documents/current/api/twisted.web.resource.IResource.html>`_.
 
 Writing tests for HTTP clients
 ------------------------------
 
-The :class:`StubTreq` class implements the :mod:`treq` module interface (:func:`treq.get()`, :func:`treq.post()`, etc.) but runs all I/O via a :class:`~twisted.test.proto_helpers.MemoryReactor`.
+The :class:`~treq.testing.StubTreq` class implements the :mod:`treq` module interface (:func:`treq.get()`, :func:`treq.post()`, etc.) but runs all I/O via a :class:`~twisted.test.proto_helpers.MemoryReactor`.
 It wraps a :class:`twisted.web.resource.IResource` provider which handles each request.
 
 You can wrap a pre-existing `IResource` provider, or write your own.
@@ -54,4 +54,4 @@ Since :class:`~treq.testing.StubTreq` wraps any resource, you can use it to test
 This is superior to calling your resource's methods directly or passing mock objects, since it uses a real :class:`~twisted.web.client.Agent` to generate the request and a real :class:`~twisted.web.server.Site` to process the response.
 Thus, the ``request`` object your code interacts with is a *real* :class:`twisted.web.server.Request` and behaves the same as it would in production.
 
-Note that if your resource returns :data:`~twisted.web.server.NOT_DONE_YET` you must call the :meth:`~treq.testing.StubTreq.flush()` method to spin the memory reactor once the server writes additional data before the client will receive it.
+Note that if your resource returns :data:`~twisted.web.server.NOT_DONE_YET` you must keep a reference to the :class:`~treq.testing.RequestTraversalAgent` and call its :meth:`~treq.testing.RequestTraversalAgent.flush()` method to spin the memory reactor once the server writes additional data before the client will receive it.

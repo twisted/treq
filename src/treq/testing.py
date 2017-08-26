@@ -17,6 +17,9 @@ from twisted.internet.address import IPv4Address
 from twisted.internet.defer import succeed
 from twisted.internet.interfaces import ISSLTransport
 
+from twisted.logger import Logger
+
+from twisted.python.failure import Failure
 from twisted.python.urlpath import URLPath
 
 from twisted.internet.endpoints import TCP4ClientEndpoint
@@ -274,7 +277,7 @@ class StringStubbingResource(Resource):
 
     def __init__(self, get_response_for):
         """
-        See `StringStubbingResource`.
+        See :class:`StringStubbingResource`.
         """
         Resource.__init__(self)
         self._get_response_for = get_response_for
@@ -371,45 +374,88 @@ class RequestSequence(object):
 
     Expects the requests to arrive in sequence order.  If there are no more
     responses, or the request's parameters do not match the next item's
-    expected request parameters, raises :obj:`AssertionError`.
+    expected request parameters, calls `sync_failure_reporter` or
+    `async_failure_reporter`.
 
-    For the expected request arguments:
+    For the expected request tuples:
 
-    - ``method`` should be `bytes` normalized to lowercase.
-    - ``url`` should be a `str` normalized as per the transformations in
-      https://en.wikipedia.org/wiki/URL_normalization that (usually) preserve
-      semantics.  A URL to `http://something-that-looks-like-a-directory`
-      would be normalized to `http://something-that-looks-like-a-directory/`
+    - ``method`` should be :class:`bytes` normalized to lowercase.
+    - ``url`` should be a `str` normalized as per the `transformations in that
+      (usually) preserve semantics
+      <https://en.wikipedia.org/wiki/URL_normalization>`_.  A URL to
+      `http://something-that-looks-like-a-directory` would be normalized to
+      `http://something-that-looks-like-a-directory/`
       and a URL to `http://something-that-looks-like-a-page/page.html`
       remains unchanged.
-    - ``params`` is a dictionary mapping `bytes` to `lists` of `bytes`
-    - ``headers`` is a dictionary mapping `bytes` to `lists` of `bytes` - note
-      that :obj:`twisted.web.client.Agent` may add its own headers though,
-      which are not guaranteed (for instance, `user-agent` or
-      `content-length`), so it's better to use some kind of matcher like
-      :obj:`HasHeaders`.
-    - ``data`` is a `bytes`
+    - ``params`` is a dictionary mapping :class:`bytes` to :class:`list` of
+      :class:`bytes`.
+    - ``headers`` is a dictionary mapping :class:`bytes` to :class:`list` of
+      :class:`bytes` -- note that :class:`twisted.web.client.Agent` may add its
+      own headers which are not guaranteed to be present (for instance,
+      `user-agent` or `content-length`), so it's better to use some kind of
+      matcher like :class:`HasHeaders`.
+    - ``data`` is a :class:`bytes`.
 
-    For the response:
+    For the response tuples:
 
-    - ``code`` is an integer representing the HTTP status code to return
-    - ``headers`` is a dictionary mapping `bytes` to `bytes` or `lists` of
-      `bytes`
-    - ``body`` is a `bytes`
+    - ``code`` is an integer representing the HTTP status code to return.
+    - ``headers`` is a dictionary mapping :class:`bytes` to :class:`bytes` or
+      :class:`list` of :class:`bytes`.
+    - ``body`` is a :class:`bytes`.
 
-    :ivar list sequence: The sequence of expected request arguments mapped to
-        stubbed responses
-    :ivar async_failure_reporter: A callable that takes a single message
-        reporting failures—it's asynchronous because it cannot just raise
-        an exception—if it does, :obj:`Resource.render` will just convert
-        that into a 500 response, and there will be no other failure reporting
-        mechanism. Under Trial, this may be
-        a :class:`twisted.logger.Logger.error`, as Trial fails the test when an
-        error is logged.
+    :ivar list sequence: A sequence of (request tuple, response tuple)
+        two-tuples, as described above.
+    :ivar async_failure_reporter: An optional callable that takes
+        a :class:`str` message indicating a failure. It's asynchronous because
+        it cannot just raise an exception—if it does, :meth:`Resource.render
+        <twisted.web.resource.Resource.render>` will just convert that into
+        a 500 response, and there will be no other failure reporting mechanism.
+
+    When the `async_failure_reporter` parameter is not passed, async failures
+    will be reported via a :class:`twisted.logger.Logger` instance, which
+    Trial's test case classes (:class:`twisted.trial.unittest.TestCase` and
+    :class:`~twisted.trial.unittest.SynchronousTestCase`) will translate into
+    a test failure.
+
+    .. note::
+
+        Some versions of
+        :class:`twisted.trial.unittest.SynchronousTestCase` report
+        logged errors on the wrong test: see `Twisted #9267
+        <https://twistedmatrix.com/trac/ticket/9267>`_.
+
+    ..  TODO Update the above note to say what version of
+        SynchronousTestCase is fixed once Twisted >17.5.0 is released.
+
+    When not subclassing Trial's classes you must pass `async_failure_reporter`
+    and implement equivalent behavior or errors will pass silently. For
+    example::
+
+        async_failures = []
+        sequence_stubs = RequestSequence([...], async_failures.append)
+        stub_treq = StubTreq(StringStubbingResource(sequence_stubs))
+        with sequence_stubs.consume(self.fail):  # self = unittest.TestCase
+            stub_treq.get('http://fakeurl.com')
+
+        self.assertEqual([], async_failures)
     """
-    def __init__(self, sequence, async_failure_reporter):
+    _log = Logger()
+
+    def __init__(self, sequence, async_failure_reporter=None):
         self._sequence = sequence
-        self._async_reporter = async_failure_reporter
+        self._async_reporter = async_failure_reporter or self._log_async_error
+
+    def _log_async_error(self, message):
+        """
+        The default async failure reporter—see `async_failure_reporter`. Logs
+        a failure which wraps an :ex:`AssertionError`.
+
+        :param str message: Failure message
+        """
+        # Passing message twice may look redundant, but Trial only preserves
+        # the Failure, not the log message.
+        self._log.failure("RequestSequence async error: {message}", message=message,
+                          failure=Failure(AssertionError(message)))
 
     def consumed(self):
         """
@@ -424,14 +470,11 @@ class RequestSequence(object):
         """
         Usage::
 
-            async_failures = []
-            sequence_stubs = RequestSequence([...], async_failures.append)
+            sequence_stubs = RequestSequence([...])
             stub_treq = StubTreq(StringStubbingResource(sequence_stubs))
-            with sequence_stubs.consume(self.fail):  # self = unittest.TestCase
+            with sequence_stubs.consume(self.fail):  # self = twisted.trial.unittest.TestCase
                 stub_treq.get('http://fakeurl.com')
                 stub_treq.get('http://another-fake-url.com')
-
-            self.assertEqual([], async_failures)
 
         If there are still remaining expected requests to be made in the
         sequence, fails the provided test case.

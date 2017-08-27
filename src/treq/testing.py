@@ -454,8 +454,11 @@ class RequestSequence(object):
         """
         # Passing message twice may look redundant, but Trial only preserves
         # the Failure, not the log message.
-        self._log.failure("RequestSequence async error: {message}", message=message,
-                          failure=Failure(AssertionError(message)))
+        self._log.failure(
+            "RequestSequence async error: {message}",
+            message=message,
+            failure=Failure(AssertionError(message)),
+        )
 
     def consumed(self):
         """
@@ -472,7 +475,8 @@ class RequestSequence(object):
 
             sequence_stubs = RequestSequence([...])
             stub_treq = StubTreq(StringStubbingResource(sequence_stubs))
-            with sequence_stubs.consume(self.fail):  # self = twisted.trial.unittest.TestCase
+            # self = twisted.trial.unittest.SynchronousTestCase
+            with sequence_stubs.consume(self.fail):
                 stub_treq.get('http://fakeurl.com')
                 stub_treq.get('http://another-fake-url.com')
 

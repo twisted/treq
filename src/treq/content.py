@@ -22,6 +22,9 @@ def _encoding_from_headers(headers):
     if 'charset' in params:
         return params.get('charset').strip("'\"")
 
+    if content_type == 'application/json':
+        return 'UTF-8'
+
 
 class _BodyCollector(Protocol):
     def __init__(self, finished, collector):

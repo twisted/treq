@@ -1,21 +1,27 @@
 from io import BytesIO
 
+from twisted.python.url import URL
+
 from twisted.trial.unittest import TestCase
 from twisted.internet.defer import CancelledError, inlineCallbacks
 from twisted.internet.task import deferLater
 from twisted.internet import reactor
 from twisted.internet.tcp import Client
+from twisted.internet.ssl import Certificate, trustRootFromCertificates
 from twisted.python.monkey import MonkeyPatcher
 
-from twisted.web.client import HTTPConnectionPool, ResponseFailed, Agent
+from twisted.web.client import (Agent, BrowserLikePolicyForHTTPS,
+                                HTTPConnectionPool, ResponseFailed)
 
-from treq.test.util import DEBUG
+from treq.test.util import DEBUG, skip_on_windows_because_of_199
+
+from .local_httpbin.parent import _HTTPBinProcess
 
 import treq
 from treq.auth import HTTPDigestAuth
 
-HTTPBIN_URL = "http://httpbin.org"
-HTTPSBIN_URL = "https://httpbin.org"
+
+skip = skip_on_windows_because_of_199()
 
 
 @inlineCallbacks
@@ -32,13 +38,16 @@ def print_response(response):
 
 def with_baseurl(method):
     def _request(self, url, *args, **kwargs):
-        return method(self.baseurl + url, *args, pool=self.pool, **kwargs)
+        return method(self.baseurl + url,
+                      *args,
+                      agent=self.agent,
+                      pool=self.pool,
+                      **kwargs)
 
     return _request
 
 
 class TreqIntegrationTests(TestCase):
-    baseurl = HTTPBIN_URL
     get = with_baseurl(treq.get)
     head = with_baseurl(treq.head)
     post = with_baseurl(treq.post)
@@ -46,7 +55,16 @@ class TreqIntegrationTests(TestCase):
     patch = with_baseurl(treq.patch)
     delete = with_baseurl(treq.delete)
 
+    _httpbin_process = _HTTPBinProcess(https=False)
+
+    @inlineCallbacks
     def setUp(self):
+        description = yield self._httpbin_process.server_description(
+            reactor)
+        self.baseurl = URL(scheme=u"http",
+                           host=description.host,
+                           port=description.port).asText()
+        self.agent = Agent(reactor)
         self.pool = HTTPConnectionPool(reactor, False)
 
     def tearDown(self):
@@ -348,4 +366,22 @@ class TreqIntegrationTests(TestCase):
 
 
 class HTTPSTreqIntegrationTests(TreqIntegrationTests):
-    baseurl = HTTPSBIN_URL
+    _httpbin_process = _HTTPBinProcess(https=True)
+
+    @inlineCallbacks
+    def setUp(self):
+        description = yield self._httpbin_process.server_description(
+            reactor)
+        self.baseurl = URL(scheme=u"https",
+                           host=description.host,
+                           port=description.port).asText()
+
+        root = trustRootFromCertificates(
+            [Certificate.loadPEM(description.cacert)],
+        )
+        self.agent = Agent(
+            reactor,
+            contextFactory=BrowserLikePolicyForHTTPS(root),
+        )
+
+        self.pool = HTTPConnectionPool(reactor, False)

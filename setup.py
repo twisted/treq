@@ -34,6 +34,7 @@ if __name__ == "__main__":
             "attrs",
         ],
         extras_require={
+            "dev:(python_version < '3.4' and platform_python_implementation != 'PyPy')": ["enum34"],
             "dev": [
                 "mock",
                 "pep8",

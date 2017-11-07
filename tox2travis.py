@@ -44,6 +44,7 @@ before_install:
       pyenv global pypy-5.4.1
     fi
   - pip install --upgrade pip
+  - pip install --upgrade setuptools
 
 install:
   - pip install tox codecov

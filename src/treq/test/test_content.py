@@ -188,6 +188,17 @@ class ContentTests(TestCase):
 
         self.assertEqual(self.successResultOf(d), u'\xa1')
 
+    def test_content_application_json_default_encoding(self):
+        self.response.headers = Headers(
+            {b'Content-Type': [b'application/json']})
+
+        d = text_content(self.response)
+
+        self.protocol.dataReceived(b'gr\xc3\xbcn')
+        self.protocol.connectionLost(Failure(ResponseDone()))
+
+        self.assertEqual(self.successResultOf(d), u'grün')
+
     def test_text_content_unicode_headers(self):
         """
         Header parsing is robust against unicode header names and values.

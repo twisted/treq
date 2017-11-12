@@ -34,12 +34,13 @@ if __name__ == "__main__":
             "attrs",
         ],
         extras_require={
+            "dev:(python_version < '3.4' and platform_python_implementation != 'PyPy')": ["enum34"],
             "dev": [
                 "mock",
                 "pep8",
                 "pyflakes",
                 "sphinx",
-                "httpbin",
+                "httpbin==0.5.0",
             ],
         },
         package_data={"treq": ["_version"]},

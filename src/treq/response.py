@@ -28,8 +28,10 @@ class _Response(proxyForInterface(IResponse)):
             size = 'unknown size'
         else:
             size = '{:,d} bytes'.format(self.original.length)
-        # Display non-ascii bits of the content-type header as backslash escapes.
-        content_type_bytes = b', '.join(self.original.headers.getRawHeaders(b'content-type', ()))
+        # Display non-ascii bits of the content-type header as backslash
+        # escapes.
+        content_type_bytes = b', '.join(
+            self.original.headers.getRawHeaders(b'content-type', ()))
         content_type = repr(content_type_bytes).lstrip('b')[1:-1]
         return "<{} {} '{:.40s}' {}>".format(
             reflect.qual(self.__class__),

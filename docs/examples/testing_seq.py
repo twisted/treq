@@ -1,12 +1,9 @@
 from twisted.internet import defer
-from twisted.logger import Logger
 from twisted.trial.unittest import SynchronousTestCase
 from twisted.web import http
 
 from treq.testing import StubTreq, HasHeaders
 from treq.testing import RequestSequence, StringStubbingResource
-
-log = Logger()
 
 
 @defer.inlineCallbacks
@@ -35,7 +32,7 @@ class MakeARequestTests(SynchronousTestCase):
             ((b'get', 'http://an.example/foo', {b'a': [b'b']},
               HasHeaders({'Accept': ['application/json']}), b''),
              (http.OK, {b'Content-Type': b'application/json'}, b'{"status": "ok"}'))
-        ], log.error)
+        ])
         treq = StubTreq(StringStubbingResource(req_seq))
 
         with req_seq.consume(self.fail):
@@ -49,7 +46,7 @@ class MakeARequestTests(SynchronousTestCase):
             ((b'get', 'http://an.example/foo', {b'a': [b'b']},
               HasHeaders({'Accept': ['application/json']}), b''),
              (418, {b'Content-Type': b'text/plain'}, b"I'm a teapot!"))
-        ], log.error)
+        ])
         treq = StubTreq(StringStubbingResource(req_seq))
 
         with req_seq.consume(self.fail):

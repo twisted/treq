@@ -1,11 +1,11 @@
 """
-Provides Treq version information.
+Provides treq version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update Treq` to change this file.
+# Use `python -m incremental.update treq` to change this file.
 
 from incremental import Version
 
-__version__ = Version('Treq', 16, 12, 0)
+__version__ = Version('treq', 17, 8, 0)
 __all__ = ["__version__"]

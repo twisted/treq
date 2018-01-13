@@ -1,32 +1,25 @@
 from io import BytesIO
 
+from twisted.python.url import URL
+
 from twisted.trial.unittest import TestCase
 from twisted.internet.defer import CancelledError, inlineCallbacks
 from twisted.internet.task import deferLater
 from twisted.internet import reactor
 from twisted.internet.tcp import Client
+from twisted.internet.ssl import Certificate, trustRootFromCertificates
 
-from twisted import version as current_version
-from twisted.python.versions import Version
+from twisted.web.client import (Agent, BrowserLikePolicyForHTTPS,
+                                HTTPConnectionPool, ResponseFailed)
 
-from twisted.web.client import HTTPConnectionPool, ResponseFailed
+from treq.test.util import DEBUG, skip_on_windows_because_of_199
 
-from treq.test.util import DEBUG
+from .local_httpbin.parent import _HTTPBinProcess
 
 import treq
 
-HTTPBIN_URL = "http://httpbin.org"
-HTTPSBIN_URL = "https://httpbin.org"
 
-
-def todo_relative_redirect(test_method):
-    expected_version = Version('twisted', 13, 1, 0)
-    if current_version < expected_version:
-        test_method.todo = (
-            "Relative Redirects are not supported in Twisted versions "
-            "prior to: {0}").format(expected_version.short())
-
-    return test_method
+skip = skip_on_windows_because_of_199()
 
 
 @inlineCallbacks
@@ -43,13 +36,16 @@ def print_response(response):
 
 def with_baseurl(method):
     def _request(self, url, *args, **kwargs):
-        return method(self.baseurl + url, *args, pool=self.pool, **kwargs)
+        return method(self.baseurl + url,
+                      *args,
+                      agent=self.agent,
+                      pool=self.pool,
+                      **kwargs)
 
     return _request
 
 
 class TreqIntegrationTests(TestCase):
-    baseurl = HTTPBIN_URL
     get = with_baseurl(treq.get)
     head = with_baseurl(treq.head)
     post = with_baseurl(treq.post)
@@ -57,7 +53,16 @@ class TreqIntegrationTests(TestCase):
     patch = with_baseurl(treq.patch)
     delete = with_baseurl(treq.delete)
 
+    _httpbin_process = _HTTPBinProcess(https=False)
+
+    @inlineCallbacks
     def setUp(self):
+        description = yield self._httpbin_process.server_description(
+            reactor)
+        self.baseurl = URL(scheme=u"http",
+                           host=description.host,
+                           port=description.port).asText()
+        self.agent = Agent(reactor)
         self.pool = HTTPConnectionPool(reactor, False)
 
     def tearDown(self):
@@ -112,7 +117,6 @@ class TreqIntegrationTests(TestCase):
         self.assertEqual(response.code, 200)
         yield print_response(response)
 
-    @todo_relative_redirect
     @inlineCallbacks
     def test_get_302_relative_redirect(self):
         response = yield self.get('/relative-redirect/1')
@@ -139,7 +143,6 @@ class TreqIntegrationTests(TestCase):
         self.assertEqual(response.code, 200)
         yield print_response(response)
 
-    @todo_relative_redirect
     @inlineCallbacks
     def test_head_302_relative_redirect(self):
         response = yield self.head('/relative-redirect/1')
@@ -265,4 +268,22 @@ class TreqIntegrationTests(TestCase):
 
 
 class HTTPSTreqIntegrationTests(TreqIntegrationTests):
-    baseurl = HTTPSBIN_URL
+    _httpbin_process = _HTTPBinProcess(https=True)
+
+    @inlineCallbacks
+    def setUp(self):
+        description = yield self._httpbin_process.server_description(
+            reactor)
+        self.baseurl = URL(scheme=u"https",
+                           host=description.host,
+                           port=description.port).asText()
+
+        root = trustRootFromCertificates(
+            [Certificate.loadPEM(description.cacert)],
+        )
+        self.agent = Agent(
+            reactor,
+            contextFactory=BrowserLikePolicyForHTTPS(root),
+        )
+
+        self.pool = HTTPConnectionPool(reactor, False)

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 In-memory version of treq for testing.
 """
@@ -16,17 +17,59 @@ from twisted.internet.address import IPv4Address
 from twisted.internet.defer import succeed
 from twisted.internet.interfaces import ISSLTransport
 
+from twisted.logger import Logger
+
+from twisted.python.failure import Failure
 from twisted.python.urlpath import URLPath
 
+from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.web.client import Agent
+from twisted.web.error import SchemeNotSupported
+from twisted.web.iweb import IAgent, IAgentEndpointFactory, IBodyProducer
 from twisted.web.resource import Resource
 from twisted.web.server import Site
-from twisted.web.iweb import IAgent, IBodyProducer
 
 from zope.interface import directlyProvides, implementer
 
 import treq
 from treq.client import HTTPClient
+import attr
+
+
+@implementer(IAgentEndpointFactory)
+@attr.s
+class _EndpointFactory(object):
+    """
+    An endpoint factory used by :class:`RequestTraversalAgent`.
+
+    :ivar reactor: The agent's reactor.
+    :type reactor: :class:`MemoryReactor`
+    """
+
+    reactor = attr.ib()
+
+    def endpointForURI(self, uri):
+        """
+        Create an endpoint that represents an in-memory connection to
+        a URI.
+
+        Note: This always creates a
+        :class:`~twisted.internet.endpoints.TCP4ClientEndpoint` on the
+        assumption :class:`RequestTraversalAgent` ignores everything
+        about the endpoint but its port.
+
+        :param uri: The URI to connect to.
+        :type uri: :class:`~twisted.web.client.URI`
+
+        :return: The endpoint.
+        :rtype: An
+                :class:`~twisted.internet.interfaces.IStreamClientEndpoint`
+                provider.
+        """
+
+        if uri.scheme not in {b'http', b'https'}:
+            raise SchemeNotSupported("Unsupported scheme: %r" % (uri.scheme,))
+        return TCP4ClientEndpoint(self.reactor, "127.0.0.1", uri.port)
 
 
 @implementer(IAgent)
@@ -42,7 +85,9 @@ class RequestTraversalAgent(object):
             resource tree.
         """
         self._memoryReactor = MemoryReactor()
-        self._realAgent = Agent(reactor=self._memoryReactor)
+        self._realAgent = Agent.usingEndpointFactory(
+            reactor=self._memoryReactor,
+            endpointFactory=_EndpointFactory(self._memoryReactor))
         self._rootResource = rootResource
         self._pumps = set()
 
@@ -76,12 +121,8 @@ class RequestTraversalAgent(object):
         else:
             scheme = URLPath.fromString(uri).scheme
 
-        if scheme == b"https":
-            host, port, factory, context_factory, timeout, bindAddress = (
-                self._memoryReactor.sslClients[-1])
-        else:
-            host, port, factory, timeout, bindAddress = (
-                self._memoryReactor.tcpClients[-1])
+        host, port, factory, timeout, bindAddress = (
+            self._memoryReactor.tcpClients[-1])
 
         serverAddress = IPv4Address('TCP', '127.0.0.1', port)
         clientAddress = IPv4Address('TCP', '127.0.0.1', 31337)
@@ -97,10 +138,6 @@ class RequestTraversalAgent(object):
         clientTransport = iosim.FakeTransport(
             clientProtocol, isServer=False,
             hostAddress=clientAddress, peerAddress=serverAddress)
-
-        # Twisted 13.2 compatibility.
-        serverTransport.abortConnection = serverTransport.loseConnection
-        clientTransport.abortConnection = clientTransport.loseConnection
 
         if scheme == b"https":
             # Provide ISSLTransport on both transports, so everyone knows that
@@ -219,7 +256,7 @@ class StringStubbingResource(Resource):
     The parameters for the callable are:
 
     - ``method``, the HTTP method as `bytes`.
-    - ``url``, the the full URL of the request as `bytes`.
+    - ``url``, the full URL of the request as text.
     - ``params``, a dictionary of query parameters mapping query keys
       lists of values (sorted alphabetically).
     - ``headers``, a dictionary of headers mapping header keys to
@@ -240,7 +277,7 @@ class StringStubbingResource(Resource):
 
     def __init__(self, get_response_for):
         """
-        See `StringStubbingResource`.
+        See :class:`StringStubbingResource`.
         """
         Resource.__init__(self)
         self._get_response_for = get_response_for
@@ -336,44 +373,92 @@ class RequestSequence(object):
          ...]
 
     Expects the requests to arrive in sequence order.  If there are no more
-    responses, or the request's paramters do not match the next item's expected
-    request paramters, raises :obj:`AssertionError`.
+    responses, or the request's parameters do not match the next item's
+    expected request parameters, calls `sync_failure_reporter` or
+    `async_failure_reporter`.
 
-    For the expected request arguments:
+    For the expected request tuples:
 
-    - ``method`` should be `bytes` normalized to lowercase.
-    - ``url`` should be normalized as per the transformations in
-      https://en.wikipedia.org/wiki/URL_normalization that (usually) preserve
-      semantics.  A url to `http://something-that-looks-like-a-directory`
-      would be normalized to `http://something-that-looks-like-a-directory/`
-      and a url to `http://something-that-looks-like-a-page/page.html`
+    - ``method`` should be :class:`bytes` normalized to lowercase.
+    - ``url`` should be a `str` normalized as per the `transformations in that
+      (usually) preserve semantics
+      <https://en.wikipedia.org/wiki/URL_normalization>`_.  A URL to
+      `http://something-that-looks-like-a-directory` would be normalized to
+      `http://something-that-looks-like-a-directory/`
+      and a URL to `http://something-that-looks-like-a-page/page.html`
       remains unchanged.
-    - ``params`` is a dictionary mapping `bytes` to `lists` of `bytes`
-    - ``headers`` is a dictionary mapping `bytes` to `lists` of `bytes` - note
-      that :obj:`twisted.web.client.Agent` may add its own headers though,
-      which are not guaranteed (for instance, `user-agent` or
-      `content-length`), so it's better to use some kind of matcher like
-      :obj:`HasHeaders`.
-    - ``data`` is a `bytes`
+    - ``params`` is a dictionary mapping :class:`bytes` to :class:`list` of
+      :class:`bytes`.
+    - ``headers`` is a dictionary mapping :class:`bytes` to :class:`list` of
+      :class:`bytes` -- note that :class:`twisted.web.client.Agent` may add its
+      own headers which are not guaranteed to be present (for instance,
+      `user-agent` or `content-length`), so it's better to use some kind of
+      matcher like :class:`HasHeaders`.
+    - ``data`` is a :class:`bytes`.
 
-    For the response:
+    For the response tuples:
 
-    - ``code`` is an integer representing the HTTP status code to return
-    - ``headers`` is a dictionary mapping `bytes` to `bytes` or `lists` of
-      `bytes`
-    - ``body`` is a `bytes`
+    - ``code`` is an integer representing the HTTP status code to return.
+    - ``headers`` is a dictionary mapping :class:`bytes` to :class:`bytes` or
+      :class:`list` of :class:`bytes`.
+    - ``body`` is a :class:`bytes`.
 
-    :ivar list sequence: The sequence of expected request arguments mapped to
-        stubbed responses
-    :ivar async_failure_reporter: A callable that takes a single message
-        reporting failures - it's asynchronous because it cannot just raise
-        an exception - if it does, :obj:`Resource.render` will just convert
-        that into a 500 response, and there will be no other failure reporting
-        mechanism.
+    :ivar list sequence: A sequence of (request tuple, response tuple)
+        two-tuples, as described above.
+    :ivar async_failure_reporter: An optional callable that takes
+        a :class:`str` message indicating a failure. It's asynchronous because
+        it cannot just raise an exception—if it does, :meth:`Resource.render
+        <twisted.web.resource.Resource.render>` will just convert that into
+        a 500 response, and there will be no other failure reporting mechanism.
+
+    When the `async_failure_reporter` parameter is not passed, async failures
+    will be reported via a :class:`twisted.logger.Logger` instance, which
+    Trial's test case classes (:class:`twisted.trial.unittest.TestCase` and
+    :class:`~twisted.trial.unittest.SynchronousTestCase`) will translate into
+    a test failure.
+
+    .. note::
+
+        Some versions of
+        :class:`twisted.trial.unittest.SynchronousTestCase` report
+        logged errors on the wrong test: see `Twisted #9267
+        <https://twistedmatrix.com/trac/ticket/9267>`_.
+
+    ..  TODO Update the above note to say what version of
+        SynchronousTestCase is fixed once Twisted >17.5.0 is released.
+
+    When not subclassing Trial's classes you must pass `async_failure_reporter`
+    and implement equivalent behavior or errors will pass silently. For
+    example::
+
+        async_failures = []
+        sequence_stubs = RequestSequence([...], async_failures.append)
+        stub_treq = StubTreq(StringStubbingResource(sequence_stubs))
+        with sequence_stubs.consume(self.fail):  # self = unittest.TestCase
+            stub_treq.get('http://fakeurl.com')
+
+        self.assertEqual([], async_failures)
     """
-    def __init__(self, sequence, async_failure_reporter):
+    _log = Logger()
+
+    def __init__(self, sequence, async_failure_reporter=None):
         self._sequence = sequence
-        self._async_reporter = async_failure_reporter
+        self._async_reporter = async_failure_reporter or self._log_async_error
+
+    def _log_async_error(self, message):
+        """
+        The default async failure reporter—see `async_failure_reporter`. Logs
+        a failure which wraps an :ex:`AssertionError`.
+
+        :param str message: Failure message
+        """
+        # Passing message twice may look redundant, but Trial only preserves
+        # the Failure, not the log message.
+        self._log.failure(
+            "RequestSequence async error: {message}",
+            message=message,
+            failure=Failure(AssertionError(message)),
+        )
 
     def consumed(self):
         """
@@ -390,7 +475,8 @@ class RequestSequence(object):
 
             sequence_stubs = RequestSequence([...])
             stub_treq = StubTreq(StringStubbingResource(sequence_stubs))
-            with sequence_stubs.consume(self.fail):  # self = unittest.TestCase
+            # self = twisted.trial.unittest.SynchronousTestCase
+            with sequence_stubs.consume(self.fail):
                 stub_treq.get('http://fakeurl.com')
                 stub_treq.get('http://another-fake-url.com')
 
@@ -421,7 +507,7 @@ class RequestSequence(object):
             self._async_reporter(
                 "No more requests expected, but request {0!r} made.".format(
                     (method, url, params, headers, data)))
-            return (500, {}, "StubbingError")
+            return (500, {}, b"StubbingError")
 
         expected, response = self._sequence[0]
         e_method, e_url, e_params, e_headers, e_data = expected
@@ -441,7 +527,7 @@ class RequestSequence(object):
                 "\nMismatches: {2!r}"
                 .format(expected, (method, url, params, headers, data),
                         mismatches))
-            return (500, {}, "StubbingError")
+            return (500, {}, b"StubbingError")
 
         self._sequence = self._sequence[1:]
 

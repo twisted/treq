@@ -30,12 +30,19 @@ if __name__ == "__main__":
             "incremental",
             "requests >= 2.1.0",
             "six",
-            "Twisted[tls] >= 16.0.0",
-            # Twisted[tls] 16.0.0 doesn't specify a version.
-            "service_identity >= 14.0.0",
-            # Twisted[tls] 16.0.0 requires 0.13, which doesn't work on Python 3.
-            "pyOpenSSL >= 0.15.1",
+            "Twisted[tls] >= 16.4.0",
+            "attrs",
         ],
+        extras_require={
+            "dev:(python_version < '3.4' and platform_python_implementation != 'PyPy')": ["enum34"],
+            "dev": [
+                "mock",
+                "pep8",
+                "pyflakes",
+                "sphinx",
+                "httpbin==0.5.0",
+            ],
+        },
         package_data={"treq": ["_version"]},
         author="David Reid",
         author_email="dreid@dreid.org",

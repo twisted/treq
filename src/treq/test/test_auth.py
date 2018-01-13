@@ -1,9 +1,9 @@
 import mock
 
+from twisted.trial.unittest import TestCase
 from twisted.web.client import Agent
 from twisted.web.http_headers import Headers
 
-from treq.test.util import TestCase
 from treq.auth import _RequestHeaderSettingAgent, add_auth, UnknownAuthConfig
 
 

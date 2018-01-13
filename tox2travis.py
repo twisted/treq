@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+"""
+Generate a Travis CI configuration based on Tox's configured environments.
+Usage:
+
+    tox -l | ./tox2travis.py > .travis.yml
+"""
+
 from __future__ import absolute_import, print_function
 
 import re
@@ -37,6 +44,7 @@ before_install:
       pyenv global pypy-5.4.1
     fi
   - pip install --upgrade pip
+  - pip install --upgrade setuptools
 
 install:
   - pip install tox codecov
@@ -46,6 +54,14 @@ script:
 
 after_success:
   - codecov
+
+after_failure:
+  - |
+    if [[ -f "_trial_temp/httpbin-server-error.log" ]]
+    then
+        echo "httpbin-server-error.log:"
+        cat "_trial_temp/httpbin-server-error.log"
+    fi
 
 notifications:
   email: false

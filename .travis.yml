@@ -8,45 +8,25 @@ cache: pip
 matrix:
   include:
     - python: pypy
-      env: TOXENV=pypy-twisted_lowest-pyopenssl_lowest
+      env: TOXENV=pypy-twisted_lowest
     - python: pypy
-      env: TOXENV=pypy-twisted_lowest-pyopenssl_latest
-    - python: pypy
-      env: TOXENV=pypy-twisted_latest-pyopenssl_lowest
-    - python: pypy
-      env: TOXENV=pypy-twisted_latest-pyopenssl_latest
+      env: TOXENV=pypy-twisted_latest
     - python: '2.7'
-      env: TOXENV=py27-twisted_lowest-pyopenssl_lowest
+      env: TOXENV=py27-twisted_lowest
     - python: '2.7'
-      env: TOXENV=py27-twisted_lowest-pyopenssl_latest
-    - python: '2.7'
-      env: TOXENV=py27-twisted_latest-pyopenssl_lowest
-    - python: '2.7'
-      env: TOXENV=py27-twisted_latest-pyopenssl_latest
+      env: TOXENV=py27-twisted_latest
     - python: '3.3'
-      env: TOXENV=py33-twisted_lowest-pyopenssl_lowest
+      env: TOXENV=py33-twisted_lowest
     - python: '3.3'
-      env: TOXENV=py33-twisted_lowest-pyopenssl_latest
-    - python: '3.3'
-      env: TOXENV=py33-twisted_latest-pyopenssl_lowest
-    - python: '3.3'
-      env: TOXENV=py33-twisted_latest-pyopenssl_latest
+      env: TOXENV=py33-twisted_latest
     - python: '3.4'
-      env: TOXENV=py34-twisted_lowest-pyopenssl_lowest
+      env: TOXENV=py34-twisted_lowest
     - python: '3.4'
-      env: TOXENV=py34-twisted_lowest-pyopenssl_latest
-    - python: '3.4'
-      env: TOXENV=py34-twisted_latest-pyopenssl_lowest
-    - python: '3.4'
-      env: TOXENV=py34-twisted_latest-pyopenssl_latest
+      env: TOXENV=py34-twisted_latest
     - python: '3.5'
-      env: TOXENV=py35-twisted_lowest-pyopenssl_lowest
+      env: TOXENV=py35-twisted_lowest
     - python: '3.5'
-      env: TOXENV=py35-twisted_lowest-pyopenssl_latest
-    - python: '3.5'
-      env: TOXENV=py35-twisted_latest-pyopenssl_lowest
-    - python: '3.5'
-      env: TOXENV=py35-twisted_latest-pyopenssl_latest
+      env: TOXENV=py35-twisted_latest
     - python: pypy
       env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
     - python: '2.7'
@@ -63,6 +43,8 @@ matrix:
       env: TOXENV=check-manifest
     - python: '2.7'
       env: TOXENV=flake8
+    - python: '2.7'
+      env: TOXENV=docs
 
   # Don't fail on trunk versions.
   allow_failures:
@@ -83,6 +65,7 @@ before_install:
       pyenv global pypy-5.4.1
     fi
   - pip install --upgrade pip
+  - pip install --upgrade setuptools
 
 install:
   - pip install tox codecov
@@ -92,6 +75,14 @@ script:
 
 after_success:
   - codecov
+
+after_failure:
+  - |
+    if [[ -f "_trial_temp/httpbin-server-error.log" ]]
+    then
+        echo "httpbin-server-error.log:"
+        cat "_trial_temp/httpbin-server-error.log"
+    fi
 
 notifications:
   email: false

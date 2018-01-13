@@ -43,13 +43,7 @@ Install dependencies:
 
 ::
 
-    pip install -r requirements-dev.txt
-
-Optionally install PyOpenSSL:
-
-::
-
-    pip install PyOpenSSL
+    pip install treq[dev]
 
 Run Tests (unit & integration):
 

@@ -59,16 +59,22 @@ Augmented Response Objects
 
     Inherited from :class:`twisted.web.iweb.IResponse`:
 
-    :ivar version:
-    :ivar code:
-    :ivar phrase:
-    :ivar headers:
-    :ivar length:
-    :ivar request:
-    :ivar previousResponse:
+    :ivar version: See :attr:`IResponse.version <twisted.web.iweb.IResponse.version>`
+    :ivar code: See :attr:`IResponse.code <twisted.web.iweb.IResponse.code>`
+    :ivar phrase: See :attr:`IResponse.phrase <twisted.web.iweb.IResponse.pharse>`
+    :ivar headers: See :attr:`IResponse.headers <twisted.web.iweb.IResponse.headers>`
+    :ivar length: See :attr:`IResponse.length <twisted.web.iweb.IResponse.length>`
+    :ivar request: See :attr:`IResponse.request <twisted.web.iweb.IResponse.request>`
+    :ivar previousResponse: See :attr:`IResponse.previousResponse <twisted.web.iweb.IResponse.previousResponse>`
 
     .. method:: deliverBody(protocol)
+
+        See :meth:`IResponse.deliverBody() <twisted.web.iweb.IResponse.deliverBody>`
+
     .. method:: setPreviousResponse(response)
+
+        See :meth:`IResponse.setPreviousResponse() <twisted.web.iweb.IResponse.setPreviousResponse>`
+
 
 Test Helpers
 ------------

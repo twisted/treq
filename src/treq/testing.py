@@ -222,13 +222,14 @@ class StubTreq(object):
     """
     A fake version of the treq module that can be used for testing that
     provides all the function calls exposed in :obj:`treq.__all__`.
-
-    :ivar resource: A :obj:`Resource` object that provides the fake responses
     """
     def __init__(self, resource):
         """
         Construct a client, and pass through client methods and/or
         treq.content functions.
+
+        :param resource: A :obj:`Resource` object that provides the fake
+            responses
         """
         _agent = RequestTraversalAgent(resource)
         _client = HTTPClient(agent=_agent,

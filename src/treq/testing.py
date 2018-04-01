@@ -159,7 +159,7 @@ class RequestTraversalAgent(object):
         This is only necessary if a :obj:`Resource` under test returns
         :obj:`NOT_DONE_YET` from its ``render`` method, making a response
         asynchronous. In that case, after each write from the server,
-        :meth:`pump` must be called so the client can see it.
+        :meth:`flush()` must be called so the client can see it.
         """
         old_pumps = self._pumps
         new_pumps = self._pumps = set()

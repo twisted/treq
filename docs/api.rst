@@ -86,6 +86,10 @@ StubTreq Objects
 
 .. class:: treq.testing.StubTreq(resource)
 
+    :class:`StubTreq` implements the same interface as the :mod:`treq` module
+    or the :class:`~treq.client.HTTPClient` class, with the limitation that it
+    does not support the ``files`` argument.
+
     .. method:: flush()
 
         Flush all data between pending client/server pairs.

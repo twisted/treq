@@ -75,8 +75,8 @@ class _EndpointFactory(object):
 @implementer(IAgent)
 class RequestTraversalAgent(object):
     """
-    :obj:`IAgent` implementation that issues an in-memory request rather than
-    going out to a real network socket.
+    :obj:`~twisted.web.iweb.IAgent` implementation that issues an in-memory
+    request rather than going out to a real network socket.
     """
 
     def __init__(self, rootResource):

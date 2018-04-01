@@ -32,13 +32,19 @@ HTTPClient Objects
 The :class:`treq.client.HTTPClient` class provides the same interface as the :mod:`treq` module itself.
 
 .. autoclass:: HTTPClient
-    :members:
-    :undoc-members:
+
+    .. automethod:: request
+    .. automethod:: get
+    .. automethod:: head
+    .. automethod:: post
+    .. automethod:: put
+    .. automethod:: patch
+    .. automethod:: delete
 
 Augmented Response Objects
 --------------------------
 
-:func:`treq.request`, :func:`treq.get`, etc. return an object which implements :class:`twisted.web.iweb.IResponse`, plus a few additional convenience methods:
+:func:`treq.request`, :func:`treq.get`, etc. return an object which provides :class:`twisted.web.iweb.IResponse`, plus a few additional convenience methods:
 
 .. module:: treq.response
 

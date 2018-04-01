@@ -79,7 +79,74 @@ Augmented Response Objects
 Test Helpers
 ------------
 
-.. automodule:: treq.testing
+The :mod:`treq.testing` module contains tools for in-memory testing of HTTP clients and servers.
+
+StubTreq Objects
+~~~~~~~~~~~~~~~~
+
+.. class:: treq.testing.StubTreq(resource)
+
+    .. method:: flush()
+
+        Flush all data between pending client/server pairs.
+
+        This is only necessary if a :obj:`Resource` under test returns
+        :obj:`NOT_DONE_YET` from its ``render`` method, making a response
+        asynchronous. In that case, after each write from the server,
+        :meth:`flush()` must be called so the client can see it.
+
+    As the methods on :class:`treq.client.HTTPClient`:
+
+    .. method:: request
+
+        See :func:`treq.request()`.
+
+    .. method:: get
+
+        See :func:`treq.get()`.
+
+    .. method:: head
+
+        See :func:`treq.head()`.
+
+    .. method:: post
+
+        See :func:`treq.post()`.
+
+    .. method:: put
+
+        See :func:`treq.put()`.
+
+    .. method:: patch
+
+        See :func:`treq.patch()`.
+
+    .. method:: delete
+
+        See :func:`treq.delete()`.
+
+RequestTraversalAgent Objects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: treq.testing.RequestTraversalAgent
+    :members:
+
+RequestSequence Objects
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: treq.testing.RequestSequence
+    :members:
+
+StringStubbingResource Objects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: treq.testing.StringStubbingResource
+    :members:
+
+HasHeaders Objects
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: treq.testing.HasHeaders
     :members:
 
 MultiPartProducer Objects

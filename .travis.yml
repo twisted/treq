@@ -23,6 +23,10 @@ matrix:
       env: TOXENV=py35-twisted_lowest
     - python: '3.5'
       env: TOXENV=py35-twisted_latest
+    - python: '3.6'
+      env: TOXENV=py36-twisted_lowest
+    - python: '3.6'
+      env: TOXENV=py36-twisted_latest
     - python: pypy
       env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
     - python: '2.7'
@@ -31,6 +35,8 @@ matrix:
       env: TOXENV=py34-twisted_trunk-pyopenssl_trunk
     - python: '3.5'
       env: TOXENV=py35-twisted_trunk-pyopenssl_trunk
+    - python: '3.6'
+      env: TOXENV=py36-twisted_trunk-pyopenssl_trunk
     - python: '2.7'
       env: TOXENV=pypi-readme
     - python: '2.7'
@@ -46,6 +52,7 @@ matrix:
     - env: TOXENV=py27-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py34-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py35-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=py36-twisted_trunk-pyopenssl_trunk
 
 before_install:
   - |

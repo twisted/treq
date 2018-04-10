@@ -44,9 +44,9 @@ class HTTPClientTests(TestCase):
             Headers({b'accept-encoding': [b'gzip']}), None)
 
     def test_request_uri_idn(self):
-        self.client.request('GET', u'http://‽.net')
+        self.client.request('GET', u'http://č.net')
         self.agent.request.assert_called_once_with(
-            b'GET', b'http://xn--fwg.net',
+            b'GET', b'http://xn--bea.net',
             Headers({b'accept-encoding': [b'gzip']}), None)
 
     def test_request_case_insensitive_methods(self):

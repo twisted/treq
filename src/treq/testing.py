@@ -75,8 +75,8 @@ class _EndpointFactory(object):
 @implementer(IAgent)
 class RequestTraversalAgent(object):
     """
-    :obj:`IAgent` implementation that issues an in-memory request rather than
-    going out to a real network socket.
+    :obj:`~twisted.web.iweb.IAgent` implementation that issues an in-memory
+    request rather than going out to a real network socket.
     """
 
     def __init__(self, rootResource):
@@ -159,7 +159,7 @@ class RequestTraversalAgent(object):
         This is only necessary if a :obj:`Resource` under test returns
         :obj:`NOT_DONE_YET` from its ``render`` method, making a response
         asynchronous. In that case, after each write from the server,
-        :meth:`pump` must be called so the client can see it.
+        :meth:`flush()` must be called so the client can see it.
         """
         old_pumps = self._pumps
         new_pumps = self._pumps = set()
@@ -222,13 +222,14 @@ class StubTreq(object):
     """
     A fake version of the treq module that can be used for testing that
     provides all the function calls exposed in :obj:`treq.__all__`.
-
-    :ivar resource: A :obj:`Resource` object that provides the fake responses
     """
     def __init__(self, resource):
         """
         Construct a client, and pass through client methods and/or
         treq.content functions.
+
+        :param resource: A :obj:`Resource` object that provides the fake
+            responses
         """
         _agent = RequestTraversalAgent(resource)
         _client = HTTPClient(agent=_agent,

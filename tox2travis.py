@@ -29,9 +29,9 @@ matrix:
   allow_failures:
     - env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py27-twisted_trunk-pyopenssl_trunk
-    - env: TOXENV=py33-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py34-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py35-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=py36-twisted_trunk-pyopenssl_trunk
 
 before_install:
   - |

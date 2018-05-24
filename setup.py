@@ -8,7 +8,6 @@ classifiers = [
     "Framework :: Twisted",
     "Programming Language :: Python",
     "Programming Language :: Python :: 2.7",
-    "Programming Language :: Python :: 3.3",
     "Programming Language :: Python :: 3.4",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: Implementation :: CPython",
@@ -34,7 +33,6 @@ if __name__ == "__main__":
             "attrs",
         ],
         extras_require={
-            "dev:(python_version < '3.4' and platform_python_implementation != 'PyPy')": ["enum34"],
             "dev": [
                 "mock",
                 "pep8",

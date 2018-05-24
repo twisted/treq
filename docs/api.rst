@@ -32,13 +32,19 @@ HTTPClient Objects
 The :class:`treq.client.HTTPClient` class provides the same interface as the :mod:`treq` module itself.
 
 .. autoclass:: HTTPClient
-    :members:
-    :undoc-members:
+
+    .. automethod:: request
+    .. automethod:: get
+    .. automethod:: head
+    .. automethod:: post
+    .. automethod:: put
+    .. automethod:: patch
+    .. automethod:: delete
 
 Augmented Response Objects
 --------------------------
 
-:func:`treq.request`, :func:`treq.get`, etc. return an object which implements :class:`twisted.web.iweb.IResponse`, plus a few additional convenience methods:
+:func:`treq.request`, :func:`treq.get`, etc. return an object which provides :class:`twisted.web.iweb.IResponse`, plus a few additional convenience methods:
 
 .. module:: treq.response
 
@@ -53,21 +59,98 @@ Augmented Response Objects
 
     Inherited from :class:`twisted.web.iweb.IResponse`:
 
-    :ivar version:
-    :ivar code:
-    :ivar phrase:
-    :ivar headers:
-    :ivar length:
-    :ivar request:
-    :ivar previousResponse:
+    :ivar version: See :attr:`IResponse.version <twisted.web.iweb.IResponse.version>`
+    :ivar code: See :attr:`IResponse.code <twisted.web.iweb.IResponse.code>`
+    :ivar phrase: See :attr:`IResponse.phrase <twisted.web.iweb.IResponse.pharse>`
+    :ivar headers: See :attr:`IResponse.headers <twisted.web.iweb.IResponse.headers>`
+    :ivar length: See :attr:`IResponse.length <twisted.web.iweb.IResponse.length>`
+    :ivar request: See :attr:`IResponse.request <twisted.web.iweb.IResponse.request>`
+    :ivar previousResponse: See :attr:`IResponse.previousResponse <twisted.web.iweb.IResponse.previousResponse>`
 
     .. method:: deliverBody(protocol)
+
+        See :meth:`IResponse.deliverBody() <twisted.web.iweb.IResponse.deliverBody>`
+
     .. method:: setPreviousResponse(response)
+
+        See :meth:`IResponse.setPreviousResponse() <twisted.web.iweb.IResponse.setPreviousResponse>`
+
 
 Test Helpers
 ------------
 
-.. automodule:: treq.testing
+The :mod:`treq.testing` module contains tools for in-memory testing of HTTP clients and servers.
+
+StubTreq Objects
+~~~~~~~~~~~~~~~~
+
+.. class:: treq.testing.StubTreq(resource)
+
+    :class:`StubTreq` implements the same interface as the :mod:`treq` module
+    or the :class:`~treq.client.HTTPClient` class, with the limitation that it
+    does not support the ``files`` argument.
+
+    .. method:: flush()
+
+        Flush all data between pending client/server pairs.
+
+        This is only necessary if a :obj:`Resource` under test returns
+        :obj:`NOT_DONE_YET` from its ``render`` method, making a response
+        asynchronous. In that case, after each write from the server,
+        :meth:`flush()` must be called so the client can see it.
+
+    As the methods on :class:`treq.client.HTTPClient`:
+
+    .. method:: request
+
+        See :func:`treq.request()`.
+
+    .. method:: get
+
+        See :func:`treq.get()`.
+
+    .. method:: head
+
+        See :func:`treq.head()`.
+
+    .. method:: post
+
+        See :func:`treq.post()`.
+
+    .. method:: put
+
+        See :func:`treq.put()`.
+
+    .. method:: patch
+
+        See :func:`treq.patch()`.
+
+    .. method:: delete
+
+        See :func:`treq.delete()`.
+
+RequestTraversalAgent Objects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: treq.testing.RequestTraversalAgent
+    :members:
+
+RequestSequence Objects
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: treq.testing.RequestSequence
+    :members:
+
+StringStubbingResource Objects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: treq.testing.StringStubbingResource
+    :members:
+
+HasHeaders Objects
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: treq.testing.HasHeaders
     :members:
 
 MultiPartProducer Objects

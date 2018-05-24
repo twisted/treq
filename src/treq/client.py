@@ -106,24 +106,45 @@ class HTTPClient(object):
         self._data_to_body_producer = data_to_body_producer
 
     def get(self, url, **kwargs):
+        """
+        See :func:`treq.get()`.
+        """
         return self.request('GET', url, **kwargs)
 
     def put(self, url, data=None, **kwargs):
+        """
+        See :func:`treq.put()`.
+        """
         return self.request('PUT', url, data=data, **kwargs)
 
     def patch(self, url, data=None, **kwargs):
+        """
+        See :func:`treq.patch()`.
+        """
         return self.request('PATCH', url, data=data, **kwargs)
 
     def post(self, url, data=None, **kwargs):
+        """
+        See :func:`treq.post()`.
+        """
         return self.request('POST', url, data=data, **kwargs)
 
     def head(self, url, **kwargs):
+        """
+        See :func:`treq.head()`.
+        """
         return self.request('HEAD', url, **kwargs)
 
     def delete(self, url, **kwargs):
+        """
+        See :func:`treq.delete()`.
+        """
         return self.request('DELETE', url, **kwargs)
 
     def request(self, method, url, **kwargs):
+        """
+        See :func:`treq.request()`.
+        """
         method = method.encode('ascii').upper()
 
         # Join parameters provided in the URL

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from twisted.trial.unittest import SynchronousTestCase
 
 from twisted.python.failure import Failure
@@ -89,6 +91,16 @@ class ResponseTests(SynchronousTestCase):
         self.assertEqual(
             {'foo': 'bar'},
             self.successResultOf(_Response(original, None).json()),
+        )
+
+    def test_json_customized(self):
+        original = FakeResponse(200, Headers(), body=[b'{"foo": ',
+                                                      b'1.0000000000000001}'])
+        self.assertEqual(
+            self.successResultOf(_Response(original, None).json(
+                parse_float=Decimal)
+            )["foo"],
+            Decimal("1.0000000000000001")
         )
 
     def test_text(self):

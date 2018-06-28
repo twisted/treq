@@ -62,18 +62,16 @@ class _Response(proxyForInterface(IResponse)):
         """
         return content(self.original)
 
-    def json(self, *args, **kwargs):
+    def json(self, **kwargs):
         """
         Collect the response body as JSON per :func:`treq.json_content()`.
-
-        :param args: Any arguments accepted by :py:func:`json.loads`
 
         :param kwargs: Any keyword arguments accepted by :py:func:`json.loads`
 
         :rtype: Deferred that fires with the decoded JSON when the entire body
             has been read.
         """
-        return json_content(self.original, *args, **kwargs)
+        return json_content(self.original, **kwargs)
 
     def text(self, encoding='ISO-8859-1'):
         """

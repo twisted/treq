@@ -10,7 +10,7 @@ from six import text_type, PY3
 from contextlib import contextmanager
 from functools import wraps
 
-from twisted.test.proto_helpers import MemoryReactor
+from twisted.test.proto_helpers import MemoryReactorClock
 from twisted.test import iosim
 
 from twisted.internet.address import IPv4Address
@@ -43,7 +43,7 @@ class _EndpointFactory(object):
     An endpoint factory used by :class:`RequestTraversalAgent`.
 
     :ivar reactor: The agent's reactor.
-    :type reactor: :class:`MemoryReactor`
+    :type reactor: :class:`MemoryReactorClock`
     """
 
     reactor = attr.ib()
@@ -84,7 +84,7 @@ class RequestTraversalAgent(object):
         :param rootResource: The Twisted `IResource` at the root of the
             resource tree.
         """
-        self._memoryReactor = MemoryReactor()
+        self._memoryReactor = MemoryReactorClock()
         self._realAgent = Agent.usingEndpointFactory(
             reactor=self._memoryReactor,
             endpointFactory=_EndpointFactory(self._memoryReactor))
@@ -130,7 +130,8 @@ class RequestTraversalAgent(object):
         # Create the protocol and fake transport for the client and server,
         # using the factory that was passed to the MemoryReactor for the
         # client, and a Site around our rootResource for the server.
-        serverProtocol = Site(self._rootResource).buildProtocol(None)
+        serverFactory = Site(self._rootResource, reactor=self._memoryReactor)
+        serverProtocol = serverFactory.buildProtocol(clientAddress)
         serverTransport = iosim.FakeTransport(
             serverProtocol, isServer=True,
             hostAddress=serverAddress, peerAddress=clientAddress)

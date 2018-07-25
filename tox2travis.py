@@ -98,4 +98,12 @@ if __name__ == "__main__":
             '  env: TOXENV={0}'.format(tox_env)
         ])
 
+        # Python 3.7 is available on sudo-enabled Xenial VMs only
+        # See https://github.com/travis-ci/travis-ci/issues/9815
+        if python == "'3.7'":
+            includes.extend([
+                '  dist: xenial',
+                '  sudo: true',
+            ])
+
     print(travis_template.format(includes='\n    '.join(includes)))

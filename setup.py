@@ -10,6 +10,8 @@ classifiers = [
     "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3.4",
     "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
@@ -29,7 +31,8 @@ if __name__ == "__main__":
             "incremental",
             "requests >= 2.1.0",
             "six",
-            "Twisted[tls] >= 16.4.0",
+            "Twisted[tls] >= 16.4.0 ; python_version < '3.7'",
+            "Twisted[tls] >= 18.7.0 ; python_version >= '3.7'",
             "attrs",
         ],
         extras_require={

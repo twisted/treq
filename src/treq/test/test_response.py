@@ -1,7 +1,10 @@
+from decimal import Decimal
+
 from twisted.trial.unittest import SynchronousTestCase
 
 from twisted.python.failure import Failure
 from twisted.web.client import ResponseDone
+from twisted.web.iweb import UNKNOWN_LENGTH
 from twisted.web.http_headers import Headers
 
 from treq.response import _Response
@@ -25,6 +28,51 @@ class FakeResponse(object):
 
 
 class ResponseTests(SynchronousTestCase):
+    def test_repr_content_type(self):
+        """
+        When the response has a Content-Type header its value is included in
+        the response.
+        """
+        headers = Headers({'Content-Type': ['text/html']})
+        original = FakeResponse(200, headers, body=[b'<!DOCTYPE html>'])
+        self.assertEqual(
+            "<treq.response._Response 200 'text/html' 15 bytes>",
+            repr(_Response(original, None)),
+        )
+
+    def test_repr_content_type_missing(self):
+        """
+        A request with no Content-Type just displays an empty field.
+        """
+        original = FakeResponse(204, Headers(), body=[b''])
+        self.assertEqual(
+            "<treq.response._Response 204 '' 0 bytes>",
+            repr(_Response(original, None)),
+        )
+
+    def test_repr_content_type_hostile(self):
+        """
+        Garbage in the Content-Type still produces a reasonable representation.
+        """
+        headers = Headers({'Content-Type': [u'\u2e18', ' x/y']})
+        original = FakeResponse(418, headers, body=[b''])
+        self.assertEqual(
+            r"<treq.response._Response 418 '\xe2\xb8\x98,  x/y' 0 bytes>",
+            repr(_Response(original, None)),
+        )
+
+    def test_repr_unknown_length(self):
+        """
+        A HTTP 1.0 or chunked response displays an unknown length.
+        """
+        headers = Headers({'Content-Type': ['text/event-stream']})
+        original = FakeResponse(200, headers)
+        original.length = UNKNOWN_LENGTH
+        self.assertEqual(
+            "<treq.response._Response 200 'text/event-stream' unknown size>",
+            repr(_Response(original, None)),
+        )
+
     def test_collect(self):
         original = FakeResponse(200, Headers(), body=[b'foo', b'bar', b'baz'])
         calls = []
@@ -43,6 +91,16 @@ class ResponseTests(SynchronousTestCase):
         self.assertEqual(
             {'foo': 'bar'},
             self.successResultOf(_Response(original, None).json()),
+        )
+
+    def test_json_customized(self):
+        original = FakeResponse(200, Headers(), body=[b'{"foo": ',
+                                                      b'1.0000000000000001}'])
+        self.assertEqual(
+            self.successResultOf(_Response(original, None).json(
+                parse_float=Decimal)
+            )["foo"],
+            Decimal("1.0000000000000001")
         )
 
     def test_text(self):

@@ -82,7 +82,7 @@ def content(response):
     return d
 
 
-def json_content(response):
+def json_content(response, **kwargs):
     """
     Read the contents of an HTTP response and attempt to decode it as JSON.
 
@@ -91,12 +91,14 @@ def json_content(response):
 
     :param IResponse response: The HTTP Response to get the contents of.
 
+    :param kwargs: Any keyword arguments accepted by :py:func:`json.loads`
+
     :rtype: Deferred that fires with the decoded JSON.
     """
     # RFC7159 (8.1): Default JSON character encoding is UTF-8
     d = text_content(response, encoding='utf-8')
 
-    d.addCallback(json.loads)
+    d.addCallback(lambda text: json.loads(text, **kwargs))
     return d
 
 

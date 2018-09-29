@@ -3,6 +3,7 @@
 # See LICENSE for details.
 
 import cgi
+import sys
 
 from io import BytesIO
 
@@ -594,9 +595,19 @@ my lovely bytes
             )
         )
 
-        form = cgi.parse_multipart(BytesIO(output), {"boundary": b"heyDavid"})
-        self.assertEqual(set([b'just a string\r\n', b'another string']),
-                         set(form['cfield']))
+        form = cgi.parse_multipart(BytesIO(output), {
+            "boundary": b"heyDavid",
+            "CONTENT-LENGTH": str(len(output)),
+        })
+
+        # Since Python 3.7, the value for a non-file field is now a list
+        # of strings, not bytes.
+        if sys.version_info >= (3, 7):
+            self.assertEqual(set(['just a string\r\n', 'another string']),
+                             set(form['cfield']))
+        else:
+            self.assertEqual(set([b'just a string\r\n', b'another string']),
+                             set(form['cfield']))
 
         self.assertEqual(set([b'my lovely bytes2']), set(form['efield']))
         self.assertEqual(set([b'my lovely bytes219']), set(form['xfield']))

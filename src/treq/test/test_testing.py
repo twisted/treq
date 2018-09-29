@@ -466,3 +466,17 @@ class RequestSequenceTests(TestCase):
 
         # no asynchronous failures (mismatches, etc.)
         self.assertEqual([], self.async_failures)
+
+    def test_async_failures_logged(self):
+        """
+        When no `async_failure_reporter` is passed async failures are logged by
+        default.
+        """
+        sequence = RequestSequence([])
+        stub = StubTreq(StringStubbingResource(sequence))
+
+        with sequence.consume(self.fail):
+            self.successResultOf(stub.get('https://example.com'))
+
+        [failure] = self.flushLoggedErrors()
+        self.assertIsInstance(failure.value, AssertionError)

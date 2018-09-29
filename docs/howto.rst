@@ -135,3 +135,12 @@ A custom agent can be passed to the various treq request methods using the
 
     custom_agent = Agent(reactor, connectTimeout=42)
     treq.get(url, agent=custom_agent)
+
+Additionally a custom client can be instantiated to use a custom agent
+using the ``agent`` keyword argument:
+
+.. code-block:: python
+
+    custom_agent = Agent(reactor, connectTimeout=42)
+    client = treq.client.HTTPClient(agent=custom_agent)
+    client.get(url)

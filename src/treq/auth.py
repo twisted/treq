@@ -288,7 +288,8 @@ class _RequestDigestAuthenticationAgent(object):
                 digest_authentication_params[b'realm'],
                 qop=qop,
                 algorithm=digest_authentication_params.get(b'algorithm',
-                                                           b'MD5')
+                                                           b'MD5'),
+                opaque=digest_authentication_params.get(b'opaque', None)
             )
         return self._perform_request(
             digest_authentication_header, method, uri, headers, bodyProducer

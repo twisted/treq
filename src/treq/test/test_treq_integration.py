@@ -18,7 +18,7 @@ from treq.test.util import DEBUG, skip_on_windows_because_of_199
 from .local_httpbin.parent import _HTTPBinProcess
 
 import treq
-from treq.auth import HTTPDigestAuth
+from treq.auth import HTTPDigestAuth, UnknownQopForDigestAuth
 
 
 skip = skip_on_windows_because_of_199()
@@ -257,6 +257,20 @@ class TreqIntegrationTests(TestCase):
         self.assertEqual(json['user'], 'treq')
 
     @inlineCallbacks
+    def test_digest_auth_multi_qop(self):
+        """
+            Test successful Digest authentication with multiple qop types
+        :return:
+        """
+        response = yield self.get('/digest-auth/undefined/treq/treq',
+                                  auth=HTTPDigestAuth('treq', 'treq'))
+        self.assertEqual(response.code, 200)
+        yield print_response(response)
+        json = yield treq.json_content(response)
+        self.assertTrue(json['authenticated'])
+        self.assertEqual(json['user'], 'treq')
+
+    @inlineCallbacks
     def test_digest_auth_multiple_calls(self):
         """
             Test proper Digest authentication credentials caching
@@ -329,6 +343,34 @@ class TreqIntegrationTests(TestCase):
         patcher.restore()
 
     @inlineCallbacks
+    def test_digest_auth_sha256(self):
+        """
+            Test successful Digest authentication with sha256
+        :return:
+        """
+        response = yield self.get('/digest-auth/auth/treq/treq/SHA-256',
+                                  auth=HTTPDigestAuth('treq', 'treq'))
+        self.assertEqual(response.code, 200)
+        yield print_response(response)
+        json = yield treq.json_content(response)
+        self.assertTrue(json['authenticated'])
+        self.assertEqual(json['user'], 'treq')
+
+    @inlineCallbacks
+    def test_digest_auth_sha512(self):
+        """
+            Test successful Digest authentication with sha512
+        :return:
+        """
+        response = yield self.get('/digest-auth/auth/treq/treq/SHA-512',
+                                  auth=HTTPDigestAuth('treq', 'treq'))
+        self.assertEqual(response.code, 200)
+        yield print_response(response)
+        json = yield treq.json_content(response)
+        self.assertTrue(json['authenticated'])
+        self.assertEqual(json['user'], 'treq')
+
+    @inlineCallbacks
     def test_failed_digest_auth(self):
         """
             Test digest auth with invalid credentials
@@ -337,6 +379,16 @@ class TreqIntegrationTests(TestCase):
                                   auth=HTTPDigestAuth('not-treq', 'not-treq'))
         self.assertEqual(response.code, 401)
         yield print_response(response)
+
+    @inlineCallbacks
+    def test_failed_digest_auth_int(self):
+        """
+            Test failed Digest authentication when qop type is unsupported
+        :return:
+        """
+        with self.assertRaises(UnknownQopForDigestAuth):
+            yield self.get('/digest-auth/auth-int/treq/treq',
+                           auth=HTTPDigestAuth('treq', 'treq'))
 
     @inlineCallbacks
     def test_timeout(self):

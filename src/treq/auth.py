@@ -33,6 +33,10 @@ def _sha256_utf_digest(x):
     return hashlib.sha256(x).hexdigest()
 
 
+def _sha512_utf_digest(x):
+    return hashlib.sha512(x).hexdigest()
+
+
 class HTTPDigestAuth(object):
     """
     The container for HTTP Digest authentication credentials
@@ -144,6 +148,8 @@ class _RequestDigestAuthenticationAgent(object):
             digest_hash_func = _sha1_utf_digest
         elif algo == b'SHA-256':
             digest_hash_func = _sha256_utf_digest
+        elif algo == b'SHA-512':
+            digest_hash_func = _sha512_utf_digest
         else:
             raise UnknownDigestAuthAlgorithm(algo)
 
@@ -263,12 +269,16 @@ class _RequestDigestAuthenticationAgent(object):
         digest_authentication_params = {
             k.encode('utf8'): v.encode('utf8')
             for k, v in digest_authentication_params_str.items()}
-        if digest_authentication_params.get(b'qop', None) is not None and \
-            digest_authentication_params[b'qop'] != b'auth' and \
-                b'auth' not in \
-                digest_authentication_params[b'qop'].split(b','):
+        if digest_authentication_params.get(b'qop', None) == b'auth':
+            qop = digest_authentication_params[b'qop']
+        elif b'auth' in digest_authentication_params.get(b'qop', None).\
+                split(b','):
+            qop = b'auth'
+        else:
             # We support only "auth" QoP as defined in rfc-2617 or rfc-2069
-            raise UnknownQopForDigestAuth(digest_authentication_params[b'qop'])
+            raise UnknownQopForDigestAuth(digest_authentication_params.
+                                          get(b'qop', None))
+
         digest_authentication_header = \
             self._build_digest_authentication_header(
                 uri,
@@ -276,7 +286,7 @@ class _RequestDigestAuthenticationAgent(object):
                 False,
                 digest_authentication_params[b'nonce'],
                 digest_authentication_params[b'realm'],
-                qop=digest_authentication_params[b'qop'],
+                qop=qop,
                 algorithm=digest_authentication_params.get(b'algorithm',
                                                            b'MD5')
             )

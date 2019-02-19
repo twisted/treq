@@ -110,6 +110,12 @@ def request(method, url, **kwargs):
     :param bool unbuffered: Pass ``True`` to to disable response buffering.  By
         default treq buffers the entire response body in memory.
 
+    :param agent: Provide your own custom agent. Use this to override things
+                  like ``connectTimeout`` or ``BrowserLikePolicyForHTTPS``. By
+                  default, treq will create its own Agent with reasonable
+                  defaults.
+    :type agent: twisted.web.iweb.IAgent
+
     :rtype: Deferred that fires with an IResponse provider.
 
     """

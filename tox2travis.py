@@ -27,11 +27,7 @@ matrix:
 
   # Don't fail on trunk versions.
   allow_failures:
-    - env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
-    - env: TOXENV=py27-twisted_trunk-pyopenssl_trunk
-    - env: TOXENV=py34-twisted_trunk-pyopenssl_trunk
-    - env: TOXENV=py35-twisted_trunk-pyopenssl_trunk
-    - env: TOXENV=py36-twisted_trunk-pyopenssl_trunk
+    {allow_failures}
 
 before_install:
   - |
@@ -81,6 +77,7 @@ if __name__ == "__main__":
         line = sys.stdin.readline()
 
     includes = []
+    allow_failures = []
     for tox_env in tox_envs:
         # Parse the Python version from the tox environment name
         python_match = re.match(r'^py(?:(\d{2})|py)-', tox_env)
@@ -98,4 +95,18 @@ if __name__ == "__main__":
             '  env: TOXENV={0}'.format(tox_env)
         ])
 
-    print(travis_template.format(includes='\n    '.join(includes)))
+        # Python 3.7 is available on sudo-enabled Xenial VMs only
+        # See https://github.com/travis-ci/travis-ci/issues/9815
+        if python == "'3.7'":
+            includes.extend([
+                '  dist: xenial',
+                '  sudo: true',
+            ])
+
+        if 'trunk' in tox_env:
+            allow_failures.append('- env: TOXENV={0}'.format(tox_env))
+
+    print(travis_template.format(
+        allow_failures='\n    '.join(allow_failures),
+        includes='\n    '.join(includes),
+    ))

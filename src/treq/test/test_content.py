@@ -7,18 +7,22 @@ from twisted.trial.unittest import TestCase
 from twisted.web.http_headers import Headers
 from twisted.web.client import ResponseDone, ResponseFailed
 from twisted.web.http import PotentialDataLoss
+from twisted.internet.defer import Deferred
 
 from treq import collect, content, json_content, text_content
+from treq.content import reduce
 from treq.client import _BufferedResponse
 
 
 class ContentTests(TestCase):
     def setUp(self):
         self.response = mock.Mock()
+        self.transport = mock.Mock()
         self.protocol = None
 
         def deliverBody(protocol):
             self.protocol = protocol
+            self.protocol.makeConnection(self.transport)
 
         self.response.deliverBody.side_effect = deliverBody
         self.response = _BufferedResponse(self.response)
@@ -37,6 +41,69 @@ class ContentTests(TestCase):
         self.assertEqual(self.successResultOf(d), None)
 
         self.assertEqual(data, [b'{', b'"msg": "hell', b'o"}'])
+
+    def test_collect_flow_control(self):
+        data = []
+        collector_d = Deferred()
+
+        def collector(b):
+            data.append(b)
+            return collector_d
+
+        d = collect(self.response, collector)
+
+        self.protocol.dataReceived(b'{')
+        self.protocol.dataReceived(b'"msg": "hell')
+        self.protocol.dataReceived(b'o"}')
+        self.assertEqual(data, [b'{'])
+
+        self.transport.pauseProducing.assert_called_once_with()
+        collector_d.callback(None)
+        self.transport.resumeProducing.assert_called_once_with()
+
+        self.assertEqual(data, [b'{', b'"msg": "hello"}'])
+
+        collector_d = Deferred()
+        self.protocol.dataReceived(b'more_data')
+        self.protocol.connectionLost(Failure(ResponseDone()))
+        self.assertFalse(d.called)
+        collector_d.callback(object())
+        self.assertEqual(self.successResultOf(d), None)
+
+        self.assertEqual(data, [b'{', b'"msg": "hello"}', b'more_data'])
+
+    def test_reduce(self):
+        d = reduce(lambda acc, b: acc+b, self.response, b'')
+        self.protocol.dataReceived(b'{')
+        self.protocol.dataReceived(b'"msg": "hell')
+        self.protocol.dataReceived(b'o"}')
+        self.protocol.connectionLost(Failure(ResponseDone()))
+        self.assertEqual(self.successResultOf(d), b'{"msg": "hello"}')
+
+    def test_collect_fn_failure(self):
+        e = Exception()
+        connection_lost_e = Exception()
+
+        def collector(b):
+            raise e
+
+        d = collect(self.response, collector)
+        self.protocol.dataReceived(b'{')
+        self.protocol.connectionLost(Failure(connection_lost_e))
+        self.assertIs(self.failureResultOf(d).value, e)
+
+    def test_collect_fn_failure_null_transport(self):
+        e = Exception()
+        connection_lost_e = Exception()
+
+        def collector(b):
+            raise e
+
+        d = collect(self.response, collector)
+        self.protocol.transport = None
+        self.protocol.dataReceived(b'{')
+        self.protocol.connectionLost(Failure(connection_lost_e))
+        self.assertIs(self.failureResultOf(d).value, e)
 
     def test_collect_failure(self):
         data = []

@@ -3,7 +3,9 @@ from __future__ import absolute_import, division, print_function
 import cgi
 import json
 
-from twisted.internet.defer import Deferred, succeed
+from twisted.internet.defer import (
+    Deferred, succeed, inlineCallbacks, maybeDeferred,
+)
 
 from twisted.internet.protocol import Protocol
 from twisted.web.client import ResponseDone
@@ -26,19 +28,59 @@ def _encoding_from_headers(headers):
         return 'UTF-8'
 
 
+class _NullTransport(object):
+    @staticmethod
+    def pauseProducing():
+        pass
+
+    @staticmethod
+    def resumeProducing():
+        pass
+
+    @staticmethod
+    def stopProducing():
+        pass
+
+
 class _BodyCollector(Protocol):
     def __init__(self, finished, collector):
+        self.buffer = b''
+        self.writing = False
         self.finished = finished
         self.collector = collector
 
-    def dataReceived(self, data):
-        self.collector(data)
+    def getTransport(self):
+        return self.transport or _NullTransport
 
+    @inlineCallbacks
+    def dataReceived(self, data):
+        try:
+            self.buffer += data
+            if self.writing:
+                return
+
+            w = Deferred()
+            self.writing = w
+            self.getTransport().pauseProducing()
+            while self.buffer:
+                bufferred = self.buffer
+                self.buffer = b''
+                yield self.collector(bufferred)
+            self.writing = False
+            self.getTransport().resumeProducing()
+            w.callback(None)
+        except Exception as e:
+            self.finished.errback(e)
+            self.getTransport().stopProducing()
+
+    @inlineCallbacks
     def connectionLost(self, reason):
-        if reason.check(ResponseDone):
-            self.finished.callback(None)
-        elif reason.check(PotentialDataLoss):
-            # http://twistedmatrix.com/trac/ticket/4840
+        if self.finished.called:
+            return
+        yield self.writing
+
+        # PotentialDataLoss due to http://twistedmatrix.com/trac/ticket/4840
+        if reason.check(ResponseDone, PotentialDataLoss):
             self.finished.callback(None)
         else:
             self.finished.errback(reason)
@@ -46,13 +88,14 @@ class _BodyCollector(Protocol):
 
 def collect(response, collector):
     """
-    Incrementally collect the body of the response.
+    Incrementally collect the body of the response. Respecting flow control.
 
     This function may only be called **once** for a given response.
 
     :param IResponse response: The HTTP response to collect the body from.
     :param collector: A callable to be called each time data is available
-        from the response body.
+        from the response body. If callable returns a Deferred, it will be
+        callable will not be called again until that Deferred completes.
     :type collector: single argument callable
 
     :rtype: Deferred that fires with None when the entire body has been read.
@@ -63,6 +106,44 @@ def collect(response, collector):
     d = Deferred()
     response.deliverBody(_BodyCollector(d, collector))
     return d
+
+
+class _Reduce(object):
+    def __init__(self, reducer, response, initializer):
+        self.reducer = reducer
+        self.response = response
+        self.initializer = initializer
+
+    def apply(self):
+        return (
+            collect(self.response, self.collector)
+            .addCallback(lambda _: self.initializer)
+        )
+
+    def collector(self, data):
+        return (
+            maybeDeferred(self.reducer, self.initializer, data)
+            .addCallback(self.update)
+        )
+
+    def update(self, v):
+        self.initializer = v
+
+
+def reduce(reducer, response, initializer):
+    """
+    Incrementally collect the body of the response. Respecting flow control.
+
+    This function may only be called **once** for a given response.
+
+    :param IResponse response: The HTTP response to collect the body from.
+    :param reducer: A reducer function called with accumulator and next data
+    :type collector: two argument callable
+
+    :rtype: Deferred that fires with the accumulator when the entire body has
+    been read.
+    """
+    return _Reduce(reducer, response, initializer).apply()
 
 
 def content(response):

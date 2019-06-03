@@ -402,7 +402,7 @@ class RequestSequence(object):
 
     - ``code`` is an integer representing the HTTP status code to return.
     - ``headers`` is a dictionary mapping :class:`bytes` to :class:`bytes` or
-      :class:`list` of :class:`bytes`.
+      :class:`str`. Note that the value is *not* a list.
     - ``body`` is a :class:`bytes`.
 
     :ivar list sequence: A sequence of (request tuple, response tuple)

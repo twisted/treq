@@ -74,13 +74,13 @@ before_install:
   - pip install --upgrade setuptools
 
 install:
-  - pip install tox codecov
+  - pip install tox coveralls
 
 script:
   - tox
 
 after_success:
-  - codecov
+  - coveralls
 
 after_failure:
   - |

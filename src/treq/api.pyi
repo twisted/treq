@@ -25,6 +25,8 @@ def head(
     timeout: Optional[int] = ...,
     browser_like_redirects: bool = ...,
     unbuffered: bool = ...,
+    agent: Optional[Agent] = ...,
+    pool: Optional[HTTPConnectionPool] = ...,
 ) -> Deferred[_Response]: ...
 def get(
     url: str,
@@ -41,6 +43,8 @@ def get(
     timeout: Optional[int] = ...,
     browser_like_redirects: bool = ...,
     unbuffered: bool = ...,
+    agent: Optional[Agent] = ...,
+    pool: Optional[HTTPConnectionPool] = ...,
 ) -> Deferred[_Response]: ...
 def post(
     url: str,
@@ -57,6 +61,8 @@ def post(
     timeout: Optional[int] = ...,
     browser_like_redirects: bool = ...,
     unbuffered: bool = ...,
+    agent: Optional[Agent] = ...,
+    pool: Optional[HTTPConnectionPool] = ...,
 ) -> Deferred[_Response]: ...
 def put(
     url: str,
@@ -73,6 +79,8 @@ def put(
     timeout: Optional[int] = ...,
     browser_like_redirects: bool = ...,
     unbuffered: bool = ...,
+    agent: Optional[Agent] = ...,
+    pool: Optional[HTTPConnectionPool] = ...,
 ) -> Deferred[_Response]: ...
 def patch(
     url: str,
@@ -89,6 +97,8 @@ def patch(
     timeout: Optional[int] = ...,
     browser_like_redirects: bool = ...,
     unbuffered: bool = ...,
+    agent: Optional[Agent] = ...,
+    pool: Optional[HTTPConnectionPool] = ...,
 ) -> Deferred[_Response]: ...
 def delete(
     url: str,
@@ -105,6 +115,8 @@ def delete(
     timeout: Optional[int] = ...,
     browser_like_redirects: bool = ...,
     unbuffered: bool = ...,
+    agent: Optional[Agent] = ...,
+    pool: Optional[HTTPConnectionPool] = ...,
 ) -> Deferred[_Response]: ...
 def request(
     method: str,
@@ -122,6 +134,8 @@ def request(
     timeout: Optional[int] = ...,
     browser_like_redirects: bool = ...,
     unbuffered: bool = ...,
+    agent: Optional[Agent] = ...,
+    pool: Optional[HTTPConnectionPool] = ...,
 ) -> Deferred[_Response]: ...
 def _client(
     *,

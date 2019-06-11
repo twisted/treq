@@ -1,5 +1,5 @@
 # Stubs for treq.testing (Python 3)
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, Union, ContextManager
 
 from treq.response import _Response
 from twisted.internet.defer import Deferred
@@ -166,7 +166,7 @@ class StringStubbingResource(Resource):
     def __init__(
         self,
         get_response_for: Callable[
-            [bytes, str, Dict[str, List[Any]], Dict[str, List[str]], bytes],
+            [bytes, str, _ParamType, _HeadersType, bytes],
             Union[int, bytes],
         ],
     ) -> None: ...
@@ -185,7 +185,7 @@ class RequestSequence:
         async_failure_reporter: Optional[Callable[[str], Any]] = ...,
     ) -> None: ...
     def consumed(self) -> bool: ...
-    def consume(self, sync_failure_reporter: Callable[[str], Any]) -> None: ...
+    def consume(self, sync_failure_reporter: Callable[[str], Any]) -> ContextManager[None]: ...
     def __call__(
         self,
         method: bytes,

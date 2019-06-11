@@ -12,8 +12,8 @@ class _RequestHeaderSettingAgent:
     def __init__(self, agent: IAgent, request_headers: Headers) -> None: ...
     def request(
         self,
-        method: bytes,
-        uri: bytes,
+        method: str,
+        uri: str,
         headers: Optional[Headers] = ...,
         bodyProducer: Optional[IBodyProducer] = ...,
     ) -> Deferred[IResponse]: ...

@@ -26,6 +26,7 @@ if __name__ == "__main__":
         package_dir={"": "src"},
         setup_requires=["incremental"],
         use_incremental=True,
+        include_package_data=True,
         install_requires=[
             "incremental",
             "requests >= 2.1.0",

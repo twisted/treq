@@ -4,4 +4,8 @@ prune docs/_build
 exclude .travis.yml
 exclude .readthedocs.yml
 
+# Stubs
+include src/treq/py.typed
+recursive-include src *.pyi
+
 global-exclude .DS_Store *.pyc

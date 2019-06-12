@@ -65,8 +65,8 @@ Build docs::
 .. |build| image:: https://api.travis-ci.org/twisted/treq.svg?branch=master
 .. _build: https://travis-ci.org/twisted/treq
 
-.. |coverage| image:: https://codecov.io/github/twisted/treq/coverage.svg?branch=master
-.. _coverage: https://codecov.io/github/twisted/treq
+.. |coverage| image:: https://coveralls.io/repos/github/twisted/treq/badge.svg
+.. _coverage: https://coveralls.io/github/twisted/treq
 
 .. |pypi| image:: https://img.shields.io/pypi/v/treq.svg
 .. _pypi: https://pypi.python.org/pypi/treq

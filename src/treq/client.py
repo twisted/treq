@@ -147,8 +147,8 @@ class HTTPClient(object):
         return self.request('DELETE', url, **kwargs)
 
     def request(self, method, url,
-                headers=None, params=None, data=None, files=list(),
-                auth=None, cookies=dict(), allow_redirects=True,
+                headers=None, params=None, data=None, files=None,
+                auth=None, cookies=None, allow_redirects=True,
                 browser_like_redirects=False, unbuffered=False,
                 timeout=None, reactor=None, json=_NoJsonData()):
         """

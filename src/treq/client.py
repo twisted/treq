@@ -98,6 +98,11 @@ class _BufferedResponse(proxyForInterface(IResponse)):
             self._waiters.append(protocol)
 
 
+class _NoJsonData():
+    """Dummy class to identify data that is not Json."""
+    pass
+
+
 class HTTPClient(object):
     def __init__(self, agent, cookiejar=None,
                  data_to_body_producer=IBodyProducer):
@@ -141,7 +146,11 @@ class HTTPClient(object):
         """
         return self.request('DELETE', url, **kwargs)
 
-    def request(self, method, url, **kwargs):
+    def request(self, method, url,
+                headers=None, params=None, data=None, files=list(),
+                auth=None, cookies=dict(), allow_redirects=True,
+                browser_like_redirects=False, unbuffered=False,
+                timeout=None, reactor=None, json=_NoJsonData()):
         """
         See :func:`treq.request()`.
         """
@@ -149,7 +158,6 @@ class HTTPClient(object):
 
         # Join parameters provided in the URL
         # and the ones passed as argument.
-        params = kwargs.get('params')
         if params:
             url = _combine_query_params(url, params)
 
@@ -158,7 +166,6 @@ class HTTPClient(object):
 
         # Convert headers dictionary to
         # twisted raw headers format.
-        headers = kwargs.get('headers')
         if headers:
             if isinstance(headers, dict):
                 h = Headers({})
@@ -175,11 +182,9 @@ class HTTPClient(object):
         # Here we choose a right producer
         # based on the parameters passed in.
         bodyProducer = None
-        data = kwargs.get('data')
-        files = kwargs.get('files')
         # since json=None needs to be serialized as 'null', we need to
-        # explicitly check kwargs for this key
-        has_json = 'json' in kwargs
+        # perform a different kind of check.
+        has_json = not isinstance(json, _NoJsonData)
 
         if files:
             # If the files keyword is present we will issue a
@@ -209,11 +214,8 @@ class HTTPClient(object):
             # If data is sent as json, set Content-Type as 'application/json'
             headers.setRawHeaders(
                 b'content-type', [b'application/json; charset=UTF-8'])
-            content = kwargs['json']
-            json = json_dumps(content, separators=(u',', u':')).encode('utf-8')
+            json = json_dumps(json, separators=(u',', u':')).encode('utf-8')
             bodyProducer = self._data_to_body_producer(json)
-
-        cookies = kwargs.get('cookies', {})
 
         if not isinstance(cookies, CookieJar):
             cookies = cookiejar_from_dict(cookies)
@@ -221,8 +223,8 @@ class HTTPClient(object):
         cookies = merge_cookies(self._cookiejar, cookies)
         wrapped_agent = CookieAgent(self._agent, cookies)
 
-        if kwargs.get('allow_redirects', True):
-            if kwargs.get('browser_like_redirects', False):
+        if allow_redirects:
+            if browser_like_redirects:
                 wrapped_agent = BrowserLikeRedirectAgent(wrapped_agent)
             else:
                 wrapped_agent = RedirectAgent(wrapped_agent)
@@ -230,7 +232,6 @@ class HTTPClient(object):
         wrapped_agent = ContentDecoderAgent(wrapped_agent,
                                             [(b'gzip', GzipDecoder)])
 
-        auth = kwargs.get('auth')
         if auth:
             wrapped_agent = add_auth(wrapped_agent, auth)
 
@@ -238,9 +239,8 @@ class HTTPClient(object):
             method, url, headers=headers,
             bodyProducer=bodyProducer)
 
-        timeout = kwargs.get('timeout')
         if timeout:
-            delayedCall = default_reactor(kwargs.get('reactor')).callLater(
+            delayedCall = default_reactor(reactor).callLater(
                 timeout, d.cancel)
 
             def gotResult(result):
@@ -250,7 +250,7 @@ class HTTPClient(object):
 
             d.addBoth(gotResult)
 
-        if not kwargs.get('unbuffered', False):
+        if not unbuffered:
             d.addCallback(_BufferedResponse)
 
         return d.addCallback(_Response, cookies)

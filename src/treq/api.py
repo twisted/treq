@@ -12,7 +12,7 @@ def head(url, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).head(url, **kwargs)
+    return _client(kwargs).head(url, **kwargs)
 
 
 def get(url, headers=None, **kwargs):
@@ -21,7 +21,7 @@ def get(url, headers=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).get(url, headers=headers, **kwargs)
+    return _client(kwargs).get(url, headers=headers, **kwargs)
 
 
 def post(url, data=None, **kwargs):
@@ -30,7 +30,7 @@ def post(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).post(url, data=data, **kwargs)
+    return _client(kwargs).post(url, data=data, **kwargs)
 
 
 def put(url, data=None, **kwargs):
@@ -39,7 +39,7 @@ def put(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).put(url, data=data, **kwargs)
+    return _client(kwargs).put(url, data=data, **kwargs)
 
 
 def patch(url, data=None, **kwargs):
@@ -48,7 +48,7 @@ def patch(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).patch(url, data=data, **kwargs)
+    return _client(kwargs).patch(url, data=data, **kwargs)
 
 
 def delete(url, **kwargs):
@@ -57,7 +57,7 @@ def delete(url, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).delete(url, **kwargs)
+    return _client(kwargs).delete(url, **kwargs)
 
 
 def request(method, url, **kwargs):
@@ -80,6 +80,10 @@ def request(method, url, **kwargs):
 
     :param data: Optional request body.
     :type data: str, file-like, IBodyProducer, or None
+
+    :param files: If present, issue a ``multipart/form-data`` request as it
+        suits better for cases with filse and/or large objects.
+    :type files: list of (unicode, file-like) for (filename, file).
 
     :param json: Optional JSON-serializable content to pass in body.
     :type json: dict, list/tuple, int, string/unicode, bool, or None
@@ -116,19 +120,19 @@ def request(method, url, **kwargs):
     :rtype: Deferred that fires with an IResponse provider.
 
     """
-    return _client(**kwargs).request(method, url, **kwargs)
+    return _client(kwargs).request(method, url, **kwargs)
 
 
 #
 # Private API
 #
 
-def _client(*args, **kwargs):
-    agent = kwargs.get('agent')
+def _client(kwargs):
+    agent = kwargs.pop('agent', None)
+    pool = kwargs.pop('pool', None)
+    persistent = kwargs.pop('persistent', None)
     if agent is None:
         reactor = default_reactor(kwargs.get('reactor'))
-        pool = default_pool(reactor,
-                            kwargs.get('pool'),
-                            kwargs.get('persistent'))
+        pool = default_pool(reactor, pool, persistent)
         agent = Agent(reactor, pool=pool)
     return HTTPClient(agent)

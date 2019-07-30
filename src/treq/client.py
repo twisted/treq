@@ -217,11 +217,10 @@ class HTTPClient(object):
             json = json_dumps(json, separators=(u',', u':')).encode('utf-8')
             bodyProducer = self._data_to_body_producer(json)
 
-        if not isinstance(cookies, CookieJar):
-            cookies = cookiejar_from_dict(cookies)
-
-        cookies = merge_cookies(self._cookiejar, cookies)
-        wrapped_agent = CookieAgent(self._agent, cookies)
+        if cookies is not None:
+            # merge_cookies actually alters the CookieJar
+            merge_cookies(self._cookiejar, cookies)
+        wrapped_agent = CookieAgent(self._agent, self._cookiejar)
 
         if allow_redirects:
             if browser_like_redirects:

@@ -341,7 +341,7 @@ registerAdapter(_from_file, BytesIO, IBodyProducer)
 if not _PY3:
     from StringIO import StringIO
     registerAdapter(_from_file, StringIO, IBodyProducer)
-    registerAdapter(_from_file, file, IBodyProducer)
+    registerAdapter(_from_file, open, IBodyProducer)
 else:
     import io
     # file()/open() equiv on Py3

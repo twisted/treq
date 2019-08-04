@@ -6,7 +6,7 @@ The :mod:`treq.testing` module provides some tools for testing both HTTP clients
 Writing tests for HTTP clients
 ------------------------------
 
-The :class:`~treq.testing.StubTreq` class implements the :mod:`treq` module interface (:func:`treq.get()`, :func:`treq.post()`, etc.) but runs all I/O via a :class:`~twisted.test.proto_helpers.MemoryReactor`.
+The :class:`~treq.testing.StubTreq` class implements the :mod:`treq` module interface (:func:`treq.get()`, :func:`treq.post()`, etc.) but runs all I/O via a :class:`~twisted.internet.testing.MemoryReactor`.
 It wraps a :class:`twisted.web.resource.IResource` provider which handles each request.
 
 You can wrap a pre-existing `IResource` provider, or write your own.

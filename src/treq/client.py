@@ -98,9 +98,8 @@ class _BufferedResponse(proxyForInterface(IResponse)):
             self._waiters.append(protocol)
 
 
-class _NoJsonData():
-    """Dummy class to identify data that is not Json."""
-    pass
+# Dummy object to identify data that is not JSON.
+_NO_JSON = object()
 
 
 class HTTPClient(object):
@@ -150,7 +149,7 @@ class HTTPClient(object):
                 headers=None, params=None, data=None, files=None,
                 auth=None, cookies=None, allow_redirects=True,
                 browser_like_redirects=False, unbuffered=False,
-                timeout=None, reactor=None, json=_NoJsonData()):
+                timeout=None, reactor=None, json=_NO_JSON):
         """
         See :func:`treq.request()`.
         """
@@ -184,7 +183,7 @@ class HTTPClient(object):
         bodyProducer = None
         # since json=None needs to be serialized as 'null', we need to
         # perform a different kind of check.
-        has_json = not isinstance(json, _NoJsonData)
+        has_json = json is not _NO_JSON
 
         if files:
             # If the files keyword is present we will issue a

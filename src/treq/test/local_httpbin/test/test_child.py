@@ -10,7 +10,11 @@ import functools
 import io
 
 from twisted.trial.unittest import SynchronousTestCase
-from twisted.test.proto_helpers import MemoryReactor
+
+try:
+    from twisted.internet.testing import MemoryReactor
+except ImportError:
+    from twisted.test.proto_helpers import MemoryReactor
 
 from twisted.internet import defer
 

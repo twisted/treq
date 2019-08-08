@@ -40,9 +40,7 @@ if _PY3:
 
     def urlencode(query, doseq):
         return _urlencode(query, doseq).encode('ascii')
-    from http.cookiejar import CookieJar
 else:
-    from cookielib import CookieJar
     from urlparse import urlunparse
     from urllib import urlencode
 
@@ -337,8 +335,9 @@ registerAdapter(_from_file, BytesIO, IBodyProducer)
 
 if not _PY3:
     from StringIO import StringIO
+    from types import FileType
     registerAdapter(_from_file, StringIO, IBodyProducer)
-    registerAdapter(_from_file, file, IBodyProducer)
+    registerAdapter(_from_file, FileType, IBodyProducer)
 else:
     import io
     # file()/open() equiv on Py3

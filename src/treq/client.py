@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import mimetypes
 import uuid
-import warnings
 
 from io import BytesIO
 
@@ -30,7 +29,7 @@ from twisted.web.client import (
 from twisted.python.components import registerAdapter
 from json import dumps as json_dumps
 
-from treq._utils import default_reactor
+from treq._utils import default_reactor, warn
 from treq.auth import add_auth
 from treq import multipart
 from treq.response import _Response
@@ -153,14 +152,14 @@ class HTTPClient(object):
         See :func:`treq.request()`.
         """
         if kwargs:
-            warnings.warn("".join([
+            warn("".join([
                 "treq.client.HttpClient.request will only accept ",
                 "supported documented arguments. ",
                 "This will raise an Exception in the future. ",
                 "Unsupported arguments: [",
                 ",".join(kwargs.keys()),
                 "]"]),
-                category=DeprecationWarning, stacklevel=2)
+                category=DeprecationWarning, namespace='treq')
 
         method = method.encode('ascii').upper()
 

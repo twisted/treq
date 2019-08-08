@@ -420,17 +420,15 @@ class HTTPClientTests(TestCase):
 
         self.assertEqual(self.successResultOf(d).original, final_resp)
 
-    def test_request_unknown_arguments(self):
+    def _check_unknown_arguments(self, method, caller, *args, **kwargs):
         response = mock.Mock(headers=Headers({}))
         self.agent.request.return_value = succeed(response)
 
-        d = self.client.request('GET', 'http://www.example.com',
-                                _idontexist=True)
+        d = getattr(self.client, method)(_idontexist=True, *args, **kwargs)
 
         self.successResultOf(d)
 
-        warnings = self.flushWarnings(offendingFunctions=[
-            self.test_request_unknown_arguments])
+        warnings = self.flushWarnings(offendingFunctions=[caller])
 
         self.assertEqual(len(warnings), 1)
         self.assertEqual(warnings[0]['category'], DeprecationWarning)
@@ -439,6 +437,41 @@ class HTTPClientTests(TestCase):
             "^treq.client.HttpClient.request will only accept "
             "supported documented arguments. "
             "This will raise an Exception in the future. ")
+
+    def test_request_unknown_arguments(self):
+        self._check_unknown_arguments('request',
+                                      self.test_request_unknown_arguments,
+                                      'GET', 'www.http://example.com')
+
+    def test_get_unknown_arguments(self):
+        self._check_unknown_arguments('get',
+                                      self.test_get_unknown_arguments,
+                                      'www.http://example.com')
+
+    def test_put_unknown_arguments(self):
+        self._check_unknown_arguments('put',
+                                      self.test_put_unknown_arguments,
+                                      'www.http://example.com')
+
+    def test_patch_unknown_arguments(self):
+        self._check_unknown_arguments('patch',
+                                      self.test_patch_unknown_arguments,
+                                      'www.http://example.com')
+
+    def test_post_unknown_arguments(self):
+        self._check_unknown_arguments('post',
+                                      self.test_post_unknown_arguments,
+                                      'www.http://example.com')
+
+    def test_head_unknown_arguments(self):
+        self._check_unknown_arguments('head',
+                                      self.test_head_unknown_arguments,
+                                      'www.http://example.com')
+
+    def test_delete_unknown_arguments(self):
+        self._check_unknown_arguments('delete',
+                                      self.test_delete_unknown_arguments,
+                                      'www.http://example.com')
 
 
 class BodyBufferingProtocolTests(TestCase):

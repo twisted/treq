@@ -82,7 +82,7 @@ def request(method, url, **kwargs):
     :type data: str, file-like, IBodyProducer, or None
 
     :param files: If present, issue a ``multipart/form-data`` request as it
-        suits better for cases with filse and/or large objects.
+        is better suited for cases with files and/or large objects.
     :type files: list of (unicode, file-like) for (filename, file).
 
     :param json: Optional JSON-serializable content to pass in body.

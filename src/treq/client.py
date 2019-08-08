@@ -196,7 +196,7 @@ class HTTPClient(object):
 
         if files:
             # If the files keyword is present we will issue a
-            # multipart/form-data request as it suits better for cases
+            # multipart/form-data request as it is better suited for cases
             # with files and/or large objects.
             files = list(_convert_files(files))
             boundary = str(uuid.uuid4()).encode('ascii')

@@ -12,7 +12,8 @@ def head(url, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).head(url, **kwargs)
+    client, filtered_kwargs = _client(**kwargs)
+    return client.head(url, **filtered_kwargs)
 
 
 def get(url, headers=None, **kwargs):
@@ -21,7 +22,8 @@ def get(url, headers=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).get(url, headers=headers, **kwargs)
+    client, filtered_kwargs = _client(**kwargs)
+    return client.get(url, headers=headers, **filtered_kwargs)
 
 
 def post(url, data=None, **kwargs):
@@ -30,7 +32,8 @@ def post(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).post(url, data=data, **kwargs)
+    client, filtered_kwargs = _client(**kwargs)
+    return client.post(url, data=data, **filtered_kwargs)
 
 
 def put(url, data=None, **kwargs):
@@ -39,7 +42,8 @@ def put(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).put(url, data=data, **kwargs)
+    client, filtered_kwargs = _client(**kwargs)
+    return client.put(url, data=data, **filtered_kwargs)
 
 
 def patch(url, data=None, **kwargs):
@@ -48,7 +52,8 @@ def patch(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).patch(url, data=data, **kwargs)
+    client, filtered_kwargs = _client(**kwargs)
+    return client.patch(url, data=data, **filtered_kwargs)
 
 
 def delete(url, **kwargs):
@@ -57,7 +62,8 @@ def delete(url, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).delete(url, **kwargs)
+    client, filtered_kwargs = _client(**kwargs)
+    return client.delete(url, **filtered_kwargs)
 
 
 def request(method, url, **kwargs):
@@ -120,19 +126,18 @@ def request(method, url, **kwargs):
     :rtype: Deferred that fires with an IResponse provider.
 
     """
-    return _client(kwargs).request(method, url, **kwargs)
+    client, filtered_kwargs = _client(kwargs)
+    return client.request(method, url, **filtered_kwargs)
 
 
 #
 # Private API
 #
 
-def _client(kwargs):
-    agent = kwargs.pop('agent', None)
-    pool = kwargs.pop('pool', None)
-    persistent = kwargs.pop('persistent', None)
+def _client(reactor=None, agent=None, pool=None, persistent=None, **kwargs):
     if agent is None:
-        reactor = default_reactor(kwargs.get('reactor'))
+        reactor = default_reactor(reactor)
         pool = default_pool(reactor, pool, persistent)
         agent = Agent(reactor, pool=pool)
-    return HTTPClient(agent)
+
+    return HTTPClient(agent), dict(kwargs, reactor=reactor)

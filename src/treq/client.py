@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import mimetypes
 import uuid
+import warnings
 
 from io import BytesIO
 
@@ -147,10 +148,20 @@ class HTTPClient(object):
                 headers=None, params=None, data=None, files=None,
                 auth=None, cookies=None, allow_redirects=True,
                 browser_like_redirects=False, unbuffered=False,
-                timeout=None, reactor=None, json=_NO_JSON):
+                timeout=None, reactor=None, json=_NO_JSON, **kwargs):
         """
         See :func:`treq.request()`.
         """
+        if kwargs:
+            warnings.warn("".join([
+                "treq.client.HttpClient.request will only accept ",
+                "supported documented arguments. ",
+                "This will raise an Exception in the future. ",
+                "Unsupported arguments: [",
+                ",".join(kwargs.keys()),
+                "]"]),
+                category=DeprecationWarning, stacklevel=2)
+
         method = method.encode('ascii').upper()
 
         # Join parameters provided in the URL

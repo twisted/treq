@@ -420,6 +420,26 @@ class HTTPClientTests(TestCase):
 
         self.assertEqual(self.successResultOf(d).original, final_resp)
 
+    def test_request_unknown_arguments(self):
+        response = mock.Mock(headers=Headers({}))
+        self.agent.request.return_value = succeed(response)
+
+        d = self.client.request('GET', 'http://www.example.com',
+                                _idontexist=True)
+
+        self.successResultOf(d)
+
+        warnings = self.flushWarnings(offendingFunctions=[
+            self.test_request_unknown_arguments])
+
+        self.assertEqual(len(warnings), 1)
+        self.assertEqual(warnings[0]['category'], DeprecationWarning)
+        self.assertRegex(
+            warnings[0]['message'],
+            "^treq.client.HttpClient.request will only accept "
+            "supported documented arguments. "
+            "This will raise an Exception in the future. ")
+
 
 class BodyBufferingProtocolTests(TestCase):
     def test_buffers_data(self):

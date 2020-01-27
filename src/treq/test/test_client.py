@@ -58,7 +58,7 @@ class HTTPClientTests(TestCase):
         """
         self.client.request('GET', u'http://č.net', params={'foo': 'bar'})
         self.agent.request.assert_called_once_with(
-            b'GET', b'http://xn--bea.net?foo=bar',
+            b'GET', b'http://xn--bea.net/?foo=bar',
             Headers({b'accept-encoding': [b'gzip']}), None)
 
     def test_request_case_insensitive_methods(self):

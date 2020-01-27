@@ -49,6 +49,18 @@ class HTTPClientTests(TestCase):
             b'GET', b'http://xn--bea.net',
             Headers({b'accept-encoding': [b'gzip']}), None)
 
+    def test_request_uri_idn_params(self):
+        """
+        A URL that contains non-ASCII characters can be augmented with
+        querystring parameters.
+
+        This reproduces treq #264.
+        """
+        self.client.request('GET', u'http://č.net', params={'foo': 'bar'})
+        self.agent.request.assert_called_once_with(
+            b'GET', b'http://xn--bea.net?foo=bar',
+            Headers({b'accept-encoding': [b'gzip']}), None)
+
     def test_request_case_insensitive_methods(self):
         self.client.request('gEt', 'http://example.com/')
         self.agent.request.assert_called_once_with(

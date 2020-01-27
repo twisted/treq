@@ -147,14 +147,14 @@ class HTTPClient(object):
         """
         method = method.encode('ascii').upper()
 
+        if isinstance(url, unicode):
+            url = URL.fromText(url).asURI().asText().encode('ascii')
+
         # Join parameters provided in the URL
         # and the ones passed as argument.
         params = kwargs.get('params')
         if params:
             url = _combine_query_params(url, params)
-
-        if isinstance(url, unicode):
-            url = URL.fromText(url).asURI().asText().encode('ascii')
 
         # Convert headers dictionary to
         # twisted raw headers format.

@@ -163,7 +163,9 @@ class HTTPClient(object):
         # and the ones passed as argument.
         params = kwargs.get('params')
         if params:
-            parsed_url = _combine_query_params(parsed_url, params)
+            parsed_url = parsed_url.replace(
+                query=parsed_url.query + tuple(_coerced_query_params(params))
+            )
 
         url = bytes(parsed_url)
 
@@ -315,12 +317,21 @@ def _convert_files(files):
         yield (param, (file_name, content_type, IBodyProducer(fobj)))
 
 
-def _combine_query_params(parsed_url, params):
-    q = parsed_url.query + tuple(_coerced_query_params(params))
-    return parsed_url.replace(query=q)
-
-
 def _coerced_query_params(params):
+    """
+    Carefully coerce *params* in the same way as `urllib.parse.urlencode()`
+
+    Parameter names and values are coerced to unicode. As a special case,
+    `bytes` are decoded as ASCII.
+
+    :param params:
+        A mapping or sequence of two-tuples.
+
+    :returns:
+        A generator that yields two-tuples containing text strings.
+    :rtype:
+        Iterator[Tuple[str, str]]
+    """
     if isinstance(params, Mapping):
         items = params.items()
     else:
@@ -329,11 +340,15 @@ def _coerced_query_params(params):
     for key, values in items:
         if isinstance(key, bytes):
             key = key.decode('ascii')
-        if isinstance(values, (unicode, bytes)):
+        elif not isinstance(key, unicode):
+            key = unicode(key)
+        if not isinstance(values, (list, tuple)):
             values = [values]
         for value in values:
             if isinstance(value, bytes):
                 value = value.decode('ascii')
+            elif not isinstance(value, unicode):
+                value = unicode(value)
             yield key, value
 
 

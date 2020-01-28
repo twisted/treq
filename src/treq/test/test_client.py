@@ -121,7 +121,7 @@ class HTTPClientTests(TestCase):
         `urllib.urlencode()`
         """
         self.client.request('GET', 'http://example.com/', params=[
-            (u'text', 'A\u03a9'),
+            (u'text', u'A\u03a9'),
             (b'bytes', ['ascii']),
             ('native', 'native'),
             (1, 'int'),

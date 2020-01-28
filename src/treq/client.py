@@ -322,7 +322,9 @@ def _coerced_query_params(params):
     `bytes` are decoded as ASCII.
 
     :param params:
-        A mapping or sequence of two-tuples.
+        A mapping or sequence of (name, value) two-tuples. The value may be
+        a list or tuple of multiple values. Names and values may be pretty much
+        any type.
 
     :returns:
         A generator that yields two-tuples containing text strings.

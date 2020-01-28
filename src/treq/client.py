@@ -12,8 +12,6 @@ from twisted.python.compat import _PY3, unicode
 from twisted.python.filepath import FilePath
 from twisted.python.url import URL
 
-from twisted.web.http import urlparse
-
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer, IResponse
 
@@ -36,14 +34,13 @@ from treq.response import _Response
 from requests.cookies import cookiejar_from_dict, merge_cookies
 
 if _PY3:
-    from urllib.parse import urlunparse, urlencode as _urlencode
+    from urllib.parse import urlencode as _urlencode
 
     def urlencode(query, doseq):
         return _urlencode(query, doseq).encode('ascii')
     from http.cookiejar import CookieJar
 else:
     from cookielib import CookieJar
-    from urlparse import urlunparse
     from urllib import urlencode
 
 try:

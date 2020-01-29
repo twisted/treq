@@ -10,7 +10,7 @@ from twisted.internet.defer import Deferred
 from twisted.python.components import proxyForInterface
 from twisted.python.compat import _PY3, unicode
 from twisted.python.filepath import FilePath
-from twisted.python.url import URL
+from hyperlink import URL
 
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer, IResponse

@@ -193,7 +193,7 @@ class HTTPDigestAuth(object):
         return digest_res
 
     def cached_metadata_for(self, method, uri):
-        return self._digest_auth_cache.get((method, uri), None)
+        return self._digest_auth_cache.get((method, uri))
 
 
 class UnknownAuthConfig(Exception):

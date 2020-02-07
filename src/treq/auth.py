@@ -13,7 +13,7 @@ from requests.utils import parse_dict_header
 _DIGEST_HEADER_PREFIX_REGEXP = re.compile(b'digest ', flags=re.IGNORECASE)
 
 
-def generate_client_nonce(server_side_nonce):
+def _generate_client_nonce(server_side_nonce):
     return hashlib.sha1(
         hashlib.sha1(server_side_nonce).digest() +
         secureRandom(16) +
@@ -156,7 +156,7 @@ class _RequestDigestAuthenticationAgent(object):
         ha1 = digest_hash_func(a1)
         ha2 = digest_hash_func(a2)
 
-        cnonce = generate_client_nonce(nonce)
+        cnonce = _generate_client_nonce(nonce)
 
         if algo == b'MD5-SESS':
             sess = ha1.encode('utf-8')

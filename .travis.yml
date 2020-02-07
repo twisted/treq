@@ -15,10 +15,6 @@ matrix:
       env: TOXENV=py27-twisted_lowest
     - python: '2.7'
       env: TOXENV=py27-twisted_latest
-    - python: '3.4'
-      env: TOXENV=py34-twisted_lowest
-    - python: '3.4'
-      env: TOXENV=py34-twisted_latest
     - python: '3.5'
       env: TOXENV=py35-twisted_lowest
     - python: '3.5'
@@ -39,8 +35,6 @@ matrix:
       env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
     - python: '2.7'
       env: TOXENV=py27-twisted_trunk-pyopenssl_trunk
-    - python: '3.4'
-      env: TOXENV=py34-twisted_trunk-pyopenssl_trunk
     - python: '3.5'
       env: TOXENV=py35-twisted_trunk-pyopenssl_trunk
     - python: '3.6'
@@ -50,7 +44,7 @@ matrix:
       dist: xenial
       sudo: true
     - python: '2.7'
-      env: TOXENV=pypi-readme
+      env: TOXENV=twine
     - python: '2.7'
       env: TOXENV=check-manifest
     - python: '2.7'
@@ -62,7 +56,6 @@ matrix:
   allow_failures:
     - env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py27-twisted_trunk-pyopenssl_trunk
-    - env: TOXENV=py34-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py35-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py36-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py37-twisted_trunk-pyopenssl_trunk
@@ -81,13 +74,13 @@ before_install:
   - pip install --upgrade setuptools
 
 install:
-  - pip install tox codecov
+  - pip install tox coveralls
 
 script:
   - tox
 
 after_success:
-  - codecov
+  - coveralls
 
 after_failure:
   - |

@@ -341,7 +341,8 @@ registerAdapter(_from_file, BytesIO, IBodyProducer)
 if not _PY3:
     from StringIO import StringIO
     registerAdapter(_from_file, StringIO, IBodyProducer)
-    registerAdapter(_from_file, file, IBodyProducer)
+    # Suppress lint failure on Python 3.
+    registerAdapter(_from_file, file, IBodyProducer)  # noqa: F821
 else:
     import io
     # file()/open() equiv on Py3

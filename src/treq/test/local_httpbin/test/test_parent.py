@@ -19,7 +19,11 @@ from treq.test.util import skip_on_windows_because_of_199
 
 from twisted.internet.error import ProcessTerminated, ConnectionDone
 
-from twisted.test.proto_helpers import MemoryReactor, StringTransport
+try:
+    from twisted.internet.testing import MemoryReactor, StringTransport
+except ImportError:
+    from twisted.test.proto_helpers import MemoryReactor, StringTransport
+
 from twisted.trial.unittest import SynchronousTestCase
 
 from zope.interface import implementer, verify

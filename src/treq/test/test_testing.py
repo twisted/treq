@@ -138,9 +138,9 @@ class StubbingTests(TestCase):
         so even after a successful request.
         """
         stub = StubTreq(_StaticTestResource())
-        self.failureResultOf(stub.get(""), SchemeNotSupported)
+        self.failureResultOf(stub.get("x-unknown-1:"), SchemeNotSupported)
         self.successResultOf(stub.get("http://url.com"))
-        self.failureResultOf(stub.get(""), SchemeNotSupported)
+        self.failureResultOf(stub.get("x-unknown-2:"), SchemeNotSupported)
 
     def test_files_are_rejected(self):
         """

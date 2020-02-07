@@ -5,7 +5,8 @@ from twisted.web.client import Agent
 from twisted.web.http_headers import Headers
 
 from treq.auth import _RequestHeaderSettingAgent, add_auth, \
-    UnknownAuthConfig, HTTPDigestAuth, UnknownDigestAuthAlgorithm, add_digest_auth
+    UnknownAuthConfig, HTTPDigestAuth, UnknownDigestAuthAlgorithm, \
+    add_digest_auth
 
 
 class RequestHeaderSettingAgentTests(TestCase):
@@ -93,14 +94,14 @@ class AddAuthTests(TestCase):
         self.assertRaises(UnknownAuthConfig, add_auth, agent, mock.Mock())
 
 
-
 class HttpDigestAuthTests(TestCase):
 
     def setUp(self):
         self._auth = HTTPDigestAuth('spam', 'eggs')
 
     def test_build_authentication_header_unknown_alforythm(self):
-        self.assertRaises(UnknownDigestAuthAlgorithm, self._auth.build_authentication_header,
+        self.assertRaises(
+            UnknownDigestAuthAlgorithm, self._auth.build_authentication_header,
             b'/spam/eggs', b'GET', False,
             b'b7f36bc385a662ed615f27bd9e94eecd',
             b'me@dragons', qop=None,
@@ -132,7 +133,7 @@ class HttpDigestAuthTests(TestCase):
             auth_header,
             b'Digest username="spam", realm="me@dragons", ' +
             b'nonce="b7f36bc385a662ed615f27bd9e94eecd", ' +
-            b'uri="/spam/eggs\?ham=bacon", ' +
+            b'uri="/spam/eggs\\?ham=bacon", ' +
             b'response="([0-9a-f]{32})", ' +
             b'algorithm="MD5-SESS", qop="auth", ' +
             b'nc=00000001, cnonce="([0-9a-f]{16})"',
@@ -154,7 +155,6 @@ class HttpDigestAuthTests(TestCase):
             b'response="45420a4786287998bcb99dfde563c3a198109b31", ' +
             b'algorithm="SHA"'
         )
-
 
     def test_build_authentication_header_sha512_cache(self):
         # Emulate 1st request

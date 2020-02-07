@@ -301,9 +301,11 @@ class TreqIntegrationTests(TestCase):
         )
         patcher.patch()
 
+        auth = HTTPDigestAuth('treq-digest-auth-multiple', 'treq')
+
         response1 = yield self.get(
             '/digest-auth/auth/treq-digest-auth-multiple/treq',
-            auth=HTTPDigestAuth('treq-digest-auth-multiple', 'treq')
+            auth=auth
         )
         self.assertEqual(response1.code, 200)
         yield print_response(response1)
@@ -323,7 +325,7 @@ class TreqIntegrationTests(TestCase):
 
         response2 = yield self.get(
             '/digest-auth/auth/treq-digest-auth-multiple/treq',
-            auth=HTTPDigestAuth('treq-digest-auth-multiple', 'treq'),
+            auth=auth,
             cookies=response1.cookies()
         )
         self.assertEqual(response2.code, 200)

@@ -39,65 +39,20 @@ def _sha512_utf_digest(x):
 
 class HTTPDigestAuth(object):
     """
-    The container for HTTP Digest authentication credentials
+    The container for HTTP Digest authentication credentials.
+
+    This container will cache digest auth parameters,
+    in order not to recompute these for each request.
     """
 
     def __init__(self, username, password):
-        self.username = username
-        self.password = password
-
-
-class UnknownAuthConfig(Exception):
-    def __init__(self, config):
-        super(Exception, self).__init__(
-            '{0!r} not of a known type.'.format(config))
-
-
-class UnknownQopForDigestAuth(Exception):
-
-    def __init__(self, qop):
-        super(Exception, self).__init__(
-            'Unsupported Quality Of Protection value passed: {qop}'.format(
-                qop=qop
-            )
-        )
-
-
-class UnknownDigestAuthAlgorithm(Exception):
-
-    def __init__(self, algorithm):
-        super(Exception, self).__init__(
-            'Unsupported Digest Auth algorithm identifier passed: {algorithm}'
-            .format(algorithm=algorithm)
-        )
-
-
-class _RequestHeaderSettingAgent(object):
-    def __init__(self, agent, request_headers):
-        self._agent = agent
-        self._request_headers = request_headers
-
-    def request(self, method, uri, headers=None, bodyProducer=None):
-        if headers is None:
-            headers = self._request_headers
-        else:
-            for header, values in self._request_headers.getAllRawHeaders():
-                headers.setRawHeaders(header, values)
-
-        return self._agent.request(
-            method, uri, headers=headers, bodyProducer=bodyProducer)
-
-
-class _RequestDigestAuthenticationAgent(object):
-
-    digest_auth_cache = {}
-
-    def __init__(self, agent, username, password):
-        self._agent = agent
         self._username = username.encode('utf-8')
         self._password = password.encode('utf-8')
 
-    def _build_digest_authentication_header(
+        # (method,uri) --> digest auth cache
+        self._digest_auth_cache = {}
+
+    def build_authentication_header(
             self, path, method, cached, nonce, realm, qop=None,
             algorithm=b'MD5', opaque=None
             ):
@@ -130,7 +85,7 @@ class _RequestDigestAuthenticationAgent(object):
         actual_path = path_parsed.path
 
         if path_parsed.query:
-            actual_path += '?' + path_parsed.query
+            actual_path += b'?' + path_parsed.query
 
         a1 = self._username
         a1 += b':'
@@ -167,10 +122,8 @@ class _RequestDigestAuthenticationAgent(object):
             ha1 = digest_hash_func(sess)
 
         if cached:
-            self.digest_auth_cache[(method, path)]['c'] += 1
-            nonce_count = self.digest_auth_cache[
-                (method, path)
-            ]['c']
+            self._digest_auth_cache[(method, path)]['c'] += 1
+            nonce_count = self._digest_auth_cache[(method, path)]['c']
         else:
             nonce_count = 1
 
@@ -178,7 +131,7 @@ class _RequestDigestAuthenticationAgent(object):
         if qop is None:
             rd = ha1.encode('utf-8')
             rd += b':'
-            rd += ha2
+            rd += ha2.encode('utf-8')
             rd += b':'
             rd += nonce
             response_digest = digest_hash_func(rd).encode('utf-8')
@@ -231,13 +184,64 @@ class _RequestDigestAuthenticationAgent(object):
                 'algorithm': algorithm,
                 'opaque': opaque
             }
-            self.digest_auth_cache[(method, path)] = {
+            self._digest_auth_cache[(method, path)] = {
                 'p': cache_params,
                 'c': 1
             }
         digest_res = b'Digest '
         digest_res += hb
         return digest_res
+
+    def cached_metadata_for(self, method, uri):
+        return self._digest_auth_cache.get((method, uri), None)
+
+
+class UnknownAuthConfig(Exception):
+    def __init__(self, config):
+        super(Exception, self).__init__(
+            '{0!r} not of a known type.'.format(config))
+
+
+class UnknownQopForDigestAuth(Exception):
+
+    def __init__(self, qop):
+        super(Exception, self).__init__(
+            'Unsupported Quality Of Protection value passed: {qop}'.format(
+                qop=qop
+            )
+        )
+
+
+class UnknownDigestAuthAlgorithm(Exception):
+
+    def __init__(self, algorithm):
+        super(Exception, self).__init__(
+            'Unsupported Digest Auth algorithm identifier passed: {algorithm}'
+            .format(algorithm=algorithm)
+        )
+
+
+class _RequestHeaderSettingAgent(object):
+    def __init__(self, agent, request_headers):
+        self._agent = agent
+        self._request_headers = request_headers
+
+    def request(self, method, uri, headers=None, bodyProducer=None):
+        if headers is None:
+            headers = self._request_headers
+        else:
+            for header, values in self._request_headers.getAllRawHeaders():
+                headers.setRawHeaders(header, values)
+
+        return self._agent.request(
+            method, uri, headers=headers, bodyProducer=bodyProducer)
+
+
+class _RequestDigestAuthenticationAgent(object):
+
+    def __init__(self, agent, auth):
+        self._agent = agent
+        self._auth = auth
 
     def _on_401_response(self, www_authenticate_response, method, uri, headers,
                          bodyProducer):
@@ -263,12 +267,11 @@ class _RequestDigestAuthenticationAgent(object):
         digest_header = _DIGEST_HEADER_PREFIX_REGEXP.sub(
             b'', www_authenticate_header_string, count=1
         )
-        digest_authentication_params_str = parse_dict_header(
-            digest_header.decode("utf-8")
-        )
         digest_authentication_params = {
             k.encode('utf8'): v.encode('utf8')
-            for k, v in digest_authentication_params_str.items()}
+            for k, v in
+            parse_dict_header(digest_header.decode("utf-8")).items()}
+
         if digest_authentication_params.get(b'qop', None) == b'auth':
             qop = digest_authentication_params[b'qop']
         elif b'auth' in digest_authentication_params.get(b'qop', None).\
@@ -280,7 +283,7 @@ class _RequestDigestAuthenticationAgent(object):
                                           get(b'qop', None))
 
         digest_authentication_header = \
-            self._build_digest_authentication_header(
+            self._auth.build_authentication_header(
                 uri,
                 method,
                 False,
@@ -328,7 +331,10 @@ class _RequestDigestAuthenticationAgent(object):
             used to fetch the response body
         :return: t.i.defer.Deferred (holding the result of the request)
         """
-        if self.digest_auth_cache.get((method, uri)) is None:
+
+        digest_auth_metadata = self._auth.cached_metadata_for(method, uri)
+
+        if digest_auth_metadata is None:
             # Perform first request for getting the realm;
             # the client awaits for 401 response code here
             d = self._agent.request(b'GET', uri,
@@ -337,12 +343,10 @@ class _RequestDigestAuthenticationAgent(object):
                           headers, bodyProducer)
         else:
             # We have performed authentication on that URI already
-            digest_params_from_cache = self.digest_auth_cache.get(
-                (method, uri)
-            )['p']
+            digest_params_from_cache = digest_auth_metadata['p']
             digest_params_from_cache['cached'] = True
             digest_authentication_header = \
-                self._build_digest_authentication_header(
+                self._auth.build_authentication_header(
                     digest_params_from_cache['path'],
                     digest_params_from_cache['method'],
                     digest_params_from_cache['cached'],
@@ -368,9 +372,7 @@ def add_basic_auth(agent, username, password):
 
 
 def add_digest_auth(agent, http_digest_auth):
-    return _RequestDigestAuthenticationAgent(
-        agent, http_digest_auth.username, http_digest_auth.password
-    )
+    return _RequestDigestAuthenticationAgent(agent, http_digest_auth)
 
 
 def add_auth(agent, auth_config):

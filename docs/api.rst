@@ -61,7 +61,7 @@ Augmented Response Objects
 
     :ivar version: See :attr:`IResponse.version <twisted.web.iweb.IResponse.version>`
     :ivar code: See :attr:`IResponse.code <twisted.web.iweb.IResponse.code>`
-    :ivar phrase: See :attr:`IResponse.phrase <twisted.web.iweb.IResponse.pharse>`
+    :ivar phrase: See :attr:`IResponse.phrase <twisted.web.iweb.IResponse.phrase>`
     :ivar headers: See :attr:`IResponse.headers <twisted.web.iweb.IResponse.headers>`
     :ivar length: See :attr:`IResponse.length <twisted.web.iweb.IResponse.length>`
     :ivar request: See :attr:`IResponse.request <twisted.web.iweb.IResponse.request>`

@@ -10,7 +10,11 @@ from six import text_type, PY3
 from contextlib import contextmanager
 from functools import wraps
 
-from twisted.test.proto_helpers import MemoryReactorClock
+try:
+    from twisted.internet.testing import MemoryReactorClock
+except ImportError:
+    from twisted.test.proto_helpers import MemoryReactorClock
+
 from twisted.test import iosim
 
 from twisted.internet.address import IPv4Address
@@ -402,7 +406,7 @@ class RequestSequence(object):
 
     - ``code`` is an integer representing the HTTP status code to return.
     - ``headers`` is a dictionary mapping :class:`bytes` to :class:`bytes` or
-      :class:`list` of :class:`bytes`.
+      :class:`str`. Note that the value is *not* a list.
     - ``body`` is a :class:`bytes`.
 
     :ivar list sequence: A sequence of (request tuple, response tuple)

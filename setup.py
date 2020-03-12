@@ -29,7 +29,7 @@ if __name__ == "__main__":
         install_requires=[
             "incremental",
             "requests >= 2.1.0",
-            "six",
+            "six >= 1.12.0",
             "Twisted[tls] >= 16.4.0 ; python_version < '3.7'",
             "Twisted[tls] >= 18.7.0 ; python_version >= '3.7'",
             "attrs",

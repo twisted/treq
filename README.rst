@@ -6,9 +6,9 @@ treq
 |coverage|_
 
 ``treq`` is an HTTP library inspired by
-`requests <http://www.python-requests.org>`_ but written on top of
-`Twisted <http://www.twistedmatrix.com>`_'s
-`Agents <http://twistedmatrix.com/documents/current/api/twisted.web.client.Agent.html>`_.
+`requests <https://www.python-requests.org>`_ but written on top of
+`Twisted <https://www.twistedmatrix.com>`_'s
+`Agents <https://twistedmatrix.com/documents/current/api/twisted.web.client.Agent.html>`_.
 
 It provides a simple, higher level API for making HTTP requests when
 using Twisted.
@@ -27,40 +27,27 @@ using Twisted.
     >>> reactor.run()
     200
 
-For more info `read the docs <http://treq.readthedocs.org>`_.
+For more info `read the docs <https://treq.readthedocs.org>`_.
 
-Contribute
-==========
+Contributing
+------------
 
-``treq`` is hosted on `GitHub <http://github.com/twisted/treq>`_.
+``treq`` development is hosted on `GitHub <https://github.com/twisted/treq>`_.
 
-Feel free to fork and send contributions over.
+We welcome contributions: feel to fork and send contributions over.
+See `CONTRIBUTING.rst <https://github.com/twisted/treq/blob/master/CONTRIBUTING.rst>`_ for more info.
 
-Developing
-==========
+Code of Conduct
+---------------
 
-Install dependencies:
+Refer to the `Twisted code of conduct <https://github.com/twisted/twisted/blob/trunk/code_of_conduct.md>`_.
 
-::
+Copyright and License
+---------------------
 
-    pip install treq[dev]
+``treq`` is made available under the MIT license.
+See `LICENSE <./LICENSE>`_ for legal details and copyright notices.
 
-Run Tests (unit & integration):
-
-::
-
-    trial treq
-
-Lint:
-
-::
-
-    pep8 treq
-    pyflakes treq
-
-Build docs::
-
-    tox -e docs
 
 .. |build| image:: https://api.travis-ci.org/twisted/treq.svg?branch=master
 .. _build: https://travis-ci.org/twisted/treq

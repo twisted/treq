@@ -85,9 +85,9 @@ Here is a list of `requests`_ features and their status in treq.
 +----------------------------------+----------+----------+
 | Connection Timeouts              | yes      | yes      |
 +----------------------------------+----------+----------+
-| .netrc support                   | yes      | no       |
+| HTTP(S) Proxy Suport             | yes      | no       |
 +----------------------------------+----------+----------+
-| Python 2.6                       | yes      | no       |
+| .netrc support                   | yes      | no       |
 +----------------------------------+----------+----------+
 | Python 2.7                       | yes      | yes      |
 +----------------------------------+----------+----------+

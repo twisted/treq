@@ -1,7 +1,7 @@
 [tool.towncrier]
 package = "treq"
 package_dir = "src"
-filename = "docs/changes.rst"
+filename = "CHANGELOG.rst"
 directory = "newsfragments"
 title_format = "{version} ({project_date})"
 issue_format = "`#{issue} <https://github.com/twisted/treq/issues/{issue}>`__"

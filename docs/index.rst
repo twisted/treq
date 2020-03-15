@@ -1,26 +1,29 @@
 treq: High-level Twisted HTTP Client API
 ========================================
 
+Release |version| (`What's new? <changelog>`_).
+
 `treq <https://pypi.org/project/treq>`_ depends on a recent Twisted and functions on Python 2.7 and Python 3.3+ (including PyPy).
 
 Why?
 ----
 
-`requests`_ by `Kenneth Reitz`_ is a wonderful library.
+`requests`_ by Kenneth Reitz is a wonderful library.
 I want the same ease of use when writing Twisted applications.
 treq is not of course a perfect clone of `requests`_.
 I have tried to stay true to the do-what-I-mean spirit of the `requests`_ API and also kept the API familiar to users of `Twisted`_ and :class:`twisted.web.client.Agent` on which treq is based.
 
-.. _requests: http://python-requests.org/
-.. _Kenneth Reitz: https://www.gittip.com/kennethreitz/
+.. _requests: https://requests.readthedocs.io/en/master/
 .. _Twisted: http://twistedmatrix.com/
 
 Quick Start
 -----------
 
-Installation::
+Installation
 
-    pip install treq
+.. code-block:: console
+
+    $ pip install treq
 
 GET
 +++
@@ -100,7 +103,7 @@ Table of Contents
     howto
     testing
     api
-    changes
+    changelog
 
 Indices and tables
 ==================

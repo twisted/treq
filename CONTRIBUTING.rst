@@ -28,9 +28,9 @@ Release notes
 -------------
 
 We use `towncrier`_ to manage our release notes.
-Basically, every pull request that has a user visible effect should add a short file to the newsfragments/ directory describing the change,
+Basically, every pull request that has a user visible effect should add a short file to the `changelog.d/ <./changelog.d>`_ directory describing the change,
 with a name like <ISSUE NUMBER>.<TYPE>.rst.
-See `newsfragments/README.rst <newsfragments/README.rst>`_ for details.
+See `changelog.d/README.rst <changelog.d/README.rst>`_ for details.
 This way we can keep a good list of changes as we go,
 which makes the release manager happy,
 which means we get more frequent releases,

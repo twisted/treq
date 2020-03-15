@@ -1,0 +1,1 @@
+`treq.testing.RequestTraversalAgent` now passes its memory reactor to the `twisted.web.server.Site` it creates, preventing the `Site` from polluting the global reactor.

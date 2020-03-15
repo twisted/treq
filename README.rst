@@ -1,5 +1,5 @@
-treq
-====
+treq: High-level Twisted HTTP Client API
+========================================
 
 |pypi|_
 |build|_

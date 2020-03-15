@@ -10,4 +10,4 @@ def download_file(reactor, url, destination_filename):
     d.addBoth(lambda _: destination.close())
     return d
 
-react(download_file, ['http://httpbin.org/get', 'download.txt'])
+react(download_file, ['https://httpbin.org/get', 'download.txt'])

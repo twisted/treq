@@ -6,7 +6,7 @@ treq: High-level Twisted HTTP Client API
 |coverage|_
 
 ``treq`` is an HTTP library inspired by
-`requests <https://www.python-requests.org>`_ but written on top of
+`requests <https://requests.readthedocs.io/>`_ but written on top of
 `Twisted <https://www.twistedmatrix.com>`_'s
 `Agents <https://twistedmatrix.com/documents/current/api/twisted.web.client.Agent.html>`_.
 

@@ -50,7 +50,7 @@ The ``auth`` argument should be a tuple of the form ``('username', 'password')``
 
 .. literalinclude:: examples/basic_auth.py
     :linenos:
-    :lines: 7-13
+    :lines: 7-15
 
 Full example: :download:`basic_auth.py <examples/basic_auth.py>`
 
@@ -63,7 +63,7 @@ The following will print a 200 OK response.
 
 .. literalinclude:: examples/redirects.py
     :linenos:
-    :lines: 7-13
+    :lines: 7-12
 
 Full example: :download:`redirects.py <examples/redirects.py>`
 
@@ -72,7 +72,7 @@ any of the request methods.
 
 .. literalinclude:: examples/disable_redirects.py
     :linenos:
-    :lines: 7-13
+    :lines: 7-12
 
 Full example: :download:`disable_redirects.py <examples/disable_redirects.py>`
 

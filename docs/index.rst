@@ -1,7 +1,7 @@
 treq: High-level Twisted HTTP Client API
 ========================================
 
-Release |version| (`What's new? <changelog>`_).
+Release v\ |version| (`What's new? <changelog>`_).
 
 `treq <https://pypi.org/project/treq>`_ depends on a recent Twisted and functions on Python 2.7 and Python 3.3+ (including PyPy).
 

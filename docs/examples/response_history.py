@@ -5,7 +5,7 @@ import treq
 
 
 def main(reactor, *args):
-    d = treq.get('http://httpbin.org/redirect/1')
+    d = treq.get('https://httpbin.org/redirect/1')
 
     def cb(response):
         print('Response history:')

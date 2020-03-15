@@ -1,0 +1,1 @@
+`treq.testing` no longer generates deprecation warnings about `twisted.test.proto_helpers.MemoryReactor`.

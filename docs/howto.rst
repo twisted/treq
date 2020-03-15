@@ -94,7 +94,7 @@ via the ``cookies`` keyword argument.  Later cookies set by the server can be
 retrieved using the :py:meth:`~treq.response._Response.cookies()` method.
 
 The object returned by :py:meth:`~treq.response._Response.cookies()` supports the same key/value
-access as `requests cookies <http://requests.readthedocs.org/en/latest/user/quickstart/#cookies>`_.
+access as `requests cookies <https://requests.readthedocs.io/en/latest/user/quickstart/#cookies>`_.
 
 .. literalinclude:: examples/using_cookies.py
     :linenos:

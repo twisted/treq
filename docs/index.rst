@@ -14,7 +14,7 @@ treq is not of course a perfect clone of `requests`_.
 I have tried to stay true to the do-what-I-mean spirit of the `requests`_ API and also kept the API familiar to users of `Twisted`_ and :class:`twisted.web.client.Agent` on which treq is based.
 
 .. _requests: https://requests.readthedocs.io/en/master/
-.. _Twisted: http://twistedmatrix.com/
+.. _Twisted: https://twistedmatrix.com/
 
 Quick Start
 -----------

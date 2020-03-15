@@ -1,9 +1,16 @@
-include README.rst LICENSE tox.ini tox2travis.py .coveragerc
+include *.rst
+include LICENSE
+include .coveragerc
 recursive-include docs *
 prune docs/_build
 prune docs/html
 
+exclude tox.ini
+exclude tox2travis.py
 exclude .travis.yml
 exclude .readthedocs.yml
+
+# This directory will be empty at release time.
+prune changelog.d
 
 global-exclude .DS_Store *.pyc *.pyo __pycache__

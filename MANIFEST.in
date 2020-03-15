@@ -1,3 +1,4 @@
+include pyproject.toml
 include *.rst
 include LICENSE
 include .coveragerc

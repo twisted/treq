@@ -80,7 +80,7 @@ if __name__ == "__main__":
             else:
                 python = 'pypy' + pypy_version
         else:
-            python = "'2.7'"  # Default to Python 2.7 if a version isn't found
+            python = "'3.8'"  # Default Python if a version isn't found
 
         includes.extend([
             '- python: {}'.format(python),

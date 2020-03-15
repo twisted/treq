@@ -56,4 +56,4 @@ See `LICENSE <./LICENSE>`_ for legal details and copyright notices.
 .. _coverage: https://coveralls.io/github/twisted/treq
 
 .. |pypi| image:: https://img.shields.io/pypi/v/treq.svg
-.. _pypi: https://pypi.python.org/pypi/treq
+.. _pypi: https://pypi.org/project/treq/

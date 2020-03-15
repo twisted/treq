@@ -9,26 +9,32 @@ matrix:
   include:
     - python: pypy
       env: TOXENV=pypy-twisted_lowest
-    - python: pypy
-      env: TOXENV=pypy-twisted_latest
     - python: '2.7'
       env: TOXENV=py27-twisted_lowest
+    - python: '3.5'
+      env: TOXENV=py35-twisted_lowest
+    - python: '3.6'
+      env: TOXENV=py36-twisted_lowest
+    - python: '3.7'
+      env: TOXENV=py37-twisted_lowest
+    - python: pypy
+      env: TOXENV=pypy-twisted_latest
+    - python: pypy3
+      env: TOXENV=pypy3-twisted_latest
     - python: '2.7'
       env: TOXENV=py27-twisted_latest
     - python: '3.5'
-      env: TOXENV=py35-twisted_lowest
-    - python: '3.5'
       env: TOXENV=py35-twisted_latest
-    - python: '3.6'
-      env: TOXENV=py36-twisted_lowest
     - python: '3.6'
       env: TOXENV=py36-twisted_latest
     - python: '3.7'
-      env: TOXENV=py37-twisted_lowest
-    - python: '3.7'
       env: TOXENV=py37-twisted_latest
+    - python: '3.8'
+      env: TOXENV=py38-twisted_latest
     - python: pypy
       env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
+    - python: pypy3
+      env: TOXENV=pypy3-twisted_trunk-pyopenssl_trunk
     - python: '2.7'
       env: TOXENV=py27-twisted_trunk-pyopenssl_trunk
     - python: '3.5'
@@ -37,6 +43,8 @@ matrix:
       env: TOXENV=py36-twisted_trunk-pyopenssl_trunk
     - python: '3.7'
       env: TOXENV=py37-twisted_trunk-pyopenssl_trunk
+    - python: '3.8'
+      env: TOXENV=py38-twisted_trunk-pyopenssl_trunk
     - python: '2.7'
       env: TOXENV=twine
     - python: '2.7'
@@ -49,10 +57,12 @@ matrix:
   # Don't fail on trunk versions.
   allow_failures:
     - env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=pypy3-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py27-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py35-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py36-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py37-twisted_trunk-pyopenssl_trunk
+    - env: TOXENV=py38-twisted_trunk-pyopenssl_trunk
 
 before_install:
   - pip install --upgrade pip

@@ -9,6 +9,7 @@ Usage:
 
 import re
 import sys
+import json
 from collections import defaultdict
 
 
@@ -67,8 +68,17 @@ if __name__ == "__main__":
         line = sys.stdin.readline()
 
     includes = []
+
+    def include(python, tox_envs):
+        includes.extend([
+            # Escape as YAML string (JSON is a subset).
+            "- python: {}".format(json.dumps(python)),
+            "  env: TOXENV={}".format(",".join(tox_envs))
+        ])
+
     allow_failures = []
     envs_by_python = defaultdict(list)
+    trunk_envs = []
     other_envs = []
 
     for tox_env in tox_envs:
@@ -78,33 +88,30 @@ if __name__ == "__main__":
             py_version = python_match.group(1)
             pypy_version = python_match.group(2)
             if py_version is not None:
-                python = "'{}.{}'".format(*py_version)
+                python = "{}.{}".format(*py_version)
             else:
                 python = 'pypy' + pypy_version
         else:
             python = None
 
-        if 'trunk' in tox_env:
-            allow_failures.append('- env: TOXENV={}'.format(tox_env))
-        elif python is not None:
+        if python is None:
+            other_envs.append(tox_env)
+        elif 'trunk' in tox_env:
+            trunk_envs.append(tox_env)
+        else:
             # Group envs by Python version as we have more Python versions than
             # Travis parallelism.
             envs_by_python[python].append(tox_env)
-        else:
-            other_envs.append(tox_env)
 
     # Linting and such goes first as it is fast.
-    includes.extend([
-        "- python: '3.8'",
-        "  env: TOXENV={}".format(",".join(other_envs))
-    ])
+    include("3.8", other_envs)
 
-    for python, tox_envs in sorted(envs_by_python.items()):
-        includes.extend([
-            '- python: {}'.format(python),
-            "  env: TOXENV={}".format(",".join(tox_envs))
-        ])
+    for python, envs in sorted(envs_by_python.items()):
+        include(python, envs)
 
+    for tox_env in trunk_envs:
+        include(python, [tox_env])
+        allow_failures.append('- env: TOXENV={}'.format(tox_env))
 
     print(travis_template.format(
         allow_failures='\n    '.join(allow_failures),

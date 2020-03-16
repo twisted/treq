@@ -5,7 +5,7 @@ language: python
 
 cache: pip
 
-matrix:
+jobs:
   include:
     - python: "3.8"
       env: TOXENV=towncrier,twine,check-manifest,flake8,docs
@@ -25,18 +25,25 @@ matrix:
       env: TOXENV=pypy3-twisted_latest
     - python: "pypy3"
       env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
+      if: branch = master
     - python: "pypy3"
       env: TOXENV=pypy3-twisted_trunk-pyopenssl_trunk
+      if: branch = master
     - python: "pypy3"
       env: TOXENV=py27-twisted_trunk-pyopenssl_trunk
+      if: branch = master
     - python: "pypy3"
       env: TOXENV=py35-twisted_trunk-pyopenssl_trunk
+      if: branch = master
     - python: "pypy3"
       env: TOXENV=py36-twisted_trunk-pyopenssl_trunk
+      if: branch = master
     - python: "pypy3"
       env: TOXENV=py37-twisted_trunk-pyopenssl_trunk
+      if: branch = master
     - python: "pypy3"
       env: TOXENV=py38-twisted_trunk-pyopenssl_trunk
+      if: branch = master
 
   # Don't fail on trunk versions.
   allow_failures:

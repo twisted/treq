@@ -21,7 +21,7 @@ language: python
 
 cache: pip
 
-matrix:
+jobs:
   include:
     {includes}
 
@@ -68,15 +68,17 @@ if __name__ == "__main__":
         line = sys.stdin.readline()
 
     includes = []
+    allow_failures = []
 
-    def include(python, tox_envs):
+    def include(python, tox_envs, only_master=False):
         includes.extend([
             # Escape as YAML string (JSON is a subset).
             "- python: {}".format(json.dumps(python)),
             "  env: TOXENV={}".format(",".join(tox_envs))
         ])
+        if only_master:
+            includes.append("  if: branch = master")
 
-    allow_failures = []
     envs_by_python = defaultdict(list)
     trunk_envs = []
     other_envs = []
@@ -110,7 +112,7 @@ if __name__ == "__main__":
         include(python, envs)
 
     for tox_env in trunk_envs:
-        include(python, [tox_env])
+        include(python, [tox_env], only_master=True)
         allow_failures.append('- env: TOXENV={}'.format(tox_env))
 
     print(travis_template.format(

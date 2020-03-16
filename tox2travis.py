@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Generate a Travis CI configuration based on Tox's configured environments.
@@ -7,10 +7,9 @@ Usage:
     tox -l | ./tox2travis.py > .travis.yml
 """
 
-from __future__ import absolute_import, print_function
-
 import re
 import sys
+from collections import defaultdict
 
 
 travis_template = """\
@@ -69,6 +68,9 @@ if __name__ == "__main__":
 
     includes = []
     allow_failures = []
+    envs_by_python = defaultdict(list)
+    other_envs = []
+
     for tox_env in tox_envs:
         # Parse the Python version from the tox environment name
         python_match = re.match(r'^py(?:(\d{2})|py(3?))-', tox_env)
@@ -80,15 +82,29 @@ if __name__ == "__main__":
             else:
                 python = 'pypy' + pypy_version
         else:
-            python = "'3.8'"  # Default Python if a version isn't found
-
-        includes.extend([
-            '- python: {}'.format(python),
-            '  env: TOXENV={}'.format(tox_env)
-        ])
+            python = None
 
         if 'trunk' in tox_env:
             allow_failures.append('- env: TOXENV={}'.format(tox_env))
+        elif python is not None:
+            # Group envs by Python version as we have more Python versions than
+            # Travis parallelism.
+            envs_by_python[python].append(tox_env)
+        else:
+            other_envs.append(tox_env)
+
+    # Linting and such goes first as it is fast.
+    includes.extend([
+        "- python: '3.8'",
+        "  env: TOXENV={}".format(",".join(other_envs))
+    ])
+
+    for python, tox_envs in sorted(envs_by_python.items()):
+        includes.extend([
+            '- python: {}'.format(python),
+            "  env: TOXENV={}".format(",".join(tox_envs))
+        ])
+
 
     print(travis_template.format(
         allow_failures='\n    '.join(allow_failures),

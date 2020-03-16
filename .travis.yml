@@ -7,52 +7,22 @@ cache: pip
 
 matrix:
   include:
-    - python: pypy
-      env: TOXENV=pypy-twisted_lowest
+    - python: '3.8'
+      env: TOXENV=towncrier,twine,check-manifest,flake8,docs
     - python: '2.7'
-      env: TOXENV=py27-twisted_lowest
+      env: TOXENV=py27-twisted_lowest,py27-twisted_latest
     - python: '3.5'
-      env: TOXENV=py35-twisted_lowest
+      env: TOXENV=py35-twisted_lowest,py35-twisted_latest
     - python: '3.6'
-      env: TOXENV=py36-twisted_lowest
+      env: TOXENV=py36-twisted_lowest,py36-twisted_latest
     - python: '3.7'
-      env: TOXENV=py37-twisted_lowest
-    - python: pypy
-      env: TOXENV=pypy-twisted_latest
-    - python: pypy3
-      env: TOXENV=pypy3-twisted_latest
-    - python: '2.7'
-      env: TOXENV=py27-twisted_latest
-    - python: '3.5'
-      env: TOXENV=py35-twisted_latest
-    - python: '3.6'
-      env: TOXENV=py36-twisted_latest
-    - python: '3.7'
-      env: TOXENV=py37-twisted_latest
+      env: TOXENV=py37-twisted_lowest,py37-twisted_latest
     - python: '3.8'
       env: TOXENV=py38-twisted_latest
     - python: pypy
-      env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
+      env: TOXENV=pypy-twisted_lowest,pypy-twisted_latest
     - python: pypy3
-      env: TOXENV=pypy3-twisted_trunk-pyopenssl_trunk
-    - python: '2.7'
-      env: TOXENV=py27-twisted_trunk-pyopenssl_trunk
-    - python: '3.5'
-      env: TOXENV=py35-twisted_trunk-pyopenssl_trunk
-    - python: '3.6'
-      env: TOXENV=py36-twisted_trunk-pyopenssl_trunk
-    - python: '3.7'
-      env: TOXENV=py37-twisted_trunk-pyopenssl_trunk
-    - python: '3.8'
-      env: TOXENV=py38-twisted_trunk-pyopenssl_trunk
-    - python: '3.8'
-      env: TOXENV=twine
-    - python: '3.8'
-      env: TOXENV=check-manifest
-    - python: '3.8'
-      env: TOXENV=flake8
-    - python: '3.8'
-      env: TOXENV=docs
+      env: TOXENV=pypy3-twisted_latest
 
   # Don't fail on trunk versions.
   allow_failures:

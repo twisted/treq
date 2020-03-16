@@ -20,8 +20,8 @@ Features
 Bugfixes
 --------
 
-- `treq.testing.RequestTraversalAgent` now passes its memory reactor to the `twisted.web.server.Site` it creates, preventing the `Site` from polluting the global reactor. (`#225 <https://github.com/twisted/treq/issues/225>`__)
-- `treq.testing` no longer generates deprecation warnings about `twisted.test.proto_helpers.MemoryReactor`. (`#253 <https://github.com/twisted/treq/issues/253>`__)
+- `treq.testing.RequestTraversalAgent` now passes its memory reactor to the `twisted.web.server.Site` it creates, preventing the ``Site`` from polluting the global reactor. (`#225 <https://github.com/twisted/treq/issues/225>`__)
+- `treq.testing` no longer generates deprecation warnings about ``twisted.test.proto_helpers.MemoryReactor``. (`#253 <https://github.com/twisted/treq/issues/253>`__)
 
 
 Improved Documentation

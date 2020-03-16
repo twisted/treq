@@ -99,7 +99,7 @@ if __name__ == "__main__":
         if python is None:
             other_envs.append(tox_env)
         elif 'trunk' in tox_env:
-            trunk_envs.append(tox_env)
+            trunk_envs.append((python, tox_env))
         else:
             # Group envs by Python version as we have more Python versions than
             # Travis parallelism.
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     for python, envs in sorted(envs_by_python.items()):
         include(python, envs)
 
-    for tox_env in trunk_envs:
+    for python, tox_env in trunk_envs:
         include(python, [tox_env], only_master=True)
         allow_failures.append('- env: TOXENV={}'.format(tox_env))
 

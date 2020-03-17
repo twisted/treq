@@ -1,0 +1,7 @@
+[tool.towncrier]
+package = "treq"
+package_dir = "src"
+filename = "CHANGELOG.rst"
+directory = "changelog.d"
+title_format = "{version} ({project_date})"
+issue_format = "`#{issue} <https://github.com/twisted/treq/issues/{issue}>`__"

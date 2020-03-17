@@ -50,7 +50,7 @@ The ``auth`` argument should be a tuple of the form ``('username', 'password')``
 
 .. literalinclude:: examples/basic_auth.py
     :linenos:
-    :lines: 7-13
+    :lines: 7-15
 
 Full example: :download:`basic_auth.py <examples/basic_auth.py>`
 
@@ -63,7 +63,7 @@ The following will print a 200 OK response.
 
 .. literalinclude:: examples/redirects.py
     :linenos:
-    :lines: 7-13
+    :lines: 7-12
 
 Full example: :download:`redirects.py <examples/redirects.py>`
 
@@ -72,7 +72,7 @@ any of the request methods.
 
 .. literalinclude:: examples/disable_redirects.py
     :linenos:
-    :lines: 7-13
+    :lines: 7-12
 
 Full example: :download:`disable_redirects.py <examples/disable_redirects.py>`
 
@@ -94,7 +94,7 @@ via the ``cookies`` keyword argument.  Later cookies set by the server can be
 retrieved using the :py:meth:`~treq.response._Response.cookies()` method.
 
 The object returned by :py:meth:`~treq.response._Response.cookies()` supports the same key/value
-access as `requests cookies <http://requests.readthedocs.org/en/latest/user/quickstart/#cookies>`_.
+access as `requests cookies <https://requests.readthedocs.io/en/latest/user/quickstart/#cookies>`_.
 
 .. literalinclude:: examples/using_cookies.py
     :linenos:

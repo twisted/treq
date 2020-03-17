@@ -7,7 +7,7 @@ import treq
 
 
 def main(reactor, *args):
-    d = treq.post('http://httpbin.org/post',
+    d = treq.post('https://httpbin.org/post',
                   json.dumps({"msg": "Hello!"}).encode('ascii'),
                   headers={b'Content-Type': [b'application/json']})
     d.addCallback(print_response)

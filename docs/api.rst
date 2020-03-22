@@ -84,6 +84,8 @@ Augmented Response Objects
 Test Helpers
 ------------
 
+.. module:: treq.testing
+
 The :mod:`treq.testing` module contains tools for in-memory testing of HTTP clients and servers.
 
 StubTreq Objects

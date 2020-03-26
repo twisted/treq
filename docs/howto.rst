@@ -24,7 +24,7 @@ Full example: :download:`download_file.py <examples/download_file.py>`
 Query Parameters
 ----------------
 
-:py:func:`treq.request` supports a ``params`` keyword argument which will
+:py:func:`treq.HTTPClient.request` supports a ``params`` keyword argument which will
 be URL-encoded and added to the ``url`` argument in addition to any query
 parameters that may already exist.
 
@@ -91,7 +91,7 @@ Cookies
 
 Cookies can be set by passing a ``dict`` or ``cookielib.CookieJar`` instance
 via the ``cookies`` keyword argument.  Later cookies set by the server can be
-retrieved using the :py:meth:`~treq.response._Response.cookies()` method.
+retrieved using the :py:meth:`~treq.response._Response.cookies()` method of the response.
 
 The object returned by :py:meth:`~treq.response._Response.cookies()` supports the same key/value
 access as `requests cookies <https://requests.readthedocs.io/en/latest/user/quickstart/#cookies>`_.
@@ -102,25 +102,21 @@ access as `requests cookies <https://requests.readthedocs.io/en/latest/user/quic
 
 Full example: :download:`using_cookies.py <examples/using_cookies.py>`
 
-Agent Customization
--------------------
+Customizing the Twisted Agent
+-----------------------------
 
-treq creates its own `twisted.web.client.Agent
-<https://twistedmatrix.com/documents/current/api/twisted.web.client.Agent.html>`_
-with reasonable defaults, but you may want to provide your own custom agent.
-A custom agent can be passed to the various treq request methods using the
-``agent`` keyword argument.
+The main :py:mod:`treq` module has helper functions that automatically instantiate
+an instance of :py:class:`treq.client.HTTPClient`.  You can create an instance
+of :py:class:`~treq.client.HTTPClient` directly in order to customize the 
+paramaters used to initialize it.
+Internally, the :py:class:`~treq.client.HTTPClient` wraps an instance of 
+:py:class:`twisted.web.client.Agent`.  When you create an instance of 
+:py:class:`~treq.client.HTTPClient`, you must initialize it with an instance of
+:py:class:`~twisted.web.client.Agent`.  This allows you to customize its
+behavior.
 
-.. code-block:: python
+.. literalinclude:: examples/custom_agent.py
+    :linenos:
+    :lines: 6-19
 
-    custom_agent = Agent(reactor, connectTimeout=42)
-    treq.get(url, agent=custom_agent)
-
-Additionally a custom client can be instantiated to use a custom agent
-using the ``agent`` keyword argument:
-
-.. code-block:: python
-
-    custom_agent = Agent(reactor, connectTimeout=42)
-    client = treq.client.HTTPClient(agent=custom_agent)
-    client.get(url)
+Full example: :download:`custom_agent.py <examples/custom_agent.py>`

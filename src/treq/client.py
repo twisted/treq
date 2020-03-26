@@ -329,7 +329,7 @@ def _coerced_query_params(params):
     :returns:
         A generator that yields two-tuples containing text strings.
     :rtype:
-        Iterator[Tuple[str, str]]
+        Iterator[Tuple[Text, Text]]
     """
     if isinstance(params, Mapping):
         items = params.items()

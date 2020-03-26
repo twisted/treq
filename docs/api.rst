@@ -6,10 +6,8 @@ This page lists all of the interfaces exposed by the `treq` package.
 Making Requests
 ---------------
 
-The :py:mod:`treq` module provides several shortcut functions for making
-requests.  These functions all create a default 
-:py:class:`treq.client.HTTPClient` instance and pass their arguments to
-the appropriate :py:class:`~treq.client.HTTPClient` method.
+The :py:mod:`treq` module provides several convenience functions for making requests.
+These functions all create a default :py:class:`treq.client.HTTPClient` instance and pass their arguments to the appropriate :py:class:`~treq.client.HTTPClient` method.
 
 .. module:: treq
 
@@ -34,7 +32,7 @@ The HTTP Client
 
 .. module:: treq.client
 
-:class:`treq.client.HTTPClient` has methods that match the signatures of the shortcut request functions in the :mod:`treq` module.
+:class:`treq.client.HTTPClient` has methods that match the signatures of the convenience request functions in the :mod:`treq` module.
 
 .. autoclass:: HTTPClient(agent, cookiejar=None, data_to_body_producer=IBodyProducer)
 

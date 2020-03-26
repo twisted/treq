@@ -1,1 +1,0 @@
-The ``download_file.py`` example has been updated to do a streaming download with *unbuffered=True*.

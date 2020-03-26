@@ -1,1 +1,0 @@
-The *agent* parameter to `treq.request()` has been documented.

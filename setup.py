@@ -54,4 +54,5 @@ if __name__ == "__main__":
         license="MIT/X",
         url="https://github.com/twisted/treq",
         long_description=readme,
+        long_description_content_type='test/x-rst',
     )

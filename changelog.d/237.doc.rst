@@ -1,1 +1,0 @@
-The type of the *headers* element of a response tuple passed to `treq.testing.RequestSequence` is now correctly documented as `str`.

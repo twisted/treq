@@ -48,11 +48,12 @@ if __name__ == "__main__":
         package_data={"treq": ["_version"]},
         author="David Reid",
         author_email="dreid@dreid.org",
-        maintainer="Amber Brown",
-        maintainer_email="hawkowl@twistedmatrix.com",
+        maintainer="Tom Most",
+        maintainer_email="twm@freecog.net",
         classifiers=classifiers,
-        description="A requests-like API built on top of twisted.web's Agent",
+        description="High-level Twisted HTTP Client API",
         license="MIT/X",
         url="https://github.com/twisted/treq",
-        long_description=readme
+        long_description=readme,
+        long_description_content_type='test/x-rst',
     )

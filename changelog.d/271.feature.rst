@@ -1,0 +1,1 @@
+Support for Python 3.8 and PyPy3: treq is now tested with these interpreters.

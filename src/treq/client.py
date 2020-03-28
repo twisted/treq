@@ -45,7 +45,10 @@ else:
 
 try:
     # The old location was quixotically deprecated and might actually be
-    # removed in 3.8, maybe.
+    # removed in 3.10, maybe.
+    #
+    # See https://github.com/html5lib/html5lib-python/issues/419 for more of
+    # this tale of woe.
     from collections.abc import Mapping
 except ImportError:
     from collections import Mapping
@@ -164,7 +167,7 @@ class HTTPClient(object):
                 query=parsed_url.query + tuple(_coerced_query_params(params))
             )
 
-        url = bytes(parsed_url)
+        url = parsed_url.to_uri().to_text().encode('ascii')
 
         # Convert headers dictionary to
         # twisted raw headers format.

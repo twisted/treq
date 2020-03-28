@@ -85,12 +85,15 @@ if __name__ == "__main__":
 
     for tox_env in tox_envs:
         # Parse the Python version from the tox environment name
-        python_match = re.match(r'^py(?:(\d{2})|py(3?))-', tox_env)
+        python_match = re.match(
+            r'^py(?:(?P<cpy_version>\d{2})|py(?P<pypy_version>3?))-',
+            tox_env,
+        )
         if python_match is not None:
-            py_version = python_match.group(1)
-            pypy_version = python_match.group(2)
-            if py_version is not None:
-                python = "{}.{}".format(*py_version)
+            cpy_version = python_match.group('cpy_version')
+            pypy_version = python_match.group('pypy_version')
+            if cpy_version is not None:
+                python = "{}.{}".format(*cpy_version)
             else:
                 python = 'pypy' + pypy_version
         else:

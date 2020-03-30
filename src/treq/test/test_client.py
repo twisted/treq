@@ -49,6 +49,18 @@ class HTTPClientTests(TestCase):
             b'GET', b'http://xn--bea.net',
             Headers({b'accept-encoding': [b'gzip']}), None)
 
+    def test_request_uri_idn_params(self):
+        """
+        A URL that contains non-ASCII characters can be augmented with
+        querystring parameters.
+
+        This reproduces treq #264.
+        """
+        self.client.request('GET', u'http://č.net', params={'foo': 'bar'})
+        self.agent.request.assert_called_once_with(
+            b'GET', b'http://xn--bea.net/?foo=bar',
+            Headers({b'accept-encoding': [b'gzip']}), None)
+
     def test_request_case_insensitive_methods(self):
         self.client.request('gEt', 'http://example.com/')
         self.agent.request.assert_called_once_with(
@@ -70,6 +82,62 @@ class HTTPClientTests(TestCase):
         self.agent.request.assert_called_once_with(
             b'GET', b'http://example.com/?foo=bar',
             Headers({b'accept-encoding': [b'gzip']}), None)
+
+    def test_request_tuple_query_value_coercion(self):
+        """
+        treq coerces non-string values passed to *params* like
+        `urllib.urlencode()`
+        """
+        self.client.request('GET', 'http://example.com/', params=[
+            ('text', u'A\u03a9'),
+            ('text-seq', [u'A\u03a9']),
+            ('bytes', [b'ascii']),
+            ('bytes-seq', [b'ascii']),
+            ('native', ['native']),
+            ('native-seq', ['aa', 'bb']),
+            ('int', 1),
+            ('int-seq', (1, 2, 3)),
+            ('none', None),
+            ('none-seq', [None, None]),
+        ])
+
+        self.agent.request.assert_called_once_with(
+            b'GET',
+            (
+                b'http://example.com/?'
+                b'text=A%CE%A9&text-seq=A%CE%A9'
+                b'&bytes=ascii&bytes-seq=ascii'
+                b'&native=native&native-seq=aa&native-seq=bb'
+                b'&int=1&int-seq=1&int-seq=2&int-seq=3'
+                b'&none=None&none-seq=None&none-seq=None'
+            ),
+            Headers({b'accept-encoding': [b'gzip']}),
+            None,
+        )
+
+    def test_request_tuple_query_param_coercion(self):
+        """
+        treq coerces non-string param names passed to *params* like
+        `urllib.urlencode()`
+        """
+        self.client.request('GET', 'http://example.com/', params=[
+            (u'text', u'A\u03a9'),
+            (b'bytes', ['ascii']),
+            ('native', 'native'),
+            (1, 'int'),
+            (None, ['none']),
+        ])
+
+        self.agent.request.assert_called_once_with(
+            b'GET',
+            (
+                b'http://example.com/'
+                b'?text=A%CE%A9&bytes=ascii'
+                b'&native=native&1=int&None=none'
+            ),
+            Headers({b'accept-encoding': [b'gzip']}),
+            None,
+        )
 
     def test_request_merge_query_params(self):
         self.client.request('GET', 'http://example.com/?baz=bax',

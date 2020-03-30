@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'treq'
-copyright = u'2014, David Reid'
+copyright = u'2014–2020 David Reid'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

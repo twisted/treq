@@ -3,18 +3,15 @@ from io import BytesIO
 
 import mock
 
+from hyperlink import URL
 from twisted.internet.defer import Deferred, succeed, CancelledError
 from twisted.internet.protocol import Protocol
-
 from twisted.python.failure import Failure
-
 from twisted.trial.unittest import TestCase
-
 from twisted.web.client import Agent, ResponseFailed
 from twisted.web.http_headers import Headers
 
 from treq.test.util import with_clock
-
 from treq.client import (
     HTTPClient, _BodyBufferingProtocol, _BufferedResponse
 )
@@ -49,6 +46,18 @@ class HTTPClientTests(TestCase):
             b'GET', b'http://xn--bea.net',
             Headers({b'accept-encoding': [b'gzip']}), None)
 
+    def test_request_uri_hyperlink(self):
+        """
+        A URL may be passed as a `hyperlink.URL` object. It is converted to
+        bytes when passed to the underlying agent.
+        """
+        self.client.request("GET", URL.from_text(u"https://example.org/foo"))
+        self.agent.request.assert_called_once_with(
+            b"GET", b"https://example.org/foo",
+            Headers({b"accept-encoding": [b"gzip"]}),
+            None,
+        )
+
     def test_request_uri_idn_params(self):
         """
         A URL that contains non-ASCII characters can be augmented with
@@ -60,6 +69,22 @@ class HTTPClientTests(TestCase):
         self.agent.request.assert_called_once_with(
             b'GET', b'http://xn--bea.net/?foo=bar',
             Headers({b'accept-encoding': [b'gzip']}), None)
+
+    def test_request_uri_hyperlink_params(self):
+        """
+        The *params* argument augments an instance of `hyperlink.URL` passed as
+        the *uri* parameter, just as if it were a string.
+        """
+        self.client.request(
+            method="GET",
+            url=URL.from_text(u"http://č.net"),
+            params={"foo": "bar"},
+        )
+        self.agent.request.assert_called_once_with(
+            b"GET", b"http://xn--bea.net/?foo=bar",
+            Headers({b"accept-encoding": [b"gzip"]}),
+            None,
+        )
 
     def test_request_case_insensitive_methods(self):
         self.client.request('gEt', 'http://example.com/')

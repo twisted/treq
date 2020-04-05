@@ -10,7 +10,7 @@ from twisted.internet.defer import Deferred
 from twisted.python.components import proxyForInterface
 from twisted.python.compat import _PY3, unicode
 from twisted.python.filepath import FilePath
-from hyperlink import URL
+from hyperlink import DecodedURL, URL
 
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer, IResponse
@@ -154,7 +154,10 @@ class HTTPClient(object):
         """
         method = method.encode('ascii').upper()
 
-        if isinstance(url, URL):
+        # FIXME: https://github.com/twisted/treq/issues/282
+        if isinstance(url, DecodedURL):
+            parsed_url = url.encoded_url
+        elif isinstance(url, URL):
             parsed_url = url
         elif isinstance(url, unicode):
             parsed_url = URL.from_text(url)

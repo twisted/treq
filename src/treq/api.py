@@ -66,7 +66,9 @@ def request(method, url, **kwargs):
 
     :param str method: HTTP method. Example: ``'GET'``, ``'HEAD'``. ``'PUT'``,
          ``'POST'``.
-    :param str url: http or https URL, which may include query arguments.
+
+    :param url: http or https URL, which may include query arguments.
+    :type url: :class:`hyperlink.URL`, `str`, or `bytes`
 
     :param headers: Optional HTTP Headers to send with this request.
     :type headers: Headers or None

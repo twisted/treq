@@ -154,7 +154,9 @@ class HTTPClient(object):
         """
         method = method.encode('ascii').upper()
 
-        if isinstance(url, unicode):
+        if isinstance(url, URL):
+            parsed_url = url
+        elif isinstance(url, unicode):
             parsed_url = URL.from_text(url)
         else:
             parsed_url = URL.from_text(url.decode('ascii'))

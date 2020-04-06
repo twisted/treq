@@ -150,7 +150,7 @@ class HTTPClientTests(TestCase):
             ('ampersand', '&'),
             ('&', 'ampersand'),
             ('octothorpe', '#'),
-            ('#','octothorpe'),
+            ('#', 'octothorpe'),
         ))
 
         self.agent.request.assert_called_once_with(

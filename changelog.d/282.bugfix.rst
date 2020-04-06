@@ -1,0 +1,2 @@
+In treq 20.3.0 the *params* argument didn't accept parameter names or values that contain the characters ``&`` or ``#``.
+Now these characters are properly escaped.

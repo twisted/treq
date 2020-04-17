@@ -8,6 +8,14 @@ Changelog
 
 .. towncrier release notes start
 
+20.4.1 (2020-04-16)
+===================
+
+Bugfixes
+--------
+
+- Correct a typo in the treq 20.4.0 package metadata that prevented upload to PyPI (`pypa/twine#589 <https://github.com/pypa/twine/issues/589>`__)
+
 20.4.0 (2020-04-16)
 ===================
 

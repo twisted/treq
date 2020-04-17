@@ -8,7 +8,7 @@ cache: pip
 jobs:
   include:
     - python: "3.8"
-      env: TOXENV=towncrier,twine,check-manifest,flake8,docs
+      env: TOXENV=twine,check-manifest,flake8,docs,coverage-report
     - python: "2.7"
       env: TOXENV=py27-twisted_lowest,py27-twisted_latest
     - python: "3.5"

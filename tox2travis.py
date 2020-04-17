@@ -40,6 +40,7 @@ script:
   - tox
 
 after_success:
+  - coverage combine
   - coveralls
 
 after_failure:

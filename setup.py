@@ -11,6 +11,7 @@ classifiers = [
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
@@ -29,6 +30,7 @@ if __name__ == "__main__":
         install_requires=[
             "incremental",
             "requests >= 2.1.0",
+            "hyperlink >= 19.0.0",
             "six >= 1.12.0",
             "Twisted[tls] >= 16.4.0 ; python_version < '3.7'",
             "Twisted[tls] >= 18.7.0 ; python_version >= '3.7'",
@@ -53,4 +55,5 @@ if __name__ == "__main__":
         license="MIT/X",
         url="https://github.com/twisted/treq",
         long_description=readme,
+        long_description_content_type='text/x-rst',
     )

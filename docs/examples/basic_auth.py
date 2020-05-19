@@ -6,7 +6,7 @@ import treq
 
 def main(reactor, *args):
     d = treq.get(
-        'http://httpbin.org/basic-auth/treq/treq',
+        'https://httpbin.org/basic-auth/treq/treq',
         auth=('treq', 'treq')
     )
     d.addCallback(print_response)

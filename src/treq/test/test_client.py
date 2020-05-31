@@ -3,7 +3,7 @@ from io import BytesIO
 
 import mock
 
-from hyperlink import URL
+from hyperlink import DecodedURL, EncodedURL
 from twisted.internet.defer import Deferred, succeed, CancelledError
 from twisted.internet.protocol import Protocol
 from twisted.python.failure import Failure
@@ -46,12 +46,26 @@ class HTTPClientTests(TestCase):
             b'GET', b'http://xn--bea.net',
             Headers({b'accept-encoding': [b'gzip']}), None)
 
-    def test_request_uri_hyperlink(self):
+    def test_request_uri_decodedurl(self):
         """
-        A URL may be passed as a `hyperlink.URL` object. It is converted to
-        bytes when passed to the underlying agent.
+        A URL may be passed as a `hyperlink.DecodedURL` object. It is converted
+        to bytes when passed to the underlying agent.
         """
-        self.client.request("GET", URL.from_text(u"https://example.org/foo"))
+        url = DecodedURL.from_text(u"https://example.org/foo")
+        self.client.request("GET", url)
+        self.agent.request.assert_called_once_with(
+            b"GET", b"https://example.org/foo",
+            Headers({b"accept-encoding": [b"gzip"]}),
+            None,
+        )
+
+    def test_request_uri_encodedurl(self):
+        """
+        A URL may be passed as a `hyperlink.EncodedURL` object. It is converted
+        to bytes when passed to the underlying agent.
+        """
+        url = EncodedURL.from_text(u"https://example.org/foo")
+        self.client.request("GET", url)
         self.agent.request.assert_called_once_with(
             b"GET", b"https://example.org/foo",
             Headers({b"accept-encoding": [b"gzip"]}),
@@ -72,12 +86,12 @@ class HTTPClientTests(TestCase):
 
     def test_request_uri_hyperlink_params(self):
         """
-        The *params* argument augments an instance of `hyperlink.URL` passed as
-        the *uri* parameter, just as if it were a string.
+        The *params* argument augments an instance of `hyperlink.DecodedURL`
+        passed as the *url* parameter, just as if it were a string.
         """
         self.client.request(
             method="GET",
-            url=URL.from_text(u"http://č.net"),
+            url=DecodedURL.from_text(u"http://č.net"),
             params={"foo": "bar"},
         )
         self.agent.request.assert_called_once_with(

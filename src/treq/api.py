@@ -121,7 +121,7 @@ def request(method, url, **kwargs):
     .. versionchanged:: treq NEXT
 
         The *url* param now accepts :class:`hyperlink.DecodedURL` and
-        :class:`hyperlink.URL` objects.
+        :class:`hyperlink.EncodedURL` objects.
     """
     return _client(**kwargs).request(method, url, **kwargs)
 

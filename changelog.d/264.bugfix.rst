@@ -1,2 +1,0 @@
-`treq.client.HTTPClient.request()` and its aliases no longer raise `UnicodeEncodeError` when passed a Unicode *url* and non-empty *params*.
-Now the URL and query parameters are concatenated as documented.

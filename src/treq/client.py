@@ -154,7 +154,6 @@ class HTTPClient(object):
         """
         method = method.encode('ascii').upper()
 
-        # FIXME: https://github.com/twisted/treq/issues/282
         if isinstance(url, DecodedURL):
             parsed_url = url
         elif isinstance(url, EncodedURL):

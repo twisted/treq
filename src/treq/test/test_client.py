@@ -164,6 +164,33 @@ class HTTPClientTests(TestCase):
             None,
         )
 
+    def test_request_query_param_seps(self):
+        """
+        When the characters ``&`` and ``#`` are passed to *params* as param
+        names or values they are percent-escaped in the URL.
+
+        This reproduces https://github.com/twisted/treq/issues/282
+        """
+        self.client.request('GET', 'http://example.com/', params=(
+            ('ampersand', '&'),
+            ('&', 'ampersand'),
+            ('octothorpe', '#'),
+            ('#', 'octothorpe'),
+        ))
+
+        self.agent.request.assert_called_once_with(
+            b'GET',
+            (
+                b'http://example.com/'
+                b'?ampersand=%26'
+                b'&%26=ampersand'
+                b'&octothorpe=%23'
+                b'&%23=octothorpe'
+            ),
+            Headers({b'accept-encoding': [b'gzip']}),
+            None,
+        )
+
     def test_request_merge_query_params(self):
         self.client.request('GET', 'http://example.com/?baz=bax',
                             params={'foo': ['bar', 'baz']})

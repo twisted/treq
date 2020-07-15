@@ -66,7 +66,10 @@ def request(method, url, **kwargs):
 
     :param str method: HTTP method. Example: ``'GET'``, ``'HEAD'``. ``'PUT'``,
          ``'POST'``.
-    :param str url: http or https URL, which may include query arguments.
+
+    :param url: http or https URL, which may include query arguments.
+    :type url: :class:`hyperlink.DecodedURL`, `str`, `bytes`, or
+        :class:`hyperlink.EncodedURL`
 
     :param headers: Optional HTTP Headers to send with this request.
     :type headers: Headers or None
@@ -115,6 +118,10 @@ def request(method, url, **kwargs):
 
     :rtype: Deferred that fires with an IResponse provider.
 
+    .. versionchanged:: treq NEXT
+
+        The *url* param now accepts :class:`hyperlink.DecodedURL` and
+        :class:`hyperlink.EncodedURL` objects.
     """
     return _client(**kwargs).request(method, url, **kwargs)
 

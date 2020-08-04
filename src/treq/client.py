@@ -10,9 +10,7 @@ from twisted.internet.defer import Deferred
 from twisted.python.components import proxyForInterface
 from twisted.python.compat import _PY3, unicode
 from twisted.python.filepath import FilePath
-from twisted.python.url import URL
-
-from twisted.web.http import urlparse
+from hyperlink import DecodedURL, EncodedURL
 
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer, IResponse
@@ -36,15 +34,24 @@ from treq.response import _Response
 from requests.cookies import cookiejar_from_dict, merge_cookies
 
 if _PY3:
-    from urllib.parse import urlunparse, urlencode as _urlencode
+    from urllib.parse import urlencode as _urlencode
 
     def urlencode(query, doseq):
         return _urlencode(query, doseq).encode('ascii')
     from http.cookiejar import CookieJar
 else:
     from cookielib import CookieJar
-    from urlparse import urlunparse
     from urllib import urlencode
+
+try:
+    # The old location was quixotically deprecated and might actually be
+    # removed in 3.10, maybe.
+    #
+    # See https://github.com/html5lib/html5lib-python/issues/419 for more of
+    # this tale of woe.
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
 
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
@@ -147,14 +154,24 @@ class HTTPClient(object):
         """
         method = method.encode('ascii').upper()
 
+        if isinstance(url, DecodedURL):
+            parsed_url = url
+        elif isinstance(url, EncodedURL):
+            parsed_url = DecodedURL(url)
+        elif isinstance(url, unicode):
+            parsed_url = DecodedURL.from_text(url)
+        else:
+            parsed_url = DecodedURL.from_text(url.decode('ascii'))
+
         # Join parameters provided in the URL
         # and the ones passed as argument.
         params = kwargs.get('params')
         if params:
-            url = _combine_query_params(url, params)
+            parsed_url = parsed_url.replace(
+                query=parsed_url.query + tuple(_coerced_query_params(params))
+            )
 
-        if isinstance(url, unicode):
-            url = URL.fromText(url).asURI().asText().encode('ascii')
+        url = parsed_url.to_uri().to_text().encode('ascii')
 
         # Convert headers dictionary to
         # twisted raw headers format.
@@ -304,19 +321,41 @@ def _convert_files(files):
         yield (param, (file_name, content_type, IBodyProducer(fobj)))
 
 
-def _combine_query_params(url, params):
-    parsed_url = urlparse(url.encode('ascii'))
+def _coerced_query_params(params):
+    """
+    Carefully coerce *params* in the same way as `urllib.parse.urlencode()`
 
-    qs = []
+    Parameter names and values are coerced to unicode. As a special case,
+    `bytes` are decoded as ASCII.
 
-    if parsed_url.query:
-        qs.extend([parsed_url.query, b'&'])
+    :param params:
+        A mapping or sequence of (name, value) two-tuples. The value may be
+        a list or tuple of multiple values. Names and values may be pretty much
+        any type.
 
-    qs.append(urlencode(params, doseq=True))
+    :returns:
+        A generator that yields two-tuples containing text strings.
+    :rtype:
+        Iterator[Tuple[Text, Text]]
+    """
+    if isinstance(params, Mapping):
+        items = params.items()
+    else:
+        items = params
 
-    return urlunparse((parsed_url[0], parsed_url[1],
-                       parsed_url[2], parsed_url[3],
-                       b''.join(qs), parsed_url[5]))
+    for key, values in items:
+        if isinstance(key, bytes):
+            key = key.decode('ascii')
+        elif not isinstance(key, unicode):
+            key = unicode(key)
+        if not isinstance(values, (list, tuple)):
+            values = [values]
+        for value in values:
+            if isinstance(value, bytes):
+                value = value.decode('ascii')
+            elif not isinstance(value, unicode):
+                value = unicode(value)
+            yield key, value
 
 
 def _from_bytes(orig_bytes):

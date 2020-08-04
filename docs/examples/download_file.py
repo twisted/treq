@@ -28,4 +28,4 @@ def download_file(reactor, url, dest):
     finally:
         yield deferToThread(reactor, f.close)
 
-react(download_file, ['http://httpbin.org/get', 'download.txt'])
+react(download_file, ['https://httpbin.org/get', 'download.txt'])

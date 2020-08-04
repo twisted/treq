@@ -3,18 +3,15 @@ from io import BytesIO
 
 import mock
 
+from hyperlink import DecodedURL, EncodedURL
 from twisted.internet.defer import Deferred, succeed, CancelledError
 from twisted.internet.protocol import Protocol
-
 from twisted.python.failure import Failure
-
 from twisted.trial.unittest import TestCase
-
 from twisted.web.client import Agent, ResponseFailed
 from twisted.web.http_headers import Headers
 
 from treq.test.util import with_clock
-
 from treq.client import (
     HTTPClient, _BodyBufferingProtocol, _BufferedResponse
 )
@@ -49,6 +46,60 @@ class HTTPClientTests(TestCase):
             b'GET', b'http://xn--bea.net',
             Headers({b'accept-encoding': [b'gzip']}), None)
 
+    def test_request_uri_decodedurl(self):
+        """
+        A URL may be passed as a `hyperlink.DecodedURL` object. It is converted
+        to bytes when passed to the underlying agent.
+        """
+        url = DecodedURL.from_text(u"https://example.org/foo")
+        self.client.request("GET", url)
+        self.agent.request.assert_called_once_with(
+            b"GET", b"https://example.org/foo",
+            Headers({b"accept-encoding": [b"gzip"]}),
+            None,
+        )
+
+    def test_request_uri_encodedurl(self):
+        """
+        A URL may be passed as a `hyperlink.EncodedURL` object. It is converted
+        to bytes when passed to the underlying agent.
+        """
+        url = EncodedURL.from_text(u"https://example.org/foo")
+        self.client.request("GET", url)
+        self.agent.request.assert_called_once_with(
+            b"GET", b"https://example.org/foo",
+            Headers({b"accept-encoding": [b"gzip"]}),
+            None,
+        )
+
+    def test_request_uri_idn_params(self):
+        """
+        A URL that contains non-ASCII characters can be augmented with
+        querystring parameters.
+
+        This reproduces treq #264.
+        """
+        self.client.request('GET', u'http://č.net', params={'foo': 'bar'})
+        self.agent.request.assert_called_once_with(
+            b'GET', b'http://xn--bea.net/?foo=bar',
+            Headers({b'accept-encoding': [b'gzip']}), None)
+
+    def test_request_uri_hyperlink_params(self):
+        """
+        The *params* argument augments an instance of `hyperlink.DecodedURL`
+        passed as the *url* parameter, just as if it were a string.
+        """
+        self.client.request(
+            method="GET",
+            url=DecodedURL.from_text(u"http://č.net"),
+            params={"foo": "bar"},
+        )
+        self.agent.request.assert_called_once_with(
+            b"GET", b"http://xn--bea.net/?foo=bar",
+            Headers({b"accept-encoding": [b"gzip"]}),
+            None,
+        )
+
     def test_request_case_insensitive_methods(self):
         self.client.request('gEt', 'http://example.com/')
         self.agent.request.assert_called_once_with(
@@ -70,6 +121,89 @@ class HTTPClientTests(TestCase):
         self.agent.request.assert_called_once_with(
             b'GET', b'http://example.com/?foo=bar',
             Headers({b'accept-encoding': [b'gzip']}), None)
+
+    def test_request_tuple_query_value_coercion(self):
+        """
+        treq coerces non-string values passed to *params* like
+        `urllib.urlencode()`
+        """
+        self.client.request('GET', 'http://example.com/', params=[
+            ('text', u'A\u03a9'),
+            ('text-seq', [u'A\u03a9']),
+            ('bytes', [b'ascii']),
+            ('bytes-seq', [b'ascii']),
+            ('native', ['native']),
+            ('native-seq', ['aa', 'bb']),
+            ('int', 1),
+            ('int-seq', (1, 2, 3)),
+            ('none', None),
+            ('none-seq', [None, None]),
+        ])
+
+        self.agent.request.assert_called_once_with(
+            b'GET',
+            (
+                b'http://example.com/?'
+                b'text=A%CE%A9&text-seq=A%CE%A9'
+                b'&bytes=ascii&bytes-seq=ascii'
+                b'&native=native&native-seq=aa&native-seq=bb'
+                b'&int=1&int-seq=1&int-seq=2&int-seq=3'
+                b'&none=None&none-seq=None&none-seq=None'
+            ),
+            Headers({b'accept-encoding': [b'gzip']}),
+            None,
+        )
+
+    def test_request_tuple_query_param_coercion(self):
+        """
+        treq coerces non-string param names passed to *params* like
+        `urllib.urlencode()`
+        """
+        self.client.request('GET', 'http://example.com/', params=[
+            (u'text', u'A\u03a9'),
+            (b'bytes', ['ascii']),
+            ('native', 'native'),
+            (1, 'int'),
+            (None, ['none']),
+        ])
+
+        self.agent.request.assert_called_once_with(
+            b'GET',
+            (
+                b'http://example.com/'
+                b'?text=A%CE%A9&bytes=ascii'
+                b'&native=native&1=int&None=none'
+            ),
+            Headers({b'accept-encoding': [b'gzip']}),
+            None,
+        )
+
+    def test_request_query_param_seps(self):
+        """
+        When the characters ``&`` and ``#`` are passed to *params* as param
+        names or values they are percent-escaped in the URL.
+
+        This reproduces https://github.com/twisted/treq/issues/282
+        """
+        self.client.request('GET', 'http://example.com/', params=(
+            ('ampersand', '&'),
+            ('&', 'ampersand'),
+            ('octothorpe', '#'),
+            ('#', 'octothorpe'),
+        ))
+
+        self.agent.request.assert_called_once_with(
+            b'GET',
+            (
+                b'http://example.com/'
+                b'?ampersand=%26'
+                b'&%26=ampersand'
+                b'&octothorpe=%23'
+                b'&%23=octothorpe'
+            ),
+            Headers({b'accept-encoding': [b'gzip']}),
+            None,
+        )
 
     def test_request_merge_query_params(self):
         self.client.request('GET', 'http://example.com/?baz=bax',

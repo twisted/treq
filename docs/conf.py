@@ -243,6 +243,7 @@ texinfo_documents = [
 RTD_NEW_THEME = True
 
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.5', None),
+    'python': ('https://docs.python.org/3/', None),
     'twisted': ('https://twistedmatrix.com/documents/current/api/', None),
+    'hyperlink': ('https://hyperlink.readthedocs.io/en/latest/', None),
 }

@@ -21,6 +21,24 @@ Here is an example which simply a file object's write method to
 
 Full example: :download:`download_file.py <examples/download_file.py>`
 
+URLs, URIs, and Hyperlinks
+--------------------------
+
+The *url* argument to :py:meth:`HTTPClient.request` accepts three URL representations:
+
+- High-level: :class:`hyperlink.DecodedURL`
+- Mid-level :class:`str` (``unicode`` on Python 2)
+- Low-level: ASCII :class:`bytes` or :class:`hyperlink.URL`
+
+The high-level :class:`~hyperlink.DecodedURL` form is useful when programatically generating URLs.
+Here is an example that builds a URL that contains a ``&`` character, which is automatically escaped properly.
+
+.. literalinclude:: examples/basic_url.py
+    :linenos:
+    :pyobject: main
+
+Full example: :download:`basic_url.py <examples/basic_url.py>`
+
 Query Parameters
 ----------------
 

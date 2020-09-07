@@ -5,7 +5,10 @@ import uuid
 
 from io import BytesIO
 
-from six import PY3
+from six import ensure_binary
+from six.moves.collections_abc import Mapping
+from six.moves.http_cookiejar import CookieJar
+from six.moves.urllib import urlencode as _urlencode
 
 from twisted.internet.interfaces import IProtocol
 from twisted.internet.defer import Deferred
@@ -35,25 +38,8 @@ from treq import multipart
 from treq.response import _Response
 from requests.cookies import cookiejar_from_dict, merge_cookies
 
-if PY3:
-    from urllib.parse import urlencode as _urlencode
-
-    def urlencode(query, doseq):
-        return _urlencode(query, doseq).encode('ascii')
-    from http.cookiejar import CookieJar
-else:
-    from cookielib import CookieJar
-    from urllib import urlencode
-
-try:
-    # The old location was quixotically deprecated and might actually be
-    # removed in 3.10, maybe.
-    #
-    # See https://github.com/html5lib/html5lib-python/issues/419 for more of
-    # this tale of woe.
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
+def urlencode(query, doseq):
+    return six.ensure_binary(_urlencode(query, doseq))
 
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):

@@ -10,6 +10,8 @@ from io import BytesIO
 from twisted.trial import unittest
 from zope.interface.verify import verifyObject
 
+from six import PY3
+
 from twisted.python import compat
 from twisted.internet import task
 from twisted.web.client import FileBodyProducer
@@ -17,7 +19,7 @@ from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
 
 from treq.multipart import MultiPartProducer, _LengthConsumer
 
-if compat._PY3:
+if PY3:
     long = int
     unicode = compat.unicode
 

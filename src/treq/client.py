@@ -5,10 +5,12 @@ import uuid
 
 from io import BytesIO
 
+from six import PY3
+
 from twisted.internet.interfaces import IProtocol
 from twisted.internet.defer import Deferred
 from twisted.python.components import proxyForInterface
-from twisted.python.compat import _PY3, unicode
+from twisted.python.compat import unicode
 from twisted.python.filepath import FilePath
 from hyperlink import DecodedURL, EncodedURL
 
@@ -33,7 +35,7 @@ from treq import multipart
 from treq.response import _Response
 from requests.cookies import cookiejar_from_dict, merge_cookies
 
-if _PY3:
+if PY3:
     from urllib.parse import urlencode as _urlencode
 
     def urlencode(query, doseq):
@@ -377,7 +379,7 @@ def _guess_content_type(filename):
 registerAdapter(_from_bytes, bytes, IBodyProducer)
 registerAdapter(_from_file, BytesIO, IBodyProducer)
 
-if not _PY3:
+if not PY3:
     from StringIO import StringIO
     registerAdapter(_from_file, StringIO, IBodyProducer)
     # Suppress lint failure on Python 3.

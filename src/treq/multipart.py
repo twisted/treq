@@ -7,13 +7,15 @@ from uuid import uuid4
 from io import BytesIO
 from contextlib import closing
 
+from six import PY3
+
 from twisted.internet import defer, task
-from twisted.python.compat import unicode, _PY3
+from twisted.python.compat import unicode
 from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
 
 from zope.interface import implementer
 
-if _PY3:
+if PY3:
     long = int
 
 CRLF = b"\r\n"

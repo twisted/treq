@@ -3,9 +3,9 @@ from __future__ import absolute_import, division, print_function
 import mimetypes
 import uuid
 
-from io import BytesIO
+from io import BytesIO, BufferedReader
 
-from six import ensure_binary, text_type, PY2
+from six import ensure_binary, PY2, StringIO, text_type
 from six.moves.collections_abc import Mapping
 from six.moves.http_cookiejar import CookieJar
 from six.moves.urllib import urlencode as _urlencode
@@ -365,11 +365,9 @@ registerAdapter(_from_bytes, bytes, IBodyProducer)
 registerAdapter(_from_file, BytesIO, IBodyProducer)
 
 if PY2:
-    from StringIO import StringIO
     registerAdapter(_from_file, StringIO, IBodyProducer)
     # Suppress lint failure on Python 3.
     registerAdapter(_from_file, file, IBodyProducer)  # noqa: F821
 else:
-    import io
     # file()/open() equiv on Py3
-    registerAdapter(_from_file, io.BufferedReader, IBodyProducer)
+    registerAdapter(_from_file, BufferedReader, IBodyProducer)

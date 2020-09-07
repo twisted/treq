@@ -7,16 +7,13 @@ from uuid import uuid4
 from io import BytesIO
 from contextlib import closing
 
-from six import PY3
+from six import integer_types
 
 from twisted.internet import defer, task
 from twisted.python.compat import unicode
 from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
 
 from zope.interface import implementer
-
-if PY3:
-    long = int
 
 CRLF = b"\r\n"
 
@@ -304,7 +301,7 @@ class _LengthConsumer(object):
 
         if value is UNKNOWN_LENGTH:
             self.length = value
-        elif isinstance(value, (int, long)):
+        elif isinstance(value, integer_types):
             self.length += value
         else:
             self.length += len(value)

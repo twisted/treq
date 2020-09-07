@@ -37,6 +37,7 @@ from treq import multipart
 from treq.response import _Response
 from requests.cookies import cookiejar_from_dict, merge_cookies
 
+
 def urlencode(query, doseq):
     return ensure_binary(_urlencode(query, doseq), encoding='ascii')
 

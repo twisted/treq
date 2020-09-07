@@ -12,7 +12,6 @@ from zope.interface.verify import verifyObject
 
 from six import PY3
 
-from twisted.python import compat
 from twisted.internet import task
 from twisted.web.client import FileBodyProducer
 from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
@@ -21,7 +20,6 @@ from treq.multipart import MultiPartProducer, _LengthConsumer
 
 if PY3:
     long = int
-    unicode = compat.unicode
 
 
 class MultiPartProducerTestCase(unittest.TestCase):
@@ -67,7 +65,7 @@ class MultiPartProducerTestCase(unittest.TestCase):
 
     def newLines(self, value):
 
-        if isinstance(value, unicode):
+        if isinstance(value, six.text_type):
             return value.replace(u"\n", u"\r\n")
         else:
             return value.replace(b"\n", b"\r\n")

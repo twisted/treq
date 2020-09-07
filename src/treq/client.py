@@ -39,7 +39,7 @@ from treq.response import _Response
 from requests.cookies import cookiejar_from_dict, merge_cookies
 
 def urlencode(query, doseq):
-    return six.ensure_binary(_urlencode(query, doseq))
+    return six.ensure_binary(_urlencode(query, doseq), encoding='ascii')
 
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):

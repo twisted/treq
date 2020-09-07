@@ -10,7 +10,7 @@ from io import BytesIO
 from twisted.trial import unittest
 from zope.interface.verify import verifyObject
 
-from six import PY3
+from six import PY3, text_type
 
 from twisted.internet import task
 from twisted.web.client import FileBodyProducer
@@ -65,7 +65,7 @@ class MultiPartProducerTestCase(unittest.TestCase):
 
     def newLines(self, value):
 
-        if isinstance(value, six.text_type):
+        if isinstance(value, text_type):
             return value.replace(u"\n", u"\r\n")
         else:
             return value.replace(b"\n", b"\r\n")

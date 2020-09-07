@@ -38,7 +38,7 @@ from treq.response import _Response
 from requests.cookies import cookiejar_from_dict, merge_cookies
 
 def urlencode(query, doseq):
-    return six.ensure_binary(_urlencode(query, doseq), encoding='ascii')
+    return ensure_binary(_urlencode(query, doseq), encoding='ascii')
 
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
@@ -145,7 +145,7 @@ class HTTPClient(object):
             parsed_url = url
         elif isinstance(url, EncodedURL):
             parsed_url = DecodedURL(url)
-        elif isinstance(url, six.text_type):
+        elif isinstance(url, text_type):
             parsed_url = DecodedURL.from_text(url)
         else:
             parsed_url = DecodedURL.from_text(url.decode('ascii'))
@@ -167,7 +167,7 @@ class HTTPClient(object):
             if isinstance(headers, dict):
                 h = Headers({})
                 for k, v in headers.items():
-                    if isinstance(v, (bytes, six.text_type)):
+                    if isinstance(v, (bytes, text_type)):
                         h.addRawHeader(k, v)
                     elif isinstance(v, list):
                         h.setRawHeaders(k, v)
@@ -333,15 +333,15 @@ def _coerced_query_params(params):
     for key, values in items:
         if isinstance(key, bytes):
             key = key.decode('ascii')
-        elif not isinstance(key, six.text_type):
-            key = six.text_type(key)
+        elif not isinstance(key, text_type):
+            key = text_type(key)
         if not isinstance(values, (list, tuple)):
             values = [values]
         for value in values:
             if isinstance(value, bytes):
                 value = value.decode('ascii')
-            elif not isinstance(value, six.text_type):
-                value = six.text_type(value)
+            elif not isinstance(value, text_type):
+                value = text_type(value)
             yield key, value
 
 

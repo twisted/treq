@@ -7,10 +7,9 @@ from uuid import uuid4
 from io import BytesIO
 from contextlib import closing
 
-from six import integer_types
+from six import integer_types, text_type
 
 from twisted.internet import defer, task
-from twisted.python.compat import unicode
 from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
 
 from zope.interface import implementer
@@ -61,7 +60,7 @@ class MultiPartProducer(object):
 
         self.boundary = boundary or uuid4().hex
 
-        if isinstance(self.boundary, unicode):
+        if isinstance(self.boundary, text_type):
             self.boundary = self.boundary.encode('ascii')
 
         self.length = self._calculateLength()
@@ -170,7 +169,7 @@ class MultiPartProducer(object):
         consumer.write(CRLF + self._getBoundary(final=True) + CRLF)
 
     def _writeField(self, name, value, consumer):
-        if isinstance(value, unicode):
+        if isinstance(value, text_type):
             self._writeString(name, value, consumer)
         elif isinstance(value, tuple):
             filename, content_type, producer = value
@@ -219,8 +218,8 @@ def _escape(value):
     a newline in the file name parameter makes form-data request unreadable
     for majority of parsers.
     """
-    if not isinstance(value, (bytes, unicode)):
-        value = unicode(value)
+    if not isinstance(value, (bytes, text_type)):
+        value = text_type(value)
     if isinstance(value, bytes):
         value = value.decode('utf-8')
     return value.replace(u"\r", u"").replace(u"\n", u"").replace(u'"', u'\\"')
@@ -233,14 +232,14 @@ def _enforce_unicode(value):
     If someone needs to pass the binary string, use BytesIO and wrap it with
     `FileBodyProducer`.
     """
-    if isinstance(value, unicode):
+    if isinstance(value, text_type):
         return value
 
     elif isinstance(value, bytes):
         # we got a byte string, and we have no ide what's the encoding of it
         # we can only assume that it's something cool
         try:
-            return unicode(value, "utf-8")
+            return text_type(value, "utf-8")
         except UnicodeDecodeError:
             raise ValueError(
                 "Supplied raw bytes that are not ascii/utf-8."
@@ -268,7 +267,7 @@ def _converted(fields):
             filename = _enforce_unicode(filename) if filename else None
             yield name, (filename, content_type, producer)
 
-        elif isinstance(value, (bytes, unicode)):
+        elif isinstance(value, (bytes, text_type)):
             yield name, _enforce_unicode(value)
 
         else:

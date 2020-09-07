@@ -5,7 +5,7 @@ import uuid
 
 from io import BytesIO
 
-from six import ensure_binary
+from six import ensure_binary, text_type
 from six.moves.collections_abc import Mapping
 from six.moves.http_cookiejar import CookieJar
 from six.moves.urllib import urlencode as _urlencode
@@ -13,7 +13,6 @@ from six.moves.urllib import urlencode as _urlencode
 from twisted.internet.interfaces import IProtocol
 from twisted.internet.defer import Deferred
 from twisted.python.components import proxyForInterface
-from twisted.python.compat import unicode
 from twisted.python.filepath import FilePath
 from hyperlink import DecodedURL, EncodedURL
 
@@ -146,7 +145,7 @@ class HTTPClient(object):
             parsed_url = url
         elif isinstance(url, EncodedURL):
             parsed_url = DecodedURL(url)
-        elif isinstance(url, unicode):
+        elif isinstance(url, six.text_type):
             parsed_url = DecodedURL.from_text(url)
         else:
             parsed_url = DecodedURL.from_text(url.decode('ascii'))
@@ -168,7 +167,7 @@ class HTTPClient(object):
             if isinstance(headers, dict):
                 h = Headers({})
                 for k, v in headers.items():
-                    if isinstance(v, (bytes, unicode)):
+                    if isinstance(v, (bytes, six.text_type)):
                         h.addRawHeader(k, v)
                     elif isinstance(v, list):
                         h.setRawHeaders(k, v)
@@ -334,15 +333,15 @@ def _coerced_query_params(params):
     for key, values in items:
         if isinstance(key, bytes):
             key = key.decode('ascii')
-        elif not isinstance(key, unicode):
-            key = unicode(key)
+        elif not isinstance(key, six.text_type):
+            key = six.text_type(key)
         if not isinstance(values, (list, tuple)):
             values = [values]
         for value in values:
             if isinstance(value, bytes):
                 value = value.decode('ascii')
-            elif not isinstance(value, unicode):
-                value = unicode(value)
+            elif not isinstance(value, six.text_type):
+                value = six.text_type(value)
             yield key, value
 
 

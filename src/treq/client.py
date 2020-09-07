@@ -8,7 +8,7 @@ from io import BytesIO, BufferedReader
 from six import ensure_binary, PY2, StringIO, text_type
 from six.moves.collections_abc import Mapping
 from six.moves.http_cookiejar import CookieJar
-from six.moves.urllib import urlencode as _urlencode
+from six.moves.urllib.parse import urlencode as _urlencode
 
 from twisted.internet.interfaces import IProtocol
 from twisted.internet.defer import Deferred

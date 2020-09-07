@@ -5,7 +5,7 @@ import uuid
 
 from io import BytesIO
 
-from six import ensure_binary, text_type
+from six import ensure_binary, text_type, PY2
 from six.moves.collections_abc import Mapping
 from six.moves.http_cookiejar import CookieJar
 from six.moves.urllib import urlencode as _urlencode
@@ -364,7 +364,7 @@ def _guess_content_type(filename):
 registerAdapter(_from_bytes, bytes, IBodyProducer)
 registerAdapter(_from_file, BytesIO, IBodyProducer)
 
-if not PY3:
+if PY2:
     from StringIO import StringIO
     registerAdapter(_from_file, StringIO, IBodyProducer)
     # Suppress lint failure on Python 3.

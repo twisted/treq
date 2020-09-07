@@ -347,7 +347,7 @@ def _sorted_by_type(fields):
     """
     def key(p):
         key, val = p
-        if isinstance(val, (bytes, unicode)):
+        if isinstance(val, (bytes, text_type)):
             return (0, key)
         else:
             return (1, key)

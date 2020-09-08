@@ -3,9 +3,9 @@ from __future__ import absolute_import, division, print_function
 import mimetypes
 import uuid
 
-from io import BytesIO, BufferedReader
+import io
 
-from six import ensure_binary, PY2, StringIO, text_type
+import six
 from six.moves.collections_abc import Mapping
 from six.moves.http_cookiejar import CookieJar
 from six.moves.urllib.parse import urlencode as _urlencode
@@ -39,7 +39,7 @@ from requests.cookies import cookiejar_from_dict, merge_cookies
 
 
 def urlencode(query, doseq):
-    return ensure_binary(_urlencode(query, doseq), encoding='ascii')
+    return six.ensure_binary(_urlencode(query, doseq), encoding='ascii')
 
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
@@ -146,7 +146,7 @@ class HTTPClient(object):
             parsed_url = url
         elif isinstance(url, EncodedURL):
             parsed_url = DecodedURL(url)
-        elif isinstance(url, text_type):
+        elif isinstance(url, six.text_type):
             parsed_url = DecodedURL.from_text(url)
         else:
             parsed_url = DecodedURL.from_text(url.decode('ascii'))
@@ -168,7 +168,7 @@ class HTTPClient(object):
             if isinstance(headers, dict):
                 h = Headers({})
                 for k, v in headers.items():
-                    if isinstance(v, (bytes, text_type)):
+                    if isinstance(v, (bytes, six.text_type)):
                         h.addRawHeader(k, v)
                     elif isinstance(v, list):
                         h.setRawHeaders(k, v)
@@ -334,20 +334,20 @@ def _coerced_query_params(params):
     for key, values in items:
         if isinstance(key, bytes):
             key = key.decode('ascii')
-        elif not isinstance(key, text_type):
-            key = text_type(key)
+        elif not isinstance(key, six.text_type):
+            key = six.text_type(key)
         if not isinstance(values, (list, tuple)):
             values = [values]
         for value in values:
             if isinstance(value, bytes):
                 value = value.decode('ascii')
-            elif not isinstance(value, text_type):
-                value = text_type(value)
+            elif not isinstance(value, six.text_type):
+                value = six.text_type(value)
             yield key, value
 
 
 def _from_bytes(orig_bytes):
-    return FileBodyProducer(BytesIO(orig_bytes))
+    return FileBodyProducer(io.BytesIO(orig_bytes))
 
 
 def _from_file(orig_file):
@@ -363,12 +363,12 @@ def _guess_content_type(filename):
 
 
 registerAdapter(_from_bytes, bytes, IBodyProducer)
-registerAdapter(_from_file, BytesIO, IBodyProducer)
+registerAdapter(_from_file, io.BytesIO, IBodyProducer)
 
-if PY2:
-    registerAdapter(_from_file, StringIO, IBodyProducer)
+if six.PY2:
+    registerAdapter(_from_file, six.StringIO, IBodyProducer)
     # Suppress lint failure on Python 3.
     registerAdapter(_from_file, file, IBodyProducer)  # noqa: F821
 else:
     # file()/open() equiv on Py3
-    registerAdapter(_from_file, BufferedReader, IBodyProducer)
+    registerAdapter(_from_file, io.BufferedReader, IBodyProducer)

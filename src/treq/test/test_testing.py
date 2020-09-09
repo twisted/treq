@@ -85,7 +85,7 @@ class StubbingTests(TestCase):
         for name, obj in api_things:
             self.assertTrue(
                 isfunction(getattr(stub, name, None)),
-                "StubTreq.{0} should be a function.".format(name))
+                "StubTreq.{} should be a function.".format(name))
 
         for name, obj in content_things:
             self.assertIs(

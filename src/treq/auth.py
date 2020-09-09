@@ -7,7 +7,7 @@ import base64
 class UnknownAuthConfig(Exception):
     def __init__(self, config):
         super(Exception, self).__init__(
-            '{0!r} not of a known type.'.format(config))
+            '{!r} not of a known type.'.format(config))
 
 
 class _RequestHeaderSettingAgent(object):
@@ -28,7 +28,7 @@ class _RequestHeaderSettingAgent(object):
 
 def add_basic_auth(agent, username, password):
     creds = base64.b64encode(
-        '{0}:{1}'.format(username, password).encode('ascii'))
+        '{}:{}'.format(username, password).encode('ascii'))
     return _RequestHeaderSettingAgent(
         agent,
         Headers({b'Authorization': [b'Basic ' + creds]}))

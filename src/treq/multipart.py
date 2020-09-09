@@ -247,7 +247,7 @@ def _enforce_unicode(value):
                 ", or work with unicode if you are not sure")
     else:
         raise ValueError(
-            "Unsupported field type: %s" % (value.__class__.__name__,))
+            "Unsupported field type: {}".format(value.__class__.__name__))
 
 
 def _converted(fields):

@@ -72,7 +72,7 @@ class _EndpointFactory(object):
         """
 
         if uri.scheme not in {b'http', b'https'}:
-            raise SchemeNotSupported("Unsupported scheme: %r" % (uri.scheme,))
+            raise SchemeNotSupported("Unsupported scheme: {!r}".format(uri.scheme))
         return TCP4ClientEndpoint(self.reactor, "127.0.0.1", uri.port)
 
 
@@ -356,7 +356,7 @@ class HasHeaders(object):
         self._headers = _maybeEncodeHeaders(headers)
 
     def __repr__(self):
-        return "HasHeaders({0})".format(repr(self._headers))
+        return "HasHeaders({})".format(repr(self._headers))
 
     def __eq__(self, other_headers):
         compare_to = _maybeEncodeHeaders(other_headers)
@@ -501,7 +501,7 @@ class RequestSequence(object):
         if not self.consumed():
             sync_failure_reporter("\n".join(
                 ["Not all expected requests were made.  Still expecting:"] +
-                ["- {0}(url={1}, params={2}, headers={3}, data={4})".format(
+                ["- {}(url={}, params={}, headers={}, data={})".format(
                     *expected) for expected, _ in self._sequence]))
 
     def __call__(self, method, url, params, headers, data):
@@ -511,7 +511,7 @@ class RequestSequence(object):
         """
         if len(self._sequence) == 0:
             self._async_reporter(
-                "No more requests expected, but request {0!r} made.".format(
+                "No more requests expected, but request {!r} made.".format(
                     (method, url, params, headers, data)))
             return (500, {}, b"StubbingError")
 
@@ -528,9 +528,9 @@ class RequestSequence(object):
         mismatches = [param for success, param in checks if not success]
         if mismatches:
             self._async_reporter(
-                "\nExpected the next request to be: {0!r}"
-                "\nGot request                    : {1!r}\n"
-                "\nMismatches: {2!r}"
+                "\nExpected the next request to be: {!r}"
+                "\nGot request                    : {!r}\n"
+                "\nMismatches: {!r}"
                 .format(expected, (method, url, params, headers, data),
                         mismatches))
             return (500, {}, b"StubbingError")

@@ -113,7 +113,7 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_get_302_absolute_redirect(self):
         response = yield self.get(
-            '/redirect-to?url={0}/get'.format(self.baseurl))
+            '/redirect-to?url={}/get'.format(self.baseurl))
         self.assertEqual(response.code, 200)
         yield print_response(response)
 
@@ -139,7 +139,7 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_head_302_absolute_redirect(self):
         response = yield self.head(
-            '/redirect-to?url={0}/get'.format(self.baseurl))
+            '/redirect-to?url={}/get'.format(self.baseurl))
         self.assertEqual(response.code, 200)
         yield print_response(response)
 

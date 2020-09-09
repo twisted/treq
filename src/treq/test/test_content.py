@@ -72,7 +72,7 @@ class ContentTests(TestCase):
 
         d = collect(
             self.response,
-            lambda d: self.fail("Unexpectedly called with: {0}".format(d)))
+            lambda d: self.fail("Unexpectedly called with: {}".format(d)))
 
         self.assertEqual(self.successResultOf(d), None)
 

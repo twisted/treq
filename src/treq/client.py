@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import mimetypes
 import uuid
 
@@ -93,7 +91,7 @@ class _BufferedResponse(proxyForInterface(IResponse)):
             self._waiters.append(protocol)
 
 
-class HTTPClient(object):
+class HTTPClient:
     def __init__(self, agent, cookiejar=None,
                  data_to_body_producer=IBodyProducer):
         self._agent = agent
@@ -146,7 +144,7 @@ class HTTPClient(object):
             parsed_url = url
         elif isinstance(url, EncodedURL):
             parsed_url = DecodedURL(url)
-        elif isinstance(url, six.text_type):
+        elif isinstance(url, str):
             parsed_url = DecodedURL.from_text(url)
         else:
             parsed_url = DecodedURL.from_text(url.decode('ascii'))
@@ -168,7 +166,7 @@ class HTTPClient(object):
             if isinstance(headers, dict):
                 h = Headers({})
                 for k, v in headers.items():
-                    if isinstance(v, (bytes, six.text_type)):
+                    if isinstance(v, (bytes, str)):
                         h.addRawHeader(k, v)
                     elif isinstance(v, list):
                         h.setRawHeaders(k, v)
@@ -215,7 +213,7 @@ class HTTPClient(object):
             headers.setRawHeaders(
                 b'content-type', [b'application/json; charset=UTF-8'])
             content = kwargs['json']
-            json = json_dumps(content, separators=(u',', u':')).encode('utf-8')
+            json = json_dumps(content, separators=(',', ':')).encode('utf-8')
             bodyProducer = self._data_to_body_producer(json)
 
         cookies = kwargs.get('cookies', {})
@@ -334,15 +332,15 @@ def _coerced_query_params(params):
     for key, values in items:
         if isinstance(key, bytes):
             key = key.decode('ascii')
-        elif not isinstance(key, six.text_type):
-            key = six.text_type(key)
+        elif not isinstance(key, str):
+            key = str(key)
         if not isinstance(values, (list, tuple)):
             values = [values]
         for value in values:
             if isinstance(value, bytes):
                 value = value.decode('ascii')
-            elif not isinstance(value, six.text_type):
-                value = six.text_type(value)
+            elif not isinstance(value, str):
+                value = str(value)
             yield key, value
 
 
@@ -365,10 +363,5 @@ def _guess_content_type(filename):
 registerAdapter(_from_bytes, bytes, IBodyProducer)
 registerAdapter(_from_file, io.BytesIO, IBodyProducer)
 
-if six.PY2:
-    registerAdapter(_from_file, six.StringIO, IBodyProducer)
-    # Suppress lint failure on Python 3.
-    registerAdapter(_from_file, file, IBodyProducer)  # noqa: F821
-else:
-    # file()/open() equiv on Py3
-    registerAdapter(_from_file, io.BufferedReader, IBodyProducer)
+# file()/open() equiv on Py3
+registerAdapter(_from_file, io.BufferedReader, IBodyProducer)

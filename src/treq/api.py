@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from twisted.web.client import Agent
 
 from treq.client import HTTPClient

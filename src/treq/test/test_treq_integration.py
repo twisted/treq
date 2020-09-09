@@ -59,7 +59,7 @@ class TreqIntegrationTests(TestCase):
     def setUp(self):
         description = yield self._httpbin_process.server_description(
             reactor)
-        self.baseurl = URL(scheme=u"http",
+        self.baseurl = URL(scheme="http",
                            host=description.host,
                            port=description.port).asText()
         self.agent = Agent(reactor)
@@ -105,7 +105,7 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def test_get_headers_unicode(self):
-        response = yield self.get('/get', {u'X-Blah': [u'Foo', b'Bar']})
+        response = yield self.get('/get', {'X-Blah': ['Foo', b'Bar']})
         self.assertEqual(response.code, 200)
         yield self.assert_sent_header(response, 'X-Blah', 'Foo,Bar')
         yield print_response(response)
@@ -274,7 +274,7 @@ class HTTPSTreqIntegrationTests(TreqIntegrationTests):
     def setUp(self):
         description = yield self._httpbin_process.server_description(
             reactor)
-        self.baseurl = URL(scheme=u"https",
+        self.baseurl = URL(scheme="https",
                            host=description.host,
                            port=description.port).asText()
 

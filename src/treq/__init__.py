@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from ._version import __version__
 
 from treq.api import head, get, post, put, patch, delete, request

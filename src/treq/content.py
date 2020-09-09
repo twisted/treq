@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import cgi
 import json
 
@@ -11,7 +9,7 @@ from twisted.web.http import PotentialDataLoss
 
 
 def _encoding_from_headers(headers):
-    content_types = headers.getRawHeaders(u'content-type')
+    content_types = headers.getRawHeaders('content-type')
     if content_types is None:
         return None
 

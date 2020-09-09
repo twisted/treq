@@ -52,5 +52,5 @@ class MakeARequestTests(SynchronousTestCase):
         with req_seq.consume(self.fail):
             failure = self.failureResultOf(make_a_request(treq))
 
-        self.assertEqual(u"Got an error from the server: I'm a teapot!",
+        self.assertEqual("Got an error from the server: I'm a teapot!",
                          failure.getErrorMessage())

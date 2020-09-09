@@ -1,4 +1,3 @@
-# coding: utf-8
 # Copyright (c) Twisted Matrix Laboratories.
 # See LICENSE for details.
 
@@ -18,8 +17,7 @@ from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
 
 from treq.multipart import MultiPartProducer, _LengthConsumer
 
-if PY3:
-    long = int
+long = int
 
 
 class MultiPartProducerTestCase(unittest.TestCase):
@@ -65,8 +63,8 @@ class MultiPartProducerTestCase(unittest.TestCase):
 
     def newLines(self, value):
 
-        if isinstance(value, text_type):
-            return value.replace(u"\n", u"\r\n")
+        if isinstance(value, str):
+            return value.replace("\n", "\r\n")
         else:
             return value.replace(b"\n", b"\r\n")
 
@@ -84,11 +82,11 @@ class MultiPartProducerTestCase(unittest.TestCase):
         passed as a parameter without either a C{seek} or C{tell} method,
         its C{length} attribute is set to C{UNKNOWN_LENGTH}.
         """
-        class HasSeek(object):
+        class HasSeek:
             def seek(self, offset, whence):
                 pass
 
-        class HasTell(object):
+        class HasTell:
             def tell(self):
                 pass
 
@@ -199,9 +197,9 @@ Hello, World
         L{MultiPartProducer.startProducing} fires with a L{Failure} wrapping
         that exception.
         """
-        class BrokenFile(object):
+        class BrokenFile:
             def read(self, count):
-                raise IOError("Simulated bad thing")
+                raise OSError("Simulated bad thing")
 
         producer = MultiPartProducer({
             "field": (
@@ -311,17 +309,17 @@ Hello, World
         """
         output, producer = self.getOutput(
             MultiPartProducer({
-                "afield": u"Это моя строчечка\r\n",
+                "afield": "Это моя строчечка\r\n",
             }, cooperator=self.cooperator, boundary=b"heyDavid"),
             with_producer=True)
 
-        expected = self.newLines(u"""--heyDavid
+        expected = self.newLines("""--heyDavid
 Content-Disposition: form-data; name="afield"
 
 Это моя строчечка
 
 --heyDavid--
-""".encode("utf-8"))
+""".encode())
         self.assertEqual(producer.length, len(expected))
         self.assertEqual(expected, output)
 
@@ -333,7 +331,7 @@ Content-Disposition: form-data; name="afield"
         self.assertRaises(
             ValueError,
             MultiPartProducer, {
-                "afield": u"это моя строчечка".encode("utf-32"),
+                "afield": "это моя строчечка".encode("utf-32"),
             },
             cooperator=self.cooperator, boundary=b"heyDavid")
 
@@ -493,7 +491,7 @@ my lovely bytes219
         output, producer = self.getOutput(
             MultiPartProducer({
                 "field": (
-                    u'Так себе имя.jpg',
+                    'Так себе имя.jpg',
                     "image/jpeg",
                     FileBodyProducer(
                         inputFile=BytesIO(b"my lovely bytes"),
@@ -503,14 +501,14 @@ my lovely bytes219
             }, cooperator=self.cooperator, boundary=b"heyDavid"),
             with_producer=True)
 
-        expected = self.newLines(u"""--heyDavid
+        expected = self.newLines("""--heyDavid
 Content-Disposition: form-data; name="field"; filename="Так себе имя.jpg"
 Content-Type: image/jpeg
 Content-Length: 15
 
 my lovely bytes
 --heyDavid--
-""".encode("utf-8"))
+""".encode())
         self.assertEqual(len(expected), producer.length)
         self.assertEqual(expected, output)
 
@@ -550,7 +548,7 @@ my lovely bytes
         output = self.getOutput(
             MultiPartProducer({
                 "field": (
-                    u'\r\noops.j\npg',
+                    '\r\noops.j\npg',
                     "image/jp\reg\n",
                     FileBodyProducer(
                         inputFile=BytesIO(b"my lovely bytes"),

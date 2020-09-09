@@ -3,7 +3,6 @@ A local ``httpbin`` server to run integration tests against.
 
 This ensures tests do not depend on `httpbin <https://httpbin.org/>`_.
 """
-from __future__ import print_function
 import argparse
 import datetime
 import sys
@@ -55,10 +54,10 @@ def _certificates_for_authority_and_server(service_identity, key_size=1024):
             :py:class:`OpenSSL.crypto.X509`)
     """
     common_name_for_ca = x509.Name(
-        [x509.NameAttribute(NameOID.COMMON_NAME, u'Testing Example CA')]
+        [x509.NameAttribute(NameOID.COMMON_NAME, 'Testing Example CA')]
     )
     common_name_for_server = x509.Name(
-        [x509.NameAttribute(NameOID.COMMON_NAME, u'Testing Example Server')]
+        [x509.NameAttribute(NameOID.COMMON_NAME, 'Testing Example Server')]
     )
     one_day = datetime.timedelta(1, 0, 0)
     private_key_for_ca = rsa.generate_private_key(
@@ -214,12 +213,8 @@ def _output_process_description(description, stdout=sys.stdout):
 
     :param stdout: (optional) Standard out.
     """
-    if six.PY2:
-        write = stdout.write
-        flush = stdout.flush
-    else:
-        write = stdout.buffer.write
-        flush = stdout.buffer.flush
+    write = stdout.buffer.write
+    flush = stdout.buffer.flush
 
     write(description.to_json_bytes() + b'\n')
     flush()

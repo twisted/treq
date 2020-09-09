@@ -4,7 +4,7 @@ In-memory treq returns stubbed responses.
 from functools import partial
 from inspect import getmembers, isfunction
 
-from mock import ANY
+from unittest.mock import ANY
 
 from six import text_type, binary_type, PY3
 
@@ -163,9 +163,9 @@ class StubbingTests(TestCase):
         self.successResultOf(stub.request('method', 'http://url', data=[]))
         self.successResultOf(stub.request('method', 'http://url', data=()))
         self.successResultOf(
-            stub.request('method', 'http://url', data=binary_type(b"")))
+            stub.request('method', 'http://url', data=bytes(b"")))
         self.successResultOf(
-            stub.request('method', 'http://url', data=text_type("")))
+            stub.request('method', 'http://url', data=""))
 
     def test_handles_failing_asynchronous_requests(self):
         """
@@ -298,18 +298,15 @@ class HasHeadersTests(TestCase):
         The :obj:`HasHeaders` equality function compares the bytes-encoded
         forms of both sets of headers.
         """
-        self.assertEqual(HasHeaders({b'a': [b'a']}), {u'a': [u'a']})
+        self.assertEqual(HasHeaders({b'a': [b'a']}), {'a': ['a']})
 
-        self.assertEqual(HasHeaders({u'b': [u'b']}), {b'b': [b'b']})
+        self.assertEqual(HasHeaders({'b': ['b']}), {b'b': [b'b']})
 
     def test_repr(self):
         """
         :obj:`HasHeaders` returns a nice string repr.
         """
-        if PY3:
-            reprOutput = "HasHeaders({b'a': [b'b']})"
-        else:
-            reprOutput = "HasHeaders({'a': ['b']})"
+        reprOutput = "HasHeaders({b'a': [b'b']})"
         self.assertEqual(reprOutput, repr(HasHeaders({b'A': [b'b']})))
 
 

@@ -5,7 +5,7 @@ from twisted.web.resource import IResource
 
 
 @implementer(IResource)
-class JsonResource(object):
+class JsonResource:
     isLeaf = True  # NB: means getChildWithDefault will not be called
 
     def __init__(self, data):

@@ -39,7 +39,7 @@ class CertificatesForAuthorityAndServerTests(SynchronousTestCase):
     """
 
     def setUp(self):
-        self.hostname = u".example.org"
+        self.hostname = ".example.org"
         (
             self.ca_cert,
             self.server_private_key,
@@ -97,7 +97,7 @@ class CertificatesForAuthorityAndServerTests(SynchronousTestCase):
 
 
 @attr.s
-class FakeThreadPoolState(object):
+class FakeThreadPoolState:
     """
     State for :py:class:`FakeThreadPool`.
     """
@@ -106,7 +106,7 @@ class FakeThreadPoolState(object):
 
 
 @attr.s
-class FakeThreadPool(object):
+class FakeThreadPool:
     """
     A fake :py:class:`twisted.python.threadpool.ThreadPool`
     """
@@ -241,7 +241,7 @@ class ServeTCPTests(SynchronousTestCase):
 
 
 @attr.s
-class FlushableBytesIOState(object):
+class FlushableBytesIOState:
     """
     State for :py:class:`FlushableBytesIO`
     """
@@ -250,7 +250,7 @@ class FlushableBytesIOState(object):
 
 
 @attr.s
-class FlushableBytesIO(object):
+class FlushableBytesIO:
     """
     A :py:class:`io.BytesIO` wrapper that records flushes.
     """
@@ -263,14 +263,13 @@ class FlushableBytesIO(object):
         self._state.flush_count += 1
 
 
-if not six.PY2:
-    @attr.s
-    class BufferedStandardOut(object):
-        """
+@attr.s
+class BufferedStandardOut:
+    """
         A standard out that whose ``buffer`` is a
         :py:class:`FlushableBytesIO` instance.
         """
-        buffer = attr.ib()
+    buffer = attr.ib()
 
 
 class OutputProcessDescriptionTests(SynchronousTestCase):
@@ -281,8 +280,7 @@ class OutputProcessDescriptionTests(SynchronousTestCase):
     def setUp(self):
         self.stdout_state = FlushableBytesIOState()
         self.stdout = FlushableBytesIO(self.stdout_state)
-        if not six.PY2:
-            self.stdout = BufferedStandardOut(self.stdout)
+        self.stdout = BufferedStandardOut(self.stdout)
 
     def test_description_written(self):
         """

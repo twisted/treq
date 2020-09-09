@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from twisted.web.http_headers import Headers
 import base64
 
@@ -10,7 +8,7 @@ class UnknownAuthConfig(Exception):
             '{!r} not of a known type.'.format(config))
 
 
-class _RequestHeaderSettingAgent(object):
+class _RequestHeaderSettingAgent:
     def __init__(self, agent, request_headers):
         self._agent = agent
         self._request_headers = request_headers

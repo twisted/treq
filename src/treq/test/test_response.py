@@ -10,7 +10,7 @@ from twisted.web.http_headers import Headers
 from treq.response import _Response
 
 
-class FakeResponse(object):
+class FakeResponse:
     def __init__(self, code, headers, body=()):
         self.code = code
         self.headers = headers
@@ -54,7 +54,7 @@ class ResponseTests(SynchronousTestCase):
         """
         Garbage in the Content-Type still produces a reasonable representation.
         """
-        headers = Headers({'Content-Type': [u'\u2e18', ' x/y']})
+        headers = Headers({'Content-Type': ['\u2e18', ' x/y']})
         original = FakeResponse(418, headers, body=[b''])
         self.assertEqual(
             r"<treq.response._Response 418 '\xe2\xb8\x98,  x/y' 0 bytes>",
@@ -107,7 +107,7 @@ class ResponseTests(SynchronousTestCase):
         headers = Headers({b'content-type': [b'text/plain;charset=utf-8']})
         original = FakeResponse(200, headers, body=[b'\xe2\x98', b'\x83'])
         self.assertEqual(
-            u'\u2603',
+            '\u2603',
             self.successResultOf(_Response(original, None).text()),
         )
 

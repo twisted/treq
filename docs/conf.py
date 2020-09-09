@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # treq documentation build configuration file, created by
 # sphinx-quickstart on Mon Dec 10 22:32:11 2012.
@@ -40,8 +39,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'treq'
-copyright = u'2014–2020 David Reid'
+project = 'treq'
+copyright = '2014–2020 David Reid'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -182,8 +181,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'treq.tex', u'treq Documentation',
-   u'David Reid', 'manual'),
+  ('index', 'treq.tex', 'treq Documentation',
+   'David Reid', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -212,8 +211,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'treq', u'treq Documentation',
-     [u'David Reid'], 1)
+    ('index', 'treq', 'treq Documentation',
+     ['David Reid'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -226,8 +225,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'treq', u'treq Documentation',
-   u'David Reid', 'treq', 'One line description of project.',
+  ('index', 'treq', 'treq Documentation',
+   'David Reid', 'treq', 'One line description of project.',
    'Miscellaneous'),
 ]
 

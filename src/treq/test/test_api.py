@@ -1,6 +1,4 @@
-from __future__ import absolute_import, division
-
-import mock
+from unittest import mock
 
 from twisted.trial.unittest import TestCase
 

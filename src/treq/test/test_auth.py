@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 
 from twisted.trial.unittest import TestCase
 from twisted.web.client import Agent

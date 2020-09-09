@@ -3,12 +3,16 @@ from __future__ import absolute_import, division, print_function
 import mimetypes
 import uuid
 
-from io import BytesIO
+import io
+
+import six
+from six.moves.collections_abc import Mapping
+from six.moves.http_cookiejar import CookieJar
+from six.moves.urllib.parse import urlencode as _urlencode
 
 from twisted.internet.interfaces import IProtocol
 from twisted.internet.defer import Deferred
 from twisted.python.components import proxyForInterface
-from twisted.python.compat import _PY3, unicode
 from twisted.python.filepath import FilePath
 from hyperlink import DecodedURL, EncodedURL
 
@@ -33,25 +37,9 @@ from treq import multipart
 from treq.response import _Response
 from requests.cookies import cookiejar_from_dict, merge_cookies
 
-if _PY3:
-    from urllib.parse import urlencode as _urlencode
 
-    def urlencode(query, doseq):
-        return _urlencode(query, doseq).encode('ascii')
-    from http.cookiejar import CookieJar
-else:
-    from cookielib import CookieJar
-    from urllib import urlencode
-
-try:
-    # The old location was quixotically deprecated and might actually be
-    # removed in 3.10, maybe.
-    #
-    # See https://github.com/html5lib/html5lib-python/issues/419 for more of
-    # this tale of woe.
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
+def urlencode(query, doseq):
+    return six.ensure_binary(_urlencode(query, doseq), encoding='ascii')
 
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
@@ -158,7 +146,7 @@ class HTTPClient(object):
             parsed_url = url
         elif isinstance(url, EncodedURL):
             parsed_url = DecodedURL(url)
-        elif isinstance(url, unicode):
+        elif isinstance(url, six.text_type):
             parsed_url = DecodedURL.from_text(url)
         else:
             parsed_url = DecodedURL.from_text(url.decode('ascii'))
@@ -180,7 +168,7 @@ class HTTPClient(object):
             if isinstance(headers, dict):
                 h = Headers({})
                 for k, v in headers.items():
-                    if isinstance(v, (bytes, unicode)):
+                    if isinstance(v, (bytes, six.text_type)):
                         h.addRawHeader(k, v)
                     elif isinstance(v, list):
                         h.setRawHeaders(k, v)
@@ -346,20 +334,20 @@ def _coerced_query_params(params):
     for key, values in items:
         if isinstance(key, bytes):
             key = key.decode('ascii')
-        elif not isinstance(key, unicode):
-            key = unicode(key)
+        elif not isinstance(key, six.text_type):
+            key = six.text_type(key)
         if not isinstance(values, (list, tuple)):
             values = [values]
         for value in values:
             if isinstance(value, bytes):
                 value = value.decode('ascii')
-            elif not isinstance(value, unicode):
-                value = unicode(value)
+            elif not isinstance(value, six.text_type):
+                value = six.text_type(value)
             yield key, value
 
 
 def _from_bytes(orig_bytes):
-    return FileBodyProducer(BytesIO(orig_bytes))
+    return FileBodyProducer(io.BytesIO(orig_bytes))
 
 
 def _from_file(orig_file):
@@ -375,14 +363,12 @@ def _guess_content_type(filename):
 
 
 registerAdapter(_from_bytes, bytes, IBodyProducer)
-registerAdapter(_from_file, BytesIO, IBodyProducer)
+registerAdapter(_from_file, io.BytesIO, IBodyProducer)
 
-if not _PY3:
-    from StringIO import StringIO
-    registerAdapter(_from_file, StringIO, IBodyProducer)
+if six.PY2:
+    registerAdapter(_from_file, six.StringIO, IBodyProducer)
     # Suppress lint failure on Python 3.
     registerAdapter(_from_file, file, IBodyProducer)  # noqa: F821
 else:
-    import io
     # file()/open() equiv on Py3
     registerAdapter(_from_file, io.BufferedReader, IBodyProducer)

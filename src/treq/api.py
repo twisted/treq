@@ -118,7 +118,7 @@ def request(method, url, **kwargs):
 
     :rtype: Deferred that fires with an IResponse provider.
 
-    .. versionchanged:: treq 20.9.0rc1
+    .. versionchanged:: treq 20.9.0
 
         The *url* param now accepts :class:`hyperlink.DecodedURL` and
         :class:`hyperlink.EncodedURL` objects.

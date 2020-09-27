@@ -15,6 +15,7 @@ Features
 --------
 
 - The *url* parameter of :meth:`HTTPClient.request()` (and shortcuts like :meth:`~HTTPClient.get()`) now accept :class:`hyperlink.DecodedURL` and :class:`hyperlink.URL` in addition to :class:`str` and :class:`bytes`. (`#212 <https://github.com/twisted/treq/issues/212>`__)
+- Compatibility with the upcoming Twisted 20.9.0 release (`#290 <https://github.com/twisted/treq/issues/290>`__).
 
 
 Improved Documentation

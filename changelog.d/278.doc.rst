@@ -1,1 +1,0 @@
-An example of sending and receiving JSON has been added.

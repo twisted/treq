@@ -38,6 +38,9 @@ from treq.response import _Response
 from requests.cookies import cookiejar_from_dict, merge_cookies
 
 
+_NOTHING = object()
+
+
 def urlencode(query, doseq):
     return six.ensure_binary(_urlencode(query, doseq), encoding='ascii')
 
@@ -153,7 +156,7 @@ class HTTPClient(object):
 
         # Join parameters provided in the URL
         # and the ones passed as argument.
-        params = kwargs.get('params')
+        params = kwargs.pop('params', None)
         if params:
             parsed_url = parsed_url.replace(
                 query=parsed_url.query + tuple(_coerced_query_params(params))
@@ -163,7 +166,7 @@ class HTTPClient(object):
 
         # Convert headers dictionary to
         # twisted raw headers format.
-        headers = kwargs.get('headers')
+        headers = kwargs.pop('headers', None)
         if headers:
             if isinstance(headers, dict):
                 h = Headers({})
@@ -177,48 +180,15 @@ class HTTPClient(object):
         else:
             headers = Headers({})
 
-        # Here we choose a right producer
-        # based on the parameters passed in.
-        bodyProducer = None
-        data = kwargs.get('data')
-        files = kwargs.get('files')
-        # since json=None needs to be serialized as 'null', we need to
-        # explicitly check kwargs for this key
-        has_json = 'json' in kwargs
+        bodyProducer, contentType = self._request_body(
+            data=kwargs.pop('data', _NOTHING),
+            files=kwargs.pop('files', _NOTHING),
+            json=kwargs.pop('json', _NOTHING),
+        )
+        if contentType is not None:
+            headers.setRawHeaders(b'Content-Type', [contentType])
 
-        if files:
-            # If the files keyword is present we will issue a
-            # multipart/form-data request as it suits better for cases
-            # with files and/or large objects.
-            files = list(_convert_files(files))
-            boundary = str(uuid.uuid4()).encode('ascii')
-            headers.setRawHeaders(
-                b'content-type', [
-                    b'multipart/form-data; boundary=' + boundary])
-            if data:
-                data = _convert_params(data)
-            else:
-                data = []
-
-            bodyProducer = multipart.MultiPartProducer(
-                data + files, boundary=boundary)
-        elif data:
-            # Otherwise stick to x-www-form-urlencoded format
-            # as it's generally faster for smaller requests.
-            if isinstance(data, (dict, list, tuple)):
-                headers.setRawHeaders(
-                    b'content-type', [b'application/x-www-form-urlencoded'])
-                data = urlencode(data, doseq=True)
-            bodyProducer = self._data_to_body_producer(data)
-        elif has_json:
-            # If data is sent as json, set Content-Type as 'application/json'
-            headers.setRawHeaders(
-                b'content-type', [b'application/json; charset=UTF-8'])
-            content = kwargs['json']
-            json = json_dumps(content, separators=(u',', u':')).encode('utf-8')
-            bodyProducer = self._data_to_body_producer(json)
-
-        cookies = kwargs.get('cookies', {})
+        cookies = kwargs.pop('cookies', {})
 
         if not isinstance(cookies, CookieJar):
             cookies = cookiejar_from_dict(cookies)
@@ -226,8 +196,9 @@ class HTTPClient(object):
         cookies = merge_cookies(self._cookiejar, cookies)
         wrapped_agent = CookieAgent(self._agent, cookies)
 
-        if kwargs.get('allow_redirects', True):
-            if kwargs.get('browser_like_redirects', False):
+        browser_like_redirects = kwargs.pop('browser_like_redirects', False)
+        if kwargs.pop('allow_redirects', True):
+            if browser_like_redirects:
                 wrapped_agent = BrowserLikeRedirectAgent(wrapped_agent)
             else:
                 wrapped_agent = RedirectAgent(wrapped_agent)
@@ -235,7 +206,7 @@ class HTTPClient(object):
         wrapped_agent = ContentDecoderAgent(wrapped_agent,
                                             [(b'gzip', GzipDecoder)])
 
-        auth = kwargs.get('auth')
+        auth = kwargs.pop('auth', None)
         if auth:
             wrapped_agent = add_auth(wrapped_agent, auth)
 
@@ -243,9 +214,10 @@ class HTTPClient(object):
             method, url, headers=headers,
             bodyProducer=bodyProducer)
 
-        timeout = kwargs.get('timeout')
+        reactor = kwargs.pop('reactor', None)
+        timeout = kwargs.pop('timeout', None)
         if timeout:
-            delayedCall = default_reactor(kwargs.get('reactor')).callLater(
+            delayedCall = default_reactor(reactor).callLater(
                 timeout, d.cancel)
 
             def gotResult(result):
@@ -255,10 +227,87 @@ class HTTPClient(object):
 
             d.addBoth(gotResult)
 
-        if not kwargs.get('unbuffered', False):
+        if not kwargs.pop('unbuffered', False):
             d.addCallback(_BufferedResponse)
 
         return d.addCallback(_Response, cookies)
+
+    def _request_body(self, data, files, json):
+        """
+        Here we choose a right producer based on the parameters passed in.
+
+        :params data:
+            Arbitrary request body data.
+
+            If *files* is also passed this must be a :class:`dict`,
+            a :class:`tuple` or :class:`list` of field tuples as accepted by
+            :class:`MultiPartProducer`. The request is assigned a Content-Type
+            of ``multipart/form-data``.
+
+            If a :class:`dict`, :class:`list`, or :class:`tuple` it is
+            URL-encoded and the request assigned a Content-Type of
+            ``application/x-www-form-urlencoded``.
+
+            Otherwise, any non-``None`` value is passed to the client's
+            *data_to_body_producer* callable (by default,
+            :class:`IBodyProducer`), which accepts file-like objects.
+
+        :params files:
+            Files to include in the request body, in any of the several formats
+            described in :func:`_convert_files()`.
+
+        :params json:
+            JSON-encodable data, or the sentinel `_NOTHING`.
+        """
+        # Not all combinations of keyword arguments are meaningful. These make
+        # sense:
+        #
+        # - files=...
+        # - data=...
+        # - files=... and data=...
+        # - json=...
+        #
+        # TODO: Deprecate passing json when files or data is passed, as it is
+        # ignored.
+
+        if files is not _NOTHING and files:
+            # If the files keyword is present we will issue a
+            # multipart/form-data request as it suits better for cases
+            # with files and/or large objects.
+            files = list(_convert_files(files))
+            boundary = str(uuid.uuid4()).encode('ascii')
+            if data is not _NOTHING and data:
+                data = _convert_params(data)
+            else:
+                data = []
+
+            return (
+                multipart.MultiPartProducer(data + files, boundary=boundary),
+                b'multipart/form-data; boundary=' + boundary,
+            )
+
+        # Otherwise stick to x-www-form-urlencoded format
+        # as it's generally faster for smaller requests.
+        if isinstance(data, (dict, list, tuple)):
+            return (
+                self._data_to_body_producer(urlencode(data, doseq=True)),
+                b'application/x-www-form-urlencoded',
+            )
+        elif data and data is not _NOTHING:
+            return (
+                self._data_to_body_producer(data),
+                None,
+            )
+
+        if json is not _NOTHING:
+            return (
+                self._data_to_body_producer(
+                    json_dumps(json, separators=(u',', u':')).encode('utf-8'),
+                ),
+                b'application/json; charset=UTF-8',
+            )
+
+        return None, None
 
 
 def _convert_params(params):

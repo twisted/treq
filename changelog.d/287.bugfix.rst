@@ -1,0 +1,2 @@
+treq request functions and methods like :func:`treq.get()` and :meth:`HTTPClient.post()` now issue a ``DeprecationWarning``.
+This will change to a ``TypeError`` in the next treq release.

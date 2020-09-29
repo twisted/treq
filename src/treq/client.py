@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import mimetypes
 import uuid
+import warnings
 
 import io
 
@@ -229,6 +230,17 @@ class HTTPClient(object):
 
         if not kwargs.pop('unbuffered', False):
             d.addCallback(_BufferedResponse)
+
+        if kwargs:
+            warnings.warn(
+                (
+                    "Got unexpected keyword argument: {}."
+                    " treq will ignore this argument,"
+                    " but will raise TypeError in the next treq release."
+                ).format(", ".join(repr(k) for k in kwargs)),
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
         return d.addCallback(_Response, cookies)
 

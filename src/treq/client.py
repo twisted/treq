@@ -107,36 +107,42 @@ class HTTPClient(object):
         """
         See :func:`treq.get()`.
         """
+        kwargs.setdefault('_stacklevel', 3)
         return self.request('GET', url, **kwargs)
 
     def put(self, url, data=None, **kwargs):
         """
         See :func:`treq.put()`.
         """
+        kwargs.setdefault('_stacklevel', 3)
         return self.request('PUT', url, data=data, **kwargs)
 
     def patch(self, url, data=None, **kwargs):
         """
         See :func:`treq.patch()`.
         """
+        kwargs.setdefault('_stacklevel', 3)
         return self.request('PATCH', url, data=data, **kwargs)
 
     def post(self, url, data=None, **kwargs):
         """
         See :func:`treq.post()`.
         """
+        kwargs.setdefault('_stacklevel', 3)
         return self.request('POST', url, data=data, **kwargs)
 
     def head(self, url, **kwargs):
         """
         See :func:`treq.head()`.
         """
+        kwargs.setdefault('_stacklevel', 3)
         return self.request('HEAD', url, **kwargs)
 
     def delete(self, url, **kwargs):
         """
         See :func:`treq.delete()`.
         """
+        kwargs.setdefault('_stacklevel', 3)
         return self.request('DELETE', url, **kwargs)
 
     def request(self, method, url, **kwargs):
@@ -144,6 +150,7 @@ class HTTPClient(object):
         See :func:`treq.request()`.
         """
         method = method.encode('ascii').upper()
+        stacklevel = kwargs.pop('_stacklevel', 2)
 
         if isinstance(url, DecodedURL):
             parsed_url = url
@@ -184,6 +191,7 @@ class HTTPClient(object):
             data=kwargs.pop('data', None),
             files=kwargs.pop('files', None),
             json=kwargs.pop('json', _NOTHING),
+            stacklevel=stacklevel,
         )
         if contentType is not None:
             headers.setRawHeaders(b'Content-Type', [contentType])
@@ -239,12 +247,12 @@ class HTTPClient(object):
                     " but will raise TypeError in the next treq release."
                 ).format(", ".join(repr(k) for k in kwargs)),
                 DeprecationWarning,
-                stacklevel=2,
+                stacklevel=stacklevel,
             )
 
         return d.addCallback(_Response, cookies)
 
-    def _request_body(self, data, files, json):
+    def _request_body(self, data, files, json, stacklevel):
         """
         Here we choose a right producer based on the parameters passed in.
 
@@ -278,7 +286,8 @@ class HTTPClient(object):
                     "Argument 'json' will be ignored because '{}' was also passed."
                     " This will raise TypeError in the next treq release."
                 ).format("data" if data else "files"),
-                stacklevel=3,
+                DeprecationWarning,
+                stacklevel=stacklevel + 1,
             )
 
         if files:

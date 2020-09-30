@@ -473,6 +473,7 @@ class HTTPClientTests(TestCase):
         )
 
         [w] = self.flushWarnings([self.test_request_json_with_data])
+        self.assertEqual(DeprecationWarning, w["category"])
         self.assertEqual(
             (
                 "Argument 'json' will be ignored because 'data' was also passed."
@@ -494,6 +495,7 @@ class HTTPClientTests(TestCase):
         )
 
         [w] = self.flushWarnings([self.test_request_json_with_files])
+        self.assertEqual(DeprecationWarning, w["category"])
         self.assertEqual(
             (
                 "Argument 'json' will be ignored because 'files' was also passed."

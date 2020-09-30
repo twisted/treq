@@ -11,7 +11,7 @@ def head(url, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).head(url, **kwargs)
+    return _client(kwargs).head(url, _stacklevel=4, **kwargs)
 
 
 def get(url, headers=None, **kwargs):
@@ -20,7 +20,7 @@ def get(url, headers=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).get(url, headers=headers, **kwargs)
+    return _client(kwargs).get(url, headers=headers, _stacklevel=4, **kwargs)
 
 
 def post(url, data=None, **kwargs):
@@ -29,7 +29,7 @@ def post(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).post(url, data=data, **kwargs)
+    return _client(kwargs).post(url, data=data, _stacklevel=4, **kwargs)
 
 
 def put(url, data=None, **kwargs):
@@ -38,7 +38,7 @@ def put(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).put(url, data=data, **kwargs)
+    return _client(kwargs).put(url, data=data, _stacklevel=4, **kwargs)
 
 
 def patch(url, data=None, **kwargs):
@@ -47,7 +47,7 @@ def patch(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).patch(url, data=data, **kwargs)
+    return _client(kwargs).patch(url, data=data, _stacklevel=4, **kwargs)
 
 
 def delete(url, **kwargs):
@@ -56,7 +56,7 @@ def delete(url, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).delete(url, **kwargs)
+    return _client(kwargs).delete(url, _stacklevel=4, **kwargs)
 
 
 def request(method, url, **kwargs):
@@ -122,7 +122,7 @@ def request(method, url, **kwargs):
         The *url* param now accepts :class:`hyperlink.DecodedURL` and
         :class:`hyperlink.EncodedURL` objects.
     """
-    return _client(kwargs).request(method, url, **kwargs)
+    return _client(kwargs).request(method, url, _stacklevel=3, **kwargs)
 
 
 #
@@ -153,7 +153,7 @@ def set_global_pool(pool):
 
 def default_pool(reactor, pool, persistent):
     """
-    Return the specified pool or a a pool with the specified reactor and
+    Return the specified pool or a pool with the specified reactor and
     persistence.
     """
     reactor = default_reactor(reactor)
@@ -171,11 +171,12 @@ def default_pool(reactor, pool, persistent):
 
 
 def _client(kwargs):
-    agent = kwargs.get('agent')
+    agent = kwargs.pop("agent", None)
+    reactor = kwargs.pop("reactor", None)
+    pool = kwargs.pop("pool", None)
+    persistent = kwargs.pop("persistent", None)
     if agent is None:
-        reactor = default_reactor(kwargs.get('reactor'))
-        pool = default_pool(reactor,
-                            kwargs.get('pool'),
-                            kwargs.get('persistent'))
+        reactor = default_reactor(reactor)
+        pool = default_pool(reactor, pool, persistent)
         agent = Agent(reactor, pool=pool)
     return HTTPClient(agent)

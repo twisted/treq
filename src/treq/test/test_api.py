@@ -107,6 +107,7 @@ class TreqAPITests(TestCase):
         )
 
         [w] = self.flushWarnings([self.test_request_invalid_param])
+        self.assertEqual(DeprecationWarning, w["category"])
         self.assertEqual(
             (
                 "Got unexpected keyword argument: 'invalid'."
@@ -133,6 +134,7 @@ class TreqAPITests(TestCase):
         )
 
         [w] = self.flushWarnings([self.test_post_json_with_data])
+        self.assertEqual(DeprecationWarning, w["category"])
         self.assertEqual(
             (
                 "Argument 'json' will be ignored because 'data' was also passed."

@@ -522,7 +522,7 @@ class HTTPClientTests(TestCase):
         `HTTPClient.request()` warns that invalid parameters are ignored and
         that this is deprecated.
         """
-        self.client.request('GET', 'http://example.com', invalid=True)
+        self.client.request('GET', b'http://example.com', invalid=True)
 
         [w] = self.flushWarnings([self.test_request_invalid_param])
         self.assertEqual(

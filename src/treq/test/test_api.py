@@ -89,6 +89,58 @@ class TreqAPITests(TestCase):
         self.assertNoResult(d)
         self.assertEqual(1, custom_agent.requests)
 
+    def test_request_invalid_param(self):
+        """
+        `treq.request()` warns that it ignores unknown keyword arguments, but
+        this is deprecated.
+
+        This test verifies that stacklevel is set appropriately when issuing
+        the warning.
+        """
+        self.failureResultOf(
+            treq.request(
+                "GET",
+                "https://foo.bar",
+                invalid=True,
+                pool=SyntacticAbominationHTTPConnectionPool(),
+            )
+        )
+
+        [w] = self.flushWarnings([self.test_request_invalid_param])
+        self.assertEqual(
+            (
+                "Got unexpected keyword argument: 'invalid'."
+                " treq will ignore this argument,"
+                " but will raise TypeError in the next treq release."
+            ),
+            w["message"],
+        )
+
+    def test_post_json_with_data(self):
+        """
+        `treq.post()` warns that mixing *data* and *json* is deprecated.
+
+        This test verifies that stacklevel is set appropriately when issuing
+        the warning.
+        """
+        self.failureResultOf(
+            treq.post(
+                "https://test.example/",
+                data={"hello": "world"},
+                json={"goodnight": "moon"},
+                pool=SyntacticAbominationHTTPConnectionPool(),
+            )
+        )
+
+        [w] = self.flushWarnings([self.test_post_json_with_data])
+        self.assertEqual(
+            (
+                "Argument 'json' will be ignored because 'data' was also passed."
+                " This will raise TypeError in the next treq release."
+            ),
+            w["message"],
+        )
+
 
 class DefaultReactorTests(TestCase):
     """

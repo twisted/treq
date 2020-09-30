@@ -8,6 +8,22 @@ Changelog
 
 .. towncrier release notes start
 
+20.9.0 (2020-09-27)
+===================
+
+Features
+--------
+
+- The *url* parameter of :meth:`HTTPClient.request()` (and shortcuts like :meth:`~HTTPClient.get()`) now accept :class:`hyperlink.DecodedURL` and :class:`hyperlink.URL` in addition to :class:`str` and :class:`bytes`. (`#212 <https://github.com/twisted/treq/issues/212>`__)
+- Compatibility with the upcoming Twisted 20.9.0 release (`#290 <https://github.com/twisted/treq/issues/290>`__).
+
+
+Improved Documentation
+----------------------
+
+- An example of sending and receiving JSON has been added. (`#278 <https://github.com/twisted/treq/issues/278>`__)
+
+
 20.4.1 (2020-04-16)
 ===================
 

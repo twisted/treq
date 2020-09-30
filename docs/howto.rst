@@ -58,6 +58,22 @@ or a ``list`` of ``str`` values.
 
 Full example: :download:`query_params.py <examples/query_params.py>`
 
+JSON
+----
+
+:meth:`HTTPClient.request() <treq.client.HTTPClient.request>` supports a *json* keyword argument that gives a data structure to serialize as JSON (using :func:`json.dumps()`).
+This also implies a ``Content-Type: application/json`` request header.
+The *json* parameter is mutually-exclusive with *data*.
+
+The :meth:`_Response.json()` method decodes a JSON response body.
+It buffers the whole response and decodes it with :func:`json.loads()`.
+
+.. literalinclude:: examples/json_post.py
+    :linenos:
+    :pyobject: main
+
+Full example: :download:`json_post.py <examples/json_post.py>`
+
 Auth
 ----
 

@@ -172,11 +172,12 @@ def default_pool(reactor, pool, persistent):
 
 def _client(kwargs):
     agent = kwargs.pop("agent", None)
-    reactor = kwargs.pop("reactor", None)
     pool = kwargs.pop("pool", None)
     persistent = kwargs.pop("persistent", None)
     if agent is None:
-        reactor = default_reactor(reactor)
+        # "reactor" isn't removed from kwargs because it must also be passed
+        # down for use in the timeout logic.
+        reactor = default_reactor(kwargs.get("reactor"))
         pool = default_pool(reactor, pool, persistent)
         agent = Agent(reactor, pool=pool)
     return HTTPClient(agent)

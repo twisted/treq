@@ -173,19 +173,7 @@ class HTTPClient(object):
 
         # Convert headers dictionary to
         # twisted raw headers format.
-        headers = kwargs.pop('headers', None)
-        if headers:
-            if isinstance(headers, dict):
-                h = Headers({})
-                for k, v in headers.items():
-                    if isinstance(v, (bytes, six.text_type)):
-                        h.addRawHeader(k, v)
-                    elif isinstance(v, list):
-                        h.setRawHeaders(k, v)
-
-                headers = h
-        else:
-            headers = Headers({})
+        headers = self._request_headers(kwargs.pop('headers', None), stacklevel)
 
         bodyProducer, contentType = self._request_body(
             data=kwargs.pop('data', None),
@@ -251,6 +239,24 @@ class HTTPClient(object):
             )
 
         return d.addCallback(_Response, cookies)
+
+    def _request_headers(self, headers, stacklevel):
+        """
+        Convert the *headers* argument to a :class:`Headers` instance
+        """
+        if headers:
+            if isinstance(headers, dict):
+                h = Headers({})
+                for k, v in headers.items():
+                    if isinstance(v, (bytes, six.text_type)):
+                        h.addRawHeader(k, v)
+                    elif isinstance(v, list):
+                        h.setRawHeaders(k, v)
+
+                headers = h
+        else:
+            headers = Headers({})
+        return headers
 
     def _request_body(self, data, files, json, stacklevel):
         """

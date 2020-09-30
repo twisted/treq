@@ -182,8 +182,8 @@ class HTTPClient(object):
             headers = Headers({})
 
         bodyProducer, contentType = self._request_body(
-            data=kwargs.pop('data', _NOTHING),
-            files=kwargs.pop('files', _NOTHING),
+            data=kwargs.pop('data', None),
+            files=kwargs.pop('files', None),
             json=kwargs.pop('json', _NOTHING),
         )
         if contentType is not None:
@@ -269,26 +269,25 @@ class HTTPClient(object):
             described in :func:`_convert_files()`.
 
         :params json:
-            JSON-encodable data, or the sentinel `_NOTHING`.
+            JSON-encodable data, or the sentinel `_NOTHING`. The sentinel is
+            necessary because ``None`` is a valid JSON value.
         """
-        # Not all combinations of keyword arguments are meaningful. These make
-        # sense:
-        #
-        # - files=...
-        # - data=...
-        # - files=... and data=...
-        # - json=...
-        #
-        # TODO: Deprecate passing json when files or data is passed, as it is
-        # ignored.
+        if json is not _NOTHING and (files or data):
+            warnings.warn(
+                (
+                    "Argument 'json' will be ignored because '{}' was also passed."
+                    " This will raise TypeError in the next treq release."
+                ).format("data" if data else "files"),
+                stacklevel=3,
+            )
 
-        if files is not _NOTHING and files:
+        if files:
             # If the files keyword is present we will issue a
             # multipart/form-data request as it suits better for cases
             # with files and/or large objects.
             files = list(_convert_files(files))
             boundary = str(uuid.uuid4()).encode('ascii')
-            if data is not _NOTHING and data:
+            if data:
                 data = _convert_params(data)
             else:
                 data = []
@@ -305,7 +304,7 @@ class HTTPClient(object):
                 self._data_to_body_producer(urlencode(data, doseq=True)),
                 b'application/x-www-form-urlencoded',
             )
-        elif data and data is not _NOTHING:
+        elif data:
             return (
                 self._data_to_body_producer(data),
                 None,

@@ -460,6 +460,48 @@ class HTTPClientTests(TestCase):
                           data=BytesIO(b"yo"),
                           files={"file1": BytesIO(b"hey")})
 
+    def test_request_json_with_data(self):
+        """
+        Passing `HTTPClient.request()` both *data* and *json* parameters is
+        invalid because *json* is ignored. This behavior is deprecated.
+        """
+        self.client.request(
+            "POST",
+            "http://example.com/",
+            data=BytesIO(b"..."),
+            json=None,  # NB: None is a valid value. It encodes to b'null'.
+        )
+
+        [w] = self.flushWarnings([self.test_request_json_with_data])
+        self.assertEqual(
+            (
+                "Argument 'json' will be ignored because 'data' was also passed."
+                " This will raise TypeError in the next treq release."
+            ),
+            w['message'],
+        )
+
+    def test_request_json_with_files(self):
+        """
+        Passing `HTTPClient.request()` both *files* and *json* parameters is
+        invalid because *json* is ignored. This behavior is deprecated.
+        """
+        self.client.request(
+            "POST",
+            "http://example.com/",
+            files={"f1": ("foo.txt", "text/plain", BytesIO(b"...\n"))},
+            json=["this is ignored"],
+        )
+
+        [w] = self.flushWarnings([self.test_request_json_with_files])
+        self.assertEqual(
+            (
+                "Argument 'json' will be ignored because 'files' was also passed."
+                " This will raise TypeError in the next treq release."
+            ),
+            w['message'],
+        )
+
     def test_request_dict_headers(self):
         self.client.request('GET', 'http://example.com/', headers={
             'User-Agent': 'treq/0.1dev',

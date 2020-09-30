@@ -2,10 +2,12 @@ from __future__ import absolute_import, division
 
 import mock
 
+from twisted.web.client import HTTPConnectionPool
 from twisted.trial.unittest import TestCase
+from twisted.internet.testing import MemoryReactorClock
 
 import treq
-from treq.api import default_reactor, default_pool, set_global_pool
+from treq.api import default_reactor, default_pool, set_global_pool, get_global_pool
 
 
 class TreqAPITests(TestCase):
@@ -68,61 +70,80 @@ class DefaultReactorTests(TestCase):
 
 
 class DefaultPoolTests(TestCase):
+    """
+    Test `treq.api.default_pool`.
+    """
     def setUp(self):
         set_global_pool(None)
-
-        pool_patcher = mock.patch('treq.api.HTTPConnectionPool')
-
-        self.HTTPConnectionPool = pool_patcher.start()
-        self.addCleanup(pool_patcher.stop)
-
-        self.reactor = mock.Mock()
+        self.reactor = MemoryReactorClock()
 
     def test_persistent_false(self):
-        self.assertEqual(
-            default_pool(self.reactor, None, False),
-            self.HTTPConnectionPool.return_value
-        )
+        """
+        When *persistent=False* is passed a non-persistent pool is created.
+        """
+        pool = default_pool(self.reactor, None, False)
 
-        self.HTTPConnectionPool.assert_called_once_with(
-            self.reactor, persistent=False
-        )
+        self.assertTrue(isinstance(pool, HTTPConnectionPool))
+        self.assertFalse(pool.persistent)
+
+    def test_persistent_false_not_stored(self):
+        """
+        When *persistent=False* is passed the resulting pool is not stored as
+        the global pool.
+        """
+        pool = default_pool(self.reactor, None, persistent=False)
+
+        self.assertIsNot(pool, get_global_pool())
+
+    def test_persistent_false_new(self):
+        """
+        When *persistent=False* is passed a new pool is returned each time.
+        """
+        pool1 = default_pool(self.reactor, None, persistent=False)
+        pool2 = default_pool(self.reactor, None, persistent=False)
+
+        self.assertIsNot(pool1, pool2)
 
     def test_pool_none_persistent_none(self):
-        self.assertEqual(
-            default_pool(self.reactor, None, None),
-            self.HTTPConnectionPool.return_value
-        )
+        """
+        When *persistent=None* is passed a _persistent_ pool is created for
+        backwards compatibility.
+        """
+        pool = default_pool(self.reactor, None, None)
 
-        self.HTTPConnectionPool.assert_called_once_with(
-            self.reactor, persistent=True
-        )
+        self.assertTrue(pool.persistent)
 
     def test_pool_none_persistent_true(self):
-        self.assertEqual(
-            default_pool(self.reactor, None, True),
-            self.HTTPConnectionPool.return_value
-        )
+        """
+        When *persistent=True* is passed a persistent pool is created and
+        stored as the global pool.
+        """
+        pool = default_pool(self.reactor, None, True)
 
-        self.HTTPConnectionPool.assert_called_once_with(
-            self.reactor, persistent=True
-        )
+        self.assertTrue(isinstance(pool, HTTPConnectionPool))
+        self.assertTrue(pool.persistent)
 
     def test_cached_global_pool(self):
+        """
+        When *persistent=True* or *persistent=None* is passed the pool created
+        is cached as the global pool.
+        """
         pool1 = default_pool(self.reactor, None, None)
-
-        self.HTTPConnectionPool.return_value = mock.Mock()
-
         pool2 = default_pool(self.reactor, None, True)
 
         self.assertEqual(pool1, pool2)
 
     def test_specified_pool(self):
-        pool = mock.Mock()
+        """
+        When the user passes a pool it is returned directly. The *persistent*
+        argument is ignored. It is not cached as the global pool.
+        """
+        user_pool = HTTPConnectionPool(self.reactor, persistent=True)
+        pool1 = default_pool(self.reactor, user_pool, None)
+        pool2 = default_pool(self.reactor, user_pool, True)
+        pool3 = default_pool(self.reactor, user_pool, False)
 
-        self.assertEqual(
-            default_pool(self.reactor, pool, None),
-            pool
-        )
-
-        self.HTTPConnectionPool.assert_not_called()
+        self.assertIs(pool1, user_pool)
+        self.assertIs(pool2, user_pool)
+        self.assertIs(pool3, user_pool)
+        self.assertIsNot(get_global_pool(), user_pool)

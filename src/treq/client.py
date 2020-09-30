@@ -32,7 +32,6 @@ from twisted.web.client import (
 from twisted.python.components import registerAdapter
 from json import dumps as json_dumps
 
-from treq._utils import default_reactor
 from treq.auth import add_auth
 from treq import multipart
 from treq.response import _Response
@@ -216,10 +215,11 @@ class HTTPClient(object):
             bodyProducer=bodyProducer)
 
         reactor = kwargs.pop('reactor', None)
+        if reactor is None:
+            from twisted.internet import reactor
         timeout = kwargs.pop('timeout', None)
         if timeout:
-            delayedCall = default_reactor(reactor).callLater(
-                timeout, d.cancel)
+            delayedCall = reactor.callLater(timeout, d.cancel)
 
             def gotResult(result):
                 if delayedCall.active():

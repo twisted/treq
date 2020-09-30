@@ -12,7 +12,7 @@ def head(url, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).head(url, **kwargs)
+    return _client(kwargs).head(url, **kwargs)
 
 
 def get(url, headers=None, **kwargs):
@@ -21,7 +21,7 @@ def get(url, headers=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).get(url, headers=headers, **kwargs)
+    return _client(kwargs).get(url, headers=headers, **kwargs)
 
 
 def post(url, data=None, **kwargs):
@@ -30,7 +30,7 @@ def post(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).post(url, data=data, **kwargs)
+    return _client(kwargs).post(url, data=data, **kwargs)
 
 
 def put(url, data=None, **kwargs):
@@ -39,7 +39,7 @@ def put(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).put(url, data=data, **kwargs)
+    return _client(kwargs).put(url, data=data, **kwargs)
 
 
 def patch(url, data=None, **kwargs):
@@ -48,7 +48,7 @@ def patch(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).patch(url, data=data, **kwargs)
+    return _client(kwargs).patch(url, data=data, **kwargs)
 
 
 def delete(url, **kwargs):
@@ -57,7 +57,7 @@ def delete(url, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).delete(url, **kwargs)
+    return _client(kwargs).delete(url, **kwargs)
 
 
 def request(method, url, **kwargs):
@@ -123,14 +123,14 @@ def request(method, url, **kwargs):
         The *url* param now accepts :class:`hyperlink.DecodedURL` and
         :class:`hyperlink.EncodedURL` objects.
     """
-    return _client(**kwargs).request(method, url, **kwargs)
+    return _client(kwargs).request(method, url, **kwargs)
 
 
 #
 # Private API
 #
 
-def _client(**kwargs):
+def _client(kwargs):
     agent = kwargs.get('agent')
     if agent is None:
         reactor = default_reactor(kwargs.get('reactor'))

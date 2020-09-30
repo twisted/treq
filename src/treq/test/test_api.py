@@ -59,12 +59,21 @@ class TreqAPITests(TestCase):
 
 
 class DefaultReactorTests(TestCase):
+    """
+    Test `treq.api.default_reactor()`
+    """
     def test_passes_reactor(self):
-        mock_reactor = mock.Mock()
+        """
+        `default_reactor()` returns any reactor passed.
+        """
+        reactor = MemoryReactorClock()
 
-        self.assertEqual(default_reactor(mock_reactor), mock_reactor)
+        self.assertIs(default_reactor(reactor), reactor)
 
     def test_uses_default_reactor(self):
+        """
+        `default_reactor()` returns the global reactor when passed ``None``.
+        """
         from twisted.internet import reactor
         self.assertEqual(default_reactor(None), reactor)
 

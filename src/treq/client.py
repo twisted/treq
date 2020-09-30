@@ -298,6 +298,17 @@ def _convert_files(files):
                 file_name, fobj = val
             elif len(val) == 3:
                 file_name, content_type, fobj = val
+            else:
+                # NB: This is TypeError for backward compatibility. This case
+                # used to fall through to `IBodyProducer`, below, which raised
+                # TypeError about being unable to coerce None.
+                raise TypeError(
+                    (
+                        "Files must given as tuples of the form (file_name, file_obj)"
+                        " or (file_name, content_type, file_obj), but the {!r} tuple"
+                        " has length {}: {!r}"
+                    ).format(param, len(val), val),
+                )
         else:
             fobj = val
             if hasattr(fobj, "name"):
@@ -306,6 +317,7 @@ def _convert_files(files):
         if not content_type:
             content_type = _guess_content_type(file_name)
 
+        # XXX: Shouldn't this call self._data_to_body_producer?
         yield (param, (file_name, content_type, IBodyProducer(fobj)))
 
 

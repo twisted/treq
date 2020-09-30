@@ -130,7 +130,7 @@ def request(method, url, **kwargs):
 # Private API
 #
 
-def _client(*args, **kwargs):
+def _client(**kwargs):
     agent = kwargs.get('agent')
     if agent is None:
         reactor = default_reactor(kwargs.get('reactor'))

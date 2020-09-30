@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+from collections import OrderedDict
 from io import BytesIO
 
 import mock
@@ -516,6 +517,54 @@ class HTTPClientTests(TestCase):
                      b'accept-encoding': [b'gzip'],
                      b'Accept': [b'application/json', b'text/plain']}),
             None)
+
+    def test_request_headers_invalid_type(self):
+        """
+        `HTTPClient.request()` warns that headers of an unexpected type are
+        invalid and that this behavior is deprecated.
+        """
+        self.client.request('GET', 'http://example.com', headers=[])
+
+        [w] = self.flushWarnings([self.test_request_headers_invalid_type])
+        self.assertEqual(DeprecationWarning, w['category'])
+        self.assertEqual(
+            (
+                "headers must be a dict, twisted.web.http_headers.Headers, or None,"
+                " but found <class 'list'>, which will be ignored. This will raise"
+                " TypeError in the next treq release."
+            ),
+            w['message'],
+        )
+
+    def test_request_dict_headers_invalid_values(self):
+        """
+        `HTTPClient.request()` warns that non-string header values are dropped
+        and that this behavior is deprecated.
+        """
+        self.client.request('GET', 'http://example.com', headers=OrderedDict([
+            ('none', None),
+            ('one', 1),
+        ]))
+
+        [w1, w2] = self.flushWarnings([self.test_request_dict_headers_invalid_values])
+        self.assertEqual(DeprecationWarning, w1['category'])
+        self.assertEqual(DeprecationWarning, w2['category'])
+        self.assertEqual(
+            (
+                "The value of headers key 'none' has non-string type"
+                " <class 'NoneType'> and will be dropped. This will raise TypeError"
+                " in the next treq release."
+            ),
+            w1['message'],
+        )
+        self.assertEqual(
+            (
+                "The value of headers key 'one' has non-string type"
+                " <class 'int'> and will be dropped. This will raise TypeError"
+                " in the next treq release."
+            ),
+            w2['message'],
+        )
 
     def test_request_invalid_param(self):
         """

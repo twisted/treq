@@ -16,6 +16,7 @@ class SyntacticAbominationHTTPConnectionPool(object):
     A HTTP connection pool that always fails to return a connection,
     but counts the number of requests made.
     """
+
     requests = 0
 
     def getConnection(self, key, endpoint):
@@ -34,7 +35,7 @@ class TreqAPITests(TestCase):
         pool = SyntacticAbominationHTTPConnectionPool()
         set_global_pool(pool)
 
-        d = treq.get('http://test.com')
+        d = treq.get("http://test.com")
 
         self.assertEqual(pool.requests, 1)
         self.failureResultOf(d, TabError)
@@ -45,7 +46,7 @@ class TreqAPITests(TestCase):
         pool, which is used for all subsequent requests.
         """
         pool = SyntacticAbominationHTTPConnectionPool()
-        self.patch(treq.api, 'HTTPConnectionPool', lambda reactor, persistent: pool)
+        self.patch(treq.api, "HTTPConnectionPool", lambda reactor, persistent: pool)
 
         self.failureResultOf(treq.head("http://test.com"), TabError)
         self.failureResultOf(treq.get("http://test.com"), TabError)
@@ -63,7 +64,7 @@ class TreqAPITests(TestCase):
         """
         pool = SyntacticAbominationHTTPConnectionPool()
 
-        d = treq.post('http://foo', data=b'bar', pool=pool)
+        d = treq.post("http://foo", data=b"bar", pool=pool)
 
         self.assertEqual(pool.requests, 1)
         self.failureResultOf(d, TabError)
@@ -73,6 +74,7 @@ class TreqAPITests(TestCase):
         """
         A custom Agent is used if specified.
         """
+
         @implementer(IAgent)
         class CounterAgent(object):
             requests = 0
@@ -82,7 +84,7 @@ class TreqAPITests(TestCase):
                 return defer.Deferred()
 
         custom_agent = CounterAgent()
-        d = treq.get('https://www.example.org/', agent=custom_agent)
+        d = treq.get("https://www.example.org/", agent=custom_agent)
 
         self.assertNoResult(d)
         self.assertEqual(1, custom_agent.requests)
@@ -92,6 +94,7 @@ class DefaultReactorTests(TestCase):
     """
     Test `treq.api.default_reactor()`
     """
+
     def test_passes_reactor(self):
         """
         `default_reactor()` returns any reactor passed.
@@ -105,6 +108,7 @@ class DefaultReactorTests(TestCase):
         `default_reactor()` returns the global reactor when passed ``None``.
         """
         from twisted.internet import reactor
+
         self.assertEqual(default_reactor(None), reactor)
 
 
@@ -112,6 +116,7 @@ class DefaultPoolTests(TestCase):
     """
     Test `treq.api.default_pool`.
     """
+
     def setUp(self):
         set_global_pool(None)
         self.reactor = MemoryReactorClock()

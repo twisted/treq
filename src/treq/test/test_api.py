@@ -4,11 +4,15 @@ from twisted.web.iweb import IAgent
 from twisted.web.client import HTTPConnectionPool
 from twisted.trial.unittest import TestCase
 from twisted.internet import defer
-from twisted.internet.testing import MemoryReactorClock
 from zope.interface import implementer
 
 import treq
 from treq.api import default_reactor, default_pool, set_global_pool, get_global_pool
+
+try:
+    from twisted.internet.testing import MemoryReactorClock
+except ImportError:
+    from twisted.test.proto_helpers import MemoryReactorClock
 
 
 class SyntacticAbominationHTTPConnectionPool(object):

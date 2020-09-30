@@ -1,61 +1,91 @@
 from __future__ import absolute_import, division
 
-import mock
-
+from twisted.web.iweb import IAgent
 from twisted.web.client import HTTPConnectionPool
 from twisted.trial.unittest import TestCase
+from twisted.internet import defer
 from twisted.internet.testing import MemoryReactorClock
+from zope.interface import implementer
 
 import treq
 from treq.api import default_reactor, default_pool, set_global_pool, get_global_pool
 
 
+class SyntacticAbominationHTTPConnectionPool(object):
+    """
+    A HTTP connection pool that always fails to return a connection,
+    but counts the number of requests made.
+    """
+    requests = 0
+
+    def getConnection(self, key, endpoint):
+        """
+        Count each request, then fail with `IndentationError`.
+        """
+        self.requests += 1
+        return defer.fail(TabError())
+
+
 class TreqAPITests(TestCase):
-    def setUp(self):
-        set_global_pool(None)
-
-        agent_patcher = mock.patch('treq.api.Agent')
-        self.Agent = agent_patcher.start()
-        self.addCleanup(agent_patcher.stop)
-
-        client_patcher = mock.patch('treq.api.HTTPClient')
-        self.HTTPClient = client_patcher.start()
-        self.addCleanup(client_patcher.stop)
-
-        pool_patcher = mock.patch('treq.api.HTTPConnectionPool')
-        self.HTTPConnectionPool = pool_patcher.start()
-        self.addCleanup(pool_patcher.stop)
-
-        self.client = self.HTTPClient.return_value
-
     def test_default_pool(self):
-        resp = treq.get('http://test.com')
+        """
+        The module-level API uses the global connection pool by default.
+        """
+        pool = SyntacticAbominationHTTPConnectionPool()
+        set_global_pool(pool)
 
-        self.Agent.assert_called_once_with(
-            mock.ANY,
-            pool=self.HTTPConnectionPool.return_value
-        )
+        d = treq.get('http://test.com')
 
-        self.assertEqual(self.client.get.return_value, resp)
+        self.assertEqual(pool.requests, 1)
+        self.failureResultOf(d, TabError)
 
     def test_cached_pool(self):
-        pool = self.HTTPConnectionPool.return_value
+        """
+        The first use of the module-level API populates the global connection
+        pool, which is used for all subsequent requests.
+        """
+        pool = SyntacticAbominationHTTPConnectionPool()
+        self.patch(treq.api, 'HTTPConnectionPool', lambda reactor, persistent: pool)
 
-        treq.get('http://test.com')
+        self.failureResultOf(treq.head("http://test.com"), TabError)
+        self.failureResultOf(treq.get("http://test.com"), TabError)
+        self.failureResultOf(treq.post("http://test.com"), TabError)
+        self.failureResultOf(treq.put("http://test.com"), TabError)
+        self.failureResultOf(treq.delete("http://test.com"), TabError)
+        self.failureResultOf(treq.request("OPTIONS", "http://test.com"), TabError)
 
-        self.HTTPConnectionPool.return_value = mock.Mock()
+        self.assertEqual(pool.requests, 6)
 
-        treq.get('http://test.com')
+    def test_custom_pool(self):
+        """
+        `treq.post()` accepts a *pool* argument to use for the request. The
+        global pool is unaffected.
+        """
+        pool = SyntacticAbominationHTTPConnectionPool()
 
-        self.Agent.assert_called_with(mock.ANY, pool=pool)
+        d = treq.post('http://foo', data=b'bar', pool=pool)
+
+        self.assertEqual(pool.requests, 1)
+        self.failureResultOf(d, TabError)
+        self.assertIsNot(pool, get_global_pool())
 
     def test_custom_agent(self):
         """
         A custom Agent is used if specified.
         """
-        custom_agent = mock.Mock()
-        treq.get('https://www.example.org/', agent=custom_agent)
-        self.HTTPClient.assert_called_once_with(custom_agent)
+        @implementer(IAgent)
+        class CounterAgent(object):
+            requests = 0
+
+            def request(self, method, uri, headers=None, bodyProducer=None):
+                self.requests += 1
+                return defer.Deferred()
+
+        custom_agent = CounterAgent()
+        d = treq.get('https://www.example.org/', agent=custom_agent)
+
+        self.assertNoResult(d)
+        self.assertEqual(1, custom_agent.requests)
 
 
 class DefaultReactorTests(TestCase):

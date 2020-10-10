@@ -527,12 +527,8 @@ class HTTPClientTests(TestCase):
 
         [w] = self.flushWarnings([self.test_request_headers_invalid_type])
         self.assertEqual(DeprecationWarning, w['category'])
-        self.assertEqual(
-            (
-                "headers must be a dict, twisted.web.http_headers.Headers, or None,"
-                " but found <class 'list'>, which will be ignored. This will raise"
-                " TypeError in the next treq release."
-            ),
+        self.assertIn(
+            "headers must be a dict, twisted.web.http_headers.Headers, or None,",
             w['message'],
         )
 
@@ -544,25 +540,18 @@ class HTTPClientTests(TestCase):
         self.client.request('GET', 'http://example.com', headers=OrderedDict([
             ('none', None),
             ('one', 1),
+            ('ok', 'string'),
         ]))
 
         [w1, w2] = self.flushWarnings([self.test_request_dict_headers_invalid_values])
         self.assertEqual(DeprecationWarning, w1['category'])
         self.assertEqual(DeprecationWarning, w2['category'])
-        self.assertEqual(
-            (
-                "The value of headers key 'none' has non-string type"
-                " <class 'NoneType'> and will be dropped. This will raise TypeError"
-                " in the next treq release."
-            ),
+        self.assertIn(
+            "The value of headers key 'none' has non-string type",
             w1['message'],
         )
-        self.assertEqual(
-            (
-                "The value of headers key 'one' has non-string type"
-                " <class 'int'> and will be dropped. This will raise TypeError"
-                " in the next treq release."
-            ),
+        self.assertIn(
+            "The value of headers key 'one' has non-string type",
             w2['message'],
         )
 

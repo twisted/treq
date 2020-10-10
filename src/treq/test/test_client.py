@@ -486,6 +486,50 @@ class HTTPClientTests(TestCase):
                           data=BytesIO(b"yo"),
                           files={"file1": BytesIO(b"hey")})
 
+    def test_request_json_with_data(self):
+        """
+        Passing `HTTPClient.request()` both *data* and *json* parameters is
+        invalid because *json* is ignored. This behavior is deprecated.
+        """
+        self.client.request(
+            "POST",
+            "http://example.com/",
+            data=BytesIO(b"..."),
+            json=None,  # NB: None is a valid value. It encodes to b'null'.
+        )
+
+        [w] = self.flushWarnings([self.test_request_json_with_data])
+        self.assertEqual(DeprecationWarning, w["category"])
+        self.assertEqual(
+            (
+                "Argument 'json' will be ignored because 'data' was also passed."
+                " This will raise TypeError in the next treq release."
+            ),
+            w['message'],
+        )
+
+    def test_request_json_with_files(self):
+        """
+        Passing `HTTPClient.request()` both *files* and *json* parameters is
+        invalid because *json* is ignored. This behavior is deprecated.
+        """
+        self.client.request(
+            "POST",
+            "http://example.com/",
+            files={"f1": ("foo.txt", "text/plain", BytesIO(b"...\n"))},
+            json=["this is ignored"],
+        )
+
+        [w] = self.flushWarnings([self.test_request_json_with_files])
+        self.assertEqual(DeprecationWarning, w["category"])
+        self.assertEqual(
+            (
+                "Argument 'json' will be ignored because 'files' was also passed."
+                " This will raise TypeError in the next treq release."
+            ),
+            w['message'],
+        )
+
     def test_request_dict_headers(self):
         self.client.request('GET', 'http://example.com/', headers={
             'User-Agent': 'treq/0.1dev',
@@ -498,6 +542,23 @@ class HTTPClientTests(TestCase):
                      b'accept-encoding': [b'gzip'],
                      b'Accept': [b'application/json', b'text/plain']}),
             None)
+
+    def test_request_invalid_param(self):
+        """
+        `HTTPClient.request()` warns that invalid parameters are ignored and
+        that this is deprecated.
+        """
+        self.client.request('GET', b'http://example.com', invalid=True)
+
+        [w] = self.flushWarnings([self.test_request_invalid_param])
+        self.assertEqual(
+            (
+                "Got unexpected keyword argument: 'invalid'."
+                " treq will ignore this argument,"
+                " but will raise TypeError in the next treq release."
+            ),
+            w['message'],
+        )
 
     @with_clock
     def test_request_timeout_fired(self, clock):

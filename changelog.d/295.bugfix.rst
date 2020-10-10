@@ -1,0 +1,1 @@
+treq's package metadata has been updated to require ``six >= 1.13``, noting a dependency introduced in treq 20.9.0.

@@ -1,9 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-from twisted.web.client import Agent
+from twisted.web.client import Agent, HTTPConnectionPool
 
 from treq.client import HTTPClient
-from treq._utils import default_pool, default_reactor
 
 
 def head(url, **kwargs):
@@ -12,7 +11,7 @@ def head(url, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).head(url, **kwargs)
+    return _client(kwargs).head(url, _stacklevel=4, **kwargs)
 
 
 def get(url, headers=None, **kwargs):
@@ -21,7 +20,7 @@ def get(url, headers=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).get(url, headers=headers, **kwargs)
+    return _client(kwargs).get(url, headers=headers, _stacklevel=4, **kwargs)
 
 
 def post(url, data=None, **kwargs):
@@ -30,7 +29,7 @@ def post(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).post(url, data=data, **kwargs)
+    return _client(kwargs).post(url, data=data, _stacklevel=4, **kwargs)
 
 
 def put(url, data=None, **kwargs):
@@ -39,7 +38,7 @@ def put(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).put(url, data=data, **kwargs)
+    return _client(kwargs).put(url, data=data, _stacklevel=4, **kwargs)
 
 
 def patch(url, data=None, **kwargs):
@@ -48,7 +47,7 @@ def patch(url, data=None, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).patch(url, data=data, **kwargs)
+    return _client(kwargs).patch(url, data=data, _stacklevel=4, **kwargs)
 
 
 def delete(url, **kwargs):
@@ -57,7 +56,7 @@ def delete(url, **kwargs):
 
     See :py:func:`treq.request`
     """
-    return _client(**kwargs).delete(url, **kwargs)
+    return _client(kwargs).delete(url, _stacklevel=4, **kwargs)
 
 
 def request(method, url, **kwargs):
@@ -123,19 +122,62 @@ def request(method, url, **kwargs):
         The *url* param now accepts :class:`hyperlink.DecodedURL` and
         :class:`hyperlink.EncodedURL` objects.
     """
-    return _client(**kwargs).request(method, url, **kwargs)
+    return _client(kwargs).request(method, url, _stacklevel=3, **kwargs)
 
 
 #
 # Private API
 #
 
-def _client(*args, **kwargs):
-    agent = kwargs.get('agent')
+
+def default_reactor(reactor):
+    """
+    Return the specified reactor or the default.
+    """
+    if reactor is None:
+        from twisted.internet import reactor
+
+    return reactor
+
+
+_global_pool = [None]
+
+
+def get_global_pool():
+    return _global_pool[0]
+
+
+def set_global_pool(pool):
+    _global_pool[0] = pool
+
+
+def default_pool(reactor, pool, persistent):
+    """
+    Return the specified pool or a pool with the specified reactor and
+    persistence.
+    """
+    reactor = default_reactor(reactor)
+
+    if pool is not None:
+        return pool
+
+    if persistent is False:
+        return HTTPConnectionPool(reactor, persistent=persistent)
+
+    if get_global_pool() is None:
+        set_global_pool(HTTPConnectionPool(reactor, persistent=True))
+
+    return get_global_pool()
+
+
+def _client(kwargs):
+    agent = kwargs.pop("agent", None)
+    pool = kwargs.pop("pool", None)
+    persistent = kwargs.pop("persistent", None)
     if agent is None:
-        reactor = default_reactor(kwargs.get('reactor'))
-        pool = default_pool(reactor,
-                            kwargs.get('pool'),
-                            kwargs.get('persistent'))
+        # "reactor" isn't removed from kwargs because it must also be passed
+        # down for use in the timeout logic.
+        reactor = default_reactor(kwargs.get("reactor"))
+        pool = default_pool(reactor, pool, persistent)
         agent = Agent(reactor, pool=pool)
     return HTTPClient(agent)

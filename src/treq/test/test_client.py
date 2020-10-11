@@ -13,6 +13,7 @@ from twisted.web.http_headers import Headers
 
 from treq.test.util import with_clock
 from treq.client import (
+    _get_content_type_from_header,
     HTTPClient, _BodyBufferingProtocol, _BufferedResponse
 )
 
@@ -349,7 +350,10 @@ class HTTPClientTests(TestCase):
         self.assertBody(b'null')
 
     def test_request_json_header_override(self):
-        self.client.request('POST', 'http://example.com/', json={'foo': 'bar'}, headers={'Content-Type': 'multipart/form-data; boundary='})
+        self.client.request(
+            'POST', 'http://example.com/',
+            json={'foo': 'bar'},
+            headers={'Content-Type': 'multipart/form-data; boundary='})
         self.agent.request.assert_called_once_with(
             b'POST', b'http://example.com/',
             Headers({b'Content-Type': [b'multipart/form-data; boundary='],
@@ -636,6 +640,10 @@ class HTTPClientTests(TestCase):
                                  unbuffered=True)
 
         self.assertEqual(self.successResultOf(d).original, final_resp)
+
+    def test_get_content_type_from_empty_headers(self):
+        self.assertEqual(_get_content_type_from_header(None, b'application/json'), b'application/json')
+        self.assertEqual(_get_content_type_from_header(None), None)
 
 
 class BodyBufferingProtocolTests(TestCase):

@@ -455,8 +455,8 @@ def _get_content_type_from_header(headers, default=None):
 
     :param headers:
         A twisted.web.http_headers.Headers object
-    
-    :param default: 
+
+    :param default:
         The default Content-Type to return, encoded as a byte-string
 
     :returns:
@@ -469,6 +469,7 @@ def _get_content_type_from_header(headers, default=None):
     return headers.getRawHeaders(
         CONTENT_TYPE_HEADER_NAME, [default]
     )[0]
+
 
 registerAdapter(_from_bytes, bytes, IBodyProducer)
 registerAdapter(_from_file, io.BytesIO, IBodyProducer)

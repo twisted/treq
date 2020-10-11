@@ -642,7 +642,9 @@ class HTTPClientTests(TestCase):
         self.assertEqual(self.successResultOf(d).original, final_resp)
 
     def test_get_content_type_from_empty_headers(self):
-        self.assertEqual(_get_content_type_from_header(None, b'application/json'), b'application/json')
+        self.assertEqual(
+            _get_content_type_from_header(None, b'application/json'),
+            b'application/json')
         self.assertEqual(_get_content_type_from_header(None), None)
 
 

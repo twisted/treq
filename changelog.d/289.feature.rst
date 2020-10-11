@@ -1,0 +1,2 @@
+treq request functions and methods like :func:`treq.put()` and :meth:`HTTPClient.post()` now accept Content-Type overrides through the headers kwarg
+Content-Types will still default to the previous default values depending on the `data`, `files`, and `json` parameters.

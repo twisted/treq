@@ -39,6 +39,7 @@ from requests.cookies import cookiejar_from_dict, merge_cookies
 
 
 _NOTHING = object()
+CONTENT_TYPE_HEADER_NAME = b'Content-Type'
 
 
 def urlencode(query, doseq):
@@ -192,9 +193,13 @@ class HTTPClient(object):
             files=kwargs.pop('files', None),
             json=kwargs.pop('json', _NOTHING),
             stacklevel=stacklevel,
+            headers=headers,
         )
         if contentType is not None:
-            headers.setRawHeaders(b'Content-Type', [contentType])
+            headers.setRawHeaders(
+                CONTENT_TYPE_HEADER_NAME,
+                [contentType]
+            )
 
         cookies = kwargs.pop('cookies', {})
 
@@ -252,7 +257,7 @@ class HTTPClient(object):
 
         return d.addCallback(_Response, cookies)
 
-    def _request_body(self, data, files, json, stacklevel):
+    def _request_body(self, data, files, json, stacklevel, headers):
         """
         Here we choose a right producer based on the parameters passed in.
 
@@ -301,17 +306,25 @@ class HTTPClient(object):
             else:
                 data = []
 
+            content_type = _get_content_type_from_header(
+                headers,
+                b'multipart/form-data; boundary=' + boundary
+            )
             return (
                 multipart.MultiPartProducer(data + files, boundary=boundary),
-                b'multipart/form-data; boundary=' + boundary,
+                content_type,
             )
 
         # Otherwise stick to x-www-form-urlencoded format
         # as it's generally faster for smaller requests.
         if isinstance(data, (dict, list, tuple)):
+            content_type = _get_content_type_from_header(
+                headers,
+                b'application/x-www-form-urlencoded'
+            )
             return (
                 self._data_to_body_producer(urlencode(data, doseq=True)),
-                b'application/x-www-form-urlencoded',
+                content_type,
             )
         elif data:
             return (
@@ -320,11 +333,15 @@ class HTTPClient(object):
             )
 
         if json is not _NOTHING:
+            content_type = _get_content_type_from_header(
+                headers,
+                b'application/json; charset=UTF-8'
+            )
             return (
                 self._data_to_body_producer(
                     json_dumps(json, separators=(u',', u':')).encode('utf-8'),
                 ),
-                b'application/json; charset=UTF-8',
+                content_type,
             )
 
         return None, None
@@ -430,6 +447,28 @@ def _guess_content_type(filename):
         guessed = None
     return guessed or 'application/octet-stream'
 
+
+def _get_content_type_from_header(headers, default=None):
+    """
+    Retrieve Content-Type header from twisted.web.http_headers.Headers object
+    or return supplied default
+
+    :param headers:
+        A twisted.web.http_headers.Headers object
+    
+    :param default: 
+        The default Content-Type to return, encoded as a byte-string
+
+    :returns:
+        byte-string containing a Content-Type value
+    :rtype:
+        bytes
+    """
+    if not headers:
+        return default
+    return headers.getRawHeaders(
+        CONTENT_TYPE_HEADER_NAME, [default]
+    )[0]
 
 registerAdapter(_from_bytes, bytes, IBodyProducer)
 registerAdapter(_from_file, io.BytesIO, IBodyProducer)

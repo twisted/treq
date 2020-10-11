@@ -281,6 +281,19 @@ class HTTPClientTests(TestCase):
 
         self.assertBody(b'hello')
 
+    def test_request_data_dict_content_type_override(self):
+        self.client.request('PUT', 'http://example.com/',
+                            data={'foo': ['bar', 'baz']},
+                            headers={'Content-Type': 'application/json'})
+
+        self.agent.request.assert_called_once_with(
+            b'PUT', b'http://example.com/',
+            Headers({b'Content-Type': [b'application/json'],
+                     b'accept-encoding': [b'gzip']}),
+            self.FileBodyProducer.return_value)
+
+        self.assertBody(b'foo=bar&foo=baz')
+
     def test_request_json_dict(self):
         self.client.request('POST', 'http://example.com/', json={'foo': 'bar'})
         self.agent.request.assert_called_once_with(
@@ -334,6 +347,15 @@ class HTTPClientTests(TestCase):
                      b'accept-encoding': [b'gzip']}),
             self.FileBodyProducer.return_value)
         self.assertBody(b'null')
+
+    def test_request_json_header_override(self):
+        self.client.request('POST', 'http://example.com/', json={'foo': 'bar'}, headers={'Content-Type': 'multipart/form-data; boundary='})
+        self.agent.request.assert_called_once_with(
+            b'POST', b'http://example.com/',
+            Headers({b'Content-Type': [b'multipart/form-data; boundary='],
+                     b'accept-encoding': [b'gzip']}),
+            self.FileBodyProducer.return_value)
+        self.assertBody(b'{"foo":"bar"}')
 
     @mock.patch('treq.client.uuid.uuid4', mock.Mock(return_value="heyDavid"))
     def test_request_no_name_attachment(self):

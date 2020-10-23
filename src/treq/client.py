@@ -171,27 +171,13 @@ class HTTPClient(object):
 
         url = parsed_url.to_uri().to_text().encode('ascii')
 
-        # Convert headers dictionary to
-        # twisted raw headers format.
-        headers = kwargs.pop('headers', None)
-        if headers:
-            if isinstance(headers, dict):
-                h = Headers({})
-                for k, v in headers.items():
-                    if isinstance(v, (bytes, six.text_type)):
-                        h.addRawHeader(k, v)
-                    elif isinstance(v, list):
-                        h.setRawHeaders(k, v)
-
-                headers = h
-        else:
-            headers = Headers({})
+        headers = self._request_headers(kwargs.pop('headers', None), stacklevel + 1)
 
         bodyProducer, contentType = self._request_body(
             data=kwargs.pop('data', None),
             files=kwargs.pop('files', None),
             json=kwargs.pop('json', _NOTHING),
-            stacklevel=stacklevel,
+            stacklevel=stacklevel + 1,
         )
         if contentType is not None:
             headers.setRawHeaders(b'Content-Type', [contentType])
@@ -252,6 +238,47 @@ class HTTPClient(object):
 
         return d.addCallback(_Response, cookies)
 
+    def _request_headers(self, headers, stacklevel):
+        """
+        Convert the *headers* argument to a :class:`Headers` instance
+
+        :returns:
+            :class:`twisted.web.http_headers.Headers`
+        """
+        if isinstance(headers, dict):
+            h = Headers({})
+            for k, v in headers.items():
+                if isinstance(v, (bytes, six.text_type)):
+                    h.addRawHeader(k, v)
+                elif isinstance(v, list):
+                    h.setRawHeaders(k, v)
+                else:
+                    warnings.warn(
+                        (
+                            "The value of headers key {!r} has non-string type {}"
+                            " and will be dropped."
+                            " This will raise TypeError in the next treq release."
+                        ).format(k, type(v)),
+                        DeprecationWarning,
+                        stacklevel=stacklevel,
+                    )
+            return h
+        if isinstance(headers, Headers):
+            return headers
+        if headers is None:
+            return Headers({})
+
+        warnings.warn(
+            (
+                "headers must be a dict, twisted.web.http_headers.Headers, or None,"
+                " but found {}, which will be ignored."
+                " This will raise TypeError in the next treq release."
+            ).format(type(headers)),
+            DeprecationWarning,
+            stacklevel=stacklevel,
+        )
+        return Headers({})
+
     def _request_body(self, data, files, json, stacklevel):
         """
         Here we choose a right producer based on the parameters passed in.
@@ -287,7 +314,7 @@ class HTTPClient(object):
                     " This will raise TypeError in the next treq release."
                 ).format("data" if data else "files"),
                 DeprecationWarning,
-                stacklevel=stacklevel + 1,
+                stacklevel=stacklevel,
             )
 
         if files:

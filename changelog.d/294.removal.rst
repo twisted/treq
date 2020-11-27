@@ -1,0 +1,1 @@
+Deprecate tolerance of non-string values when passing headers as a dict. They have historically been silently dropped, but will raise TypeError in the next treq release. Also deprecate passing headers other than :class:`dict`, :class:`~twisted.web.http_headers.Headers`, or ``None``. Historically falsy values like ``[]`` or ``()`` were accepted.

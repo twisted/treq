@@ -157,9 +157,11 @@ class HTTPClient(object):
         elif isinstance(url, EncodedURL):
             parsed_url = DecodedURL(url)
         elif isinstance(url, six.text_type):
-            parsed_url = DecodedURL.from_text(url)
+            # We use hyperlink in lazy mode so that users can pass arbitrary
+            # bytes in the path and querystring.
+            parsed_url = DecodedURL.from_text(url, lazy=True)
         else:
-            parsed_url = DecodedURL.from_text(url.decode('ascii'))
+            parsed_url = DecodedURL.from_text(url.decode('ascii'), lazy=True)
 
         # Join parameters provided in the URL
         # and the ones passed as argument.

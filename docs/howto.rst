@@ -21,6 +21,24 @@ Here is an example which simply a file object's write method to
 
 Full example: :download:`download_file.py <examples/download_file.py>`
 
+URLs, URIs, and Hyperlinks
+--------------------------
+
+The *url* argument to :py:meth:`HTTPClient.request` accepts three URL representations:
+
+- High-level: :class:`hyperlink.DecodedURL`
+- Mid-level :class:`str` (``unicode`` on Python 2)
+- Low-level: ASCII :class:`bytes` or :class:`hyperlink.URL`
+
+The high-level :class:`~hyperlink.DecodedURL` form is useful when programatically generating URLs.
+Here is an example that builds a URL that contains a ``&`` character, which is automatically escaped properly.
+
+.. literalinclude:: examples/basic_url.py
+    :linenos:
+    :pyobject: main
+
+Full example: :download:`basic_url.py <examples/basic_url.py>`
+
 Query Parameters
 ----------------
 
@@ -39,6 +57,22 @@ or a ``list`` of ``str`` values.
     :lines: 7-37
 
 Full example: :download:`query_params.py <examples/query_params.py>`
+
+JSON
+----
+
+:meth:`HTTPClient.request() <treq.client.HTTPClient.request>` supports a *json* keyword argument that gives a data structure to serialize as JSON (using :func:`json.dumps()`).
+This also implies a ``Content-Type: application/json`` request header.
+The *json* parameter is mutually-exclusive with *data*.
+
+The :meth:`_Response.json()` method decodes a JSON response body.
+It buffers the whole response and decodes it with :func:`json.loads()`.
+
+.. literalinclude:: examples/json_post.py
+    :linenos:
+    :pyobject: main
+
+Full example: :download:`json_post.py <examples/json_post.py>`
 
 Auth
 ----

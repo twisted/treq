@@ -1,20 +1,18 @@
 # -*- encoding: utf-8 -*-
+from collections import OrderedDict
 from io import BytesIO
 
 import mock
 
+from hyperlink import DecodedURL, EncodedURL
 from twisted.internet.defer import Deferred, succeed, CancelledError
 from twisted.internet.protocol import Protocol
-
 from twisted.python.failure import Failure
-
 from twisted.trial.unittest import TestCase
-
 from twisted.web.client import Agent, ResponseFailed
 from twisted.web.http_headers import Headers
 
 from treq.test.util import with_clock
-
 from treq.client import (
     HTTPClient, _BodyBufferingProtocol, _BufferedResponse
 )
@@ -49,6 +47,32 @@ class HTTPClientTests(TestCase):
             b'GET', b'http://xn--bea.net',
             Headers({b'accept-encoding': [b'gzip']}), None)
 
+    def test_request_uri_decodedurl(self):
+        """
+        A URL may be passed as a `hyperlink.DecodedURL` object. It is converted
+        to bytes when passed to the underlying agent.
+        """
+        url = DecodedURL.from_text(u"https://example.org/foo")
+        self.client.request("GET", url)
+        self.agent.request.assert_called_once_with(
+            b"GET", b"https://example.org/foo",
+            Headers({b"accept-encoding": [b"gzip"]}),
+            None,
+        )
+
+    def test_request_uri_encodedurl(self):
+        """
+        A URL may be passed as a `hyperlink.EncodedURL` object. It is converted
+        to bytes when passed to the underlying agent.
+        """
+        url = EncodedURL.from_text(u"https://example.org/foo")
+        self.client.request("GET", url)
+        self.agent.request.assert_called_once_with(
+            b"GET", b"https://example.org/foo",
+            Headers({b"accept-encoding": [b"gzip"]}),
+            None,
+        )
+
     def test_request_uri_idn_params(self):
         """
         A URL that contains non-ASCII characters can be augmented with
@@ -60,6 +84,22 @@ class HTTPClientTests(TestCase):
         self.agent.request.assert_called_once_with(
             b'GET', b'http://xn--bea.net/?foo=bar',
             Headers({b'accept-encoding': [b'gzip']}), None)
+
+    def test_request_uri_hyperlink_params(self):
+        """
+        The *params* argument augments an instance of `hyperlink.DecodedURL`
+        passed as the *url* parameter, just as if it were a string.
+        """
+        self.client.request(
+            method="GET",
+            url=DecodedURL.from_text(u"http://č.net"),
+            params={"foo": "bar"},
+        )
+        self.agent.request.assert_called_once_with(
+            b"GET", b"http://xn--bea.net/?foo=bar",
+            Headers({b"accept-encoding": [b"gzip"]}),
+            None,
+        )
 
     def test_request_case_insensitive_methods(self):
         self.client.request('gEt', 'http://example.com/')
@@ -134,6 +174,33 @@ class HTTPClientTests(TestCase):
                 b'http://example.com/'
                 b'?text=A%CE%A9&bytes=ascii'
                 b'&native=native&1=int&None=none'
+            ),
+            Headers({b'accept-encoding': [b'gzip']}),
+            None,
+        )
+
+    def test_request_query_param_seps(self):
+        """
+        When the characters ``&`` and ``#`` are passed to *params* as param
+        names or values they are percent-escaped in the URL.
+
+        This reproduces https://github.com/twisted/treq/issues/282
+        """
+        self.client.request('GET', 'http://example.com/', params=(
+            ('ampersand', '&'),
+            ('&', 'ampersand'),
+            ('octothorpe', '#'),
+            ('#', 'octothorpe'),
+        ))
+
+        self.agent.request.assert_called_once_with(
+            b'GET',
+            (
+                b'http://example.com/'
+                b'?ampersand=%26'
+                b'&%26=ampersand'
+                b'&octothorpe=%23'
+                b'&%23=octothorpe'
             ),
             Headers({b'accept-encoding': [b'gzip']}),
             None,
@@ -394,6 +461,50 @@ class HTTPClientTests(TestCase):
                           data=BytesIO(b"yo"),
                           files={"file1": BytesIO(b"hey")})
 
+    def test_request_json_with_data(self):
+        """
+        Passing `HTTPClient.request()` both *data* and *json* parameters is
+        invalid because *json* is ignored. This behavior is deprecated.
+        """
+        self.client.request(
+            "POST",
+            "http://example.com/",
+            data=BytesIO(b"..."),
+            json=None,  # NB: None is a valid value. It encodes to b'null'.
+        )
+
+        [w] = self.flushWarnings([self.test_request_json_with_data])
+        self.assertEqual(DeprecationWarning, w["category"])
+        self.assertEqual(
+            (
+                "Argument 'json' will be ignored because 'data' was also passed."
+                " This will raise TypeError in the next treq release."
+            ),
+            w['message'],
+        )
+
+    def test_request_json_with_files(self):
+        """
+        Passing `HTTPClient.request()` both *files* and *json* parameters is
+        invalid because *json* is ignored. This behavior is deprecated.
+        """
+        self.client.request(
+            "POST",
+            "http://example.com/",
+            files={"f1": ("foo.txt", "text/plain", BytesIO(b"...\n"))},
+            json=["this is ignored"],
+        )
+
+        [w] = self.flushWarnings([self.test_request_json_with_files])
+        self.assertEqual(DeprecationWarning, w["category"])
+        self.assertEqual(
+            (
+                "Argument 'json' will be ignored because 'files' was also passed."
+                " This will raise TypeError in the next treq release."
+            ),
+            w['message'],
+        )
+
     def test_request_dict_headers(self):
         self.client.request('GET', 'http://example.com/', headers={
             'User-Agent': 'treq/0.1dev',
@@ -406,6 +517,60 @@ class HTTPClientTests(TestCase):
                      b'accept-encoding': [b'gzip'],
                      b'Accept': [b'application/json', b'text/plain']}),
             None)
+
+    def test_request_headers_invalid_type(self):
+        """
+        `HTTPClient.request()` warns that headers of an unexpected type are
+        invalid and that this behavior is deprecated.
+        """
+        self.client.request('GET', 'http://example.com', headers=[])
+
+        [w] = self.flushWarnings([self.test_request_headers_invalid_type])
+        self.assertEqual(DeprecationWarning, w['category'])
+        self.assertIn(
+            "headers must be a dict, twisted.web.http_headers.Headers, or None,",
+            w['message'],
+        )
+
+    def test_request_dict_headers_invalid_values(self):
+        """
+        `HTTPClient.request()` warns that non-string header values are dropped
+        and that this behavior is deprecated.
+        """
+        self.client.request('GET', 'http://example.com', headers=OrderedDict([
+            ('none', None),
+            ('one', 1),
+            ('ok', 'string'),
+        ]))
+
+        [w1, w2] = self.flushWarnings([self.test_request_dict_headers_invalid_values])
+        self.assertEqual(DeprecationWarning, w1['category'])
+        self.assertEqual(DeprecationWarning, w2['category'])
+        self.assertIn(
+            "The value of headers key 'none' has non-string type",
+            w1['message'],
+        )
+        self.assertIn(
+            "The value of headers key 'one' has non-string type",
+            w2['message'],
+        )
+
+    def test_request_invalid_param(self):
+        """
+        `HTTPClient.request()` warns that invalid parameters are ignored and
+        that this is deprecated.
+        """
+        self.client.request('GET', b'http://example.com', invalid=True)
+
+        [w] = self.flushWarnings([self.test_request_invalid_param])
+        self.assertEqual(
+            (
+                "Got unexpected keyword argument: 'invalid'."
+                " treq will ignore this argument,"
+                " but will raise TypeError in the next treq release."
+            ),
+            w['message'],
+        )
 
     @with_clock
     def test_request_timeout_fired(self, clock):

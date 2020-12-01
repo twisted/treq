@@ -6,14 +6,13 @@ from inspect import getmembers, isfunction
 
 from mock import ANY
 
-from six import text_type, binary_type
+from six import text_type, binary_type, PY3
 
 from twisted.trial.unittest import TestCase
 from twisted.web.client import ResponseFailed
 from twisted.web.error import SchemeNotSupported
 from twisted.web.resource import Resource
 from twisted.web.server import NOT_DONE_YET
-from twisted.python.compat import _PY3
 
 import treq
 
@@ -307,7 +306,7 @@ class HasHeadersTests(TestCase):
         """
         :obj:`HasHeaders` returns a nice string repr.
         """
-        if _PY3:
+        if PY3:
             reprOutput = "HasHeaders({b'a': [b'b']})"
         else:
             reprOutput = "HasHeaders({'a': ['b']})"

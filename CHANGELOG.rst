@@ -8,6 +8,54 @@ Changelog
 
 .. towncrier release notes start
 
+20.9.0 (2020-09-27)
+===================
+
+Features
+--------
+
+- The *url* parameter of :meth:`HTTPClient.request()` (and shortcuts like :meth:`~HTTPClient.get()`) now accept :class:`hyperlink.DecodedURL` and :class:`hyperlink.URL` in addition to :class:`str` and :class:`bytes`. (`#212 <https://github.com/twisted/treq/issues/212>`__)
+- Compatibility with the upcoming Twisted 20.9.0 release (`#290 <https://github.com/twisted/treq/issues/290>`__).
+
+
+Improved Documentation
+----------------------
+
+- An example of sending and receiving JSON has been added. (`#278 <https://github.com/twisted/treq/issues/278>`__)
+
+
+20.4.1 (2020-04-16)
+===================
+
+Bugfixes
+--------
+
+- Correct a typo in the treq 20.4.0 package metadata that prevented upload to PyPI (`pypa/twine#589 <https://github.com/pypa/twine/issues/589>`__)
+
+20.4.0 (2020-04-16)
+===================
+
+Features
+--------
+
+- Support for Python 3.8 and PyPy3: treq is now tested with these interpreters. (`#271 <https://github.com/twisted/treq/issues/271>`__)
+
+
+Bugfixes
+--------
+
+- `treq.client.HTTPClient.request()` and its aliases no longer raise `UnicodeEncodeError` when passed a Unicode *url* and non-empty *params*.
+  Now the URL and query parameters are concatenated as documented. (`#264 <https://github.com/twisted/treq/issues/264>`__)
+- In treq 20.3.0 the *params* argument didn't accept parameter names or values that contain the characters ``&`` or ``#``.
+  Now these characters are properly escaped. (`#282 <https://github.com/twisted/treq/issues/282>`__)
+
+
+Improved Documentation
+----------------------
+
+- The treq documentation has been revised to emphasize use of `treq.client.HTTPClient` over the module-level convenience functions in the `treq` module. (`#276 <https://github.com/twisted/treq/issues/276>`__)
+
+
 20.3.0 (2020-03-15)
 ===================
 

@@ -27,11 +27,12 @@ if __name__ == "__main__":
         package_dir={"": "src"},
         setup_requires=["incremental"],
         use_incremental=True,
+        python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*',
         install_requires=[
             "incremental",
             "requests >= 2.1.0",
             "hyperlink >= 19.0.0",
-            "six",
+            "six >= 1.13.0",
             "Twisted[tls] >= 16.4.0 ; python_version < '3.7'",
             "Twisted[tls] >= 18.7.0 ; python_version >= '3.7'",
             "attrs",
@@ -55,5 +56,5 @@ if __name__ == "__main__":
         license="MIT/X",
         url="https://github.com/twisted/treq",
         long_description=readme,
-        long_description_content_type='test/x-rst',
+        long_description_content_type='text/x-rst',
     )

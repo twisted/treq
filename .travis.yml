@@ -23,14 +23,8 @@ jobs:
       env: TOXENV=pypy-twisted_lowest,pypy-twisted_latest
     - python: "pypy3"
       env: TOXENV=pypy3-twisted_latest
-    - python: "pypy"
-      env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
-      if: branch = master
     - python: "pypy3"
       env: TOXENV=pypy3-twisted_trunk-pyopenssl_trunk
-      if: branch = master
-    - python: "2.7"
-      env: TOXENV=py27-twisted_trunk-pyopenssl_trunk
       if: branch = master
     - python: "3.5"
       env: TOXENV=py35-twisted_trunk-pyopenssl_trunk
@@ -47,9 +41,7 @@ jobs:
 
   # Don't fail on trunk versions.
   allow_failures:
-    - env: TOXENV=pypy-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=pypy3-twisted_trunk-pyopenssl_trunk
-    - env: TOXENV=py27-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py35-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py36-twisted_trunk-pyopenssl_trunk
     - env: TOXENV=py37-twisted_trunk-pyopenssl_trunk

@@ -9,6 +9,7 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-20.04
+    timeout-minutes: 5
 
     steps:
     - uses: actions/checkout@v2
@@ -39,6 +40,7 @@ jobs:
 
   docs:
     runs-on: ubuntu-20.04
+    timeout-minutes: 5
 
     steps:
     - uses: actions/checkout@v2
@@ -63,6 +65,7 @@ jobs:
 
   test:
     runs-on: ubuntu-20.04
+    timeout-minutes: 10
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:

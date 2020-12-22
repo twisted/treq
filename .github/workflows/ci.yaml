@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key:
+          ${{ runner.os }}-pip-lint-${{ hashFiles('pyproject.toml', 'setup.py', 'tox.ini') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-lint-
+          ${{ runner.os }}-pip-
+
+    - run: python -m pip install tox
+
+    - run: tox -q -e flake8
+
+    - run: tox -q -e towncrier
+
+    - run: tox -q -e twine
+
+    - run: tox -q -e check-manifest
+
+
+  docs:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: "3.8"
+
+    - uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key:
+          ${{ runner.os }}-pip-docs-${{ hashFiles('pyproject.toml', 'setup.py', 'tox.ini') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-docs-
+          ${{ runner.os }}-pip-
+
+    - run: python -m pip install tox
+
+    - run: tox -q -e docs
+
+
+  test:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+          python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "pypy-2.7", "pypy-3.7"]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key:
+          ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml', 'setup.py', 'tox.ini') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ matrix.python-version }}-
+          ${{ runner.os }}-pip-
+
+    - name: Translate Python version to Tox factor
+      id: pyfactor
+      shell: python
+      run: |
+        table = {
+          "2.7": "py27",
+          "3.5": "py35",
+          "3.6": "py36",
+          "3.7": "py37",
+          "3.8": "py38",
+          "3.9": "py39",
+          "pypy-2.7": "pypy",
+          "pypy-3.7": "pypy3",
+        }
+        factor = table["${{ matrix.python-version }}"]
+        print("::set-output name=value::" + factor)
+
+    - run: python -m pip install tox
+
+    - run: tox -e ${{ steps.pyfactor.outputs.value }}-twisted_lowest
+
+    - run: tox -e ${{ steps.pyfactor.outputs.value }}-twisted_latest

@@ -63,10 +63,21 @@ jobs:
 
   test:
     runs-on: ubuntu-20.04
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-          python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "pypy-2.7", "pypy-3.7"]
-          twisted-version: ["lowest", "latest", "trunk"]
+          python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "pypy-2.7"]
+          twisted-version: ["lowest", "latest"]
+          experimental: [false]
+
+          include:
+          - python-version: "pypy-3.7"
+            twisted-version: "latest"
+            experimental: true
+
+          - python-version: "3.8"
+            twisted-version: "trunk"
+            experimental: true
 
     steps:
     - uses: actions/checkout@v2

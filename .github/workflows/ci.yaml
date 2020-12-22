@@ -66,6 +66,7 @@ jobs:
     strategy:
       matrix:
           python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "pypy-2.7", "pypy-3.7"]
+          twisted-version: ["lowest", "latest", "trunk"]
 
     steps:
     - uses: actions/checkout@v2
@@ -102,6 +103,4 @@ jobs:
 
     - run: python -m pip install tox
 
-    - run: tox -e ${{ steps.pyfactor.outputs.value }}-twisted_lowest
-
-    - run: tox -e ${{ steps.pyfactor.outputs.value }}-twisted_latest
+    - run: tox -e ${{ steps.pyfactor.outputs.value }}-twisted_${{ matrix.twisted-version }}

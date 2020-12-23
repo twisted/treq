@@ -64,6 +64,7 @@ jobs:
 
 
   test:
+    name: "Test ${{ matrix.python-version }} with ${{ matrix.twisted-version }} Twisted"
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     continue-on-error: ${{ matrix.experimental }}

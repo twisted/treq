@@ -99,6 +99,24 @@ class HTTPClientTests(TestCase):
             None,
         )
 
+    def test_request_uri_plus_pass(self):
+        """
+        URL parameters may contain spaces encoded as ``+``. These remain as
+        such and are not mangled.
+
+        This reproduces `Klein #339 <https://github.com/twisted/klein/issues/339>`_.
+        """
+        self.client.request(
+            "GET",
+            "https://example.com/?foo+bar=baz+biff",
+        )
+        self.agent.request.assert_called_once_with(
+            b'GET',
+            b"https://example.com/?foo+bar=baz+biff",
+            Headers({b'accept-encoding': [b'gzip']}),
+            None,
+        )
+
     def test_request_uri_idn_params(self):
         """
         A URL that contains non-ASCII characters can be augmented with

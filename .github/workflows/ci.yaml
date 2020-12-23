@@ -138,7 +138,7 @@ jobs:
 
     - run: python -m pip install coveralls
 
-    - run: coveralls --finish
+    - run: coveralls -v --finish
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         COVERALLS_REPO_TOKEN: 4nctuKHTnVtbdmty2FgdO3iiWm1nb7xc4

@@ -9,7 +9,7 @@ import io
 import six
 from six.moves.collections_abc import Mapping
 from six.moves.http_cookiejar import CookieJar
-from six.moves.urllib.parse import urlencode as _urlencode
+from six.moves.urllib.parse import quote_plus, urlencode as _urlencode
 
 from twisted.internet.interfaces import IProtocol
 from twisted.internet.defer import Deferred
@@ -153,15 +153,15 @@ class HTTPClient(object):
         stacklevel = kwargs.pop('_stacklevel', 2)
 
         if isinstance(url, DecodedURL):
-            parsed_url = url
+            parsed_url = url.encoded_url
         elif isinstance(url, EncodedURL):
-            parsed_url = DecodedURL(url)
+            parsed_url = url
         elif isinstance(url, six.text_type):
             # We use hyperlink in lazy mode so that users can pass arbitrary
             # bytes in the path and querystring.
-            parsed_url = DecodedURL.from_text(url, lazy=True)
+            parsed_url = EncodedURL.from_text(url)
         else:
-            parsed_url = DecodedURL.from_text(url.decode('ascii'), lazy=True)
+            parsed_url = EncodedURL.from_text(url.decode('ascii'))
 
         # Join parameters provided in the URL
         # and the ones passed as argument.
@@ -411,8 +411,9 @@ def _coerced_query_params(params):
     """
     Carefully coerce *params* in the same way as `urllib.parse.urlencode()`
 
-    Parameter names and values are coerced to unicode. As a special case,
-    `bytes` are decoded as ASCII.
+    Parameter names and values are coerced to unicode, which is encoded as
+    UTF-8 and then percent-encoded. As a special case, `bytes` are directly
+    percent-encoded.
 
     :param params:
         A mapping or sequence of (name, value) two-tuples. The value may be
@@ -420,7 +421,8 @@ def _coerced_query_params(params):
         any type.
 
     :returns:
-        A generator that yields two-tuples containing text strings.
+        A generator that yields two-tuples containing percent-encoded text
+        strings.
     :rtype:
         Iterator[Tuple[Text, Text]]
     """
@@ -430,18 +432,15 @@ def _coerced_query_params(params):
         items = params
 
     for key, values in items:
-        if isinstance(key, bytes):
-            key = key.decode('ascii')
-        elif not isinstance(key, six.text_type):
-            key = six.text_type(key)
+        if not isinstance(key, (six.text_type, bytes)):
+            key = six.text_type(key).encode("utf-8")
+
         if not isinstance(values, (list, tuple)):
             values = [values]
         for value in values:
-            if isinstance(value, bytes):
-                value = value.decode('ascii')
-            elif not isinstance(value, six.text_type):
+            if not isinstance(value, (six.text_type, bytes)):
                 value = six.text_type(value)
-            yield key, value
+            yield quote_plus(key), quote_plus(value)
 
 
 def _from_bytes(orig_bytes):

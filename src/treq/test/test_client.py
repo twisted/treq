@@ -188,7 +188,7 @@ class HTTPClientTests(TestCase):
         """
         self.client.request('GET', 'http://example.com/', params=[
             (u'text', u'A\u03a9'),
-            (b'bytes', ['ascii']),
+            (b'bytes', ['ascii', b'\x00\xff\xfb']),
             ('native', 'native'),
             (1, 'int'),
             (None, ['none']),
@@ -198,7 +198,7 @@ class HTTPClientTests(TestCase):
             b'GET',
             (
                 b'http://example.com/'
-                b'?text=A%CE%A9&bytes=ascii'
+                b'?text=A%CE%A9&bytes=ascii&bytes=%00%FF%FB'
                 b'&native=native&1=int&None=none'
             ),
             Headers({b'accept-encoding': [b'gzip']}),

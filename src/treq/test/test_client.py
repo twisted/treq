@@ -82,10 +82,19 @@ class HTTPClientTests(TestCase):
         # "you" are encoded as UTF-16. The particulars of the encoding aren't
         # important; what matters is that those segments can't be decoded by
         # Hyperlink's UTF-8 default.
-        self.client.request('GET', 'http://example.com/%FF%FEh%00e%00l%00l%00o%00?%FF%FEw%00h%00o%00=%FF%FEy%00o%00u%00')
+        self.client.request(
+            "GET",
+            (
+                "http://example.com/%FF%FEh%00e%00l%00l%00o%00"
+                "?%FF%FEw%00h%00o%00=%FF%FEy%00o%00u%00"
+            ),
+        )
         self.agent.request.assert_called_once_with(
             b'GET',
-            b'http://example.com/%FF%FEh%00e%00l%00l%00o%00?%FF%FEw%00h%00o%00=%FF%FEy%00o%00u%00',
+            (
+                b'http://example.com/%FF%FEh%00e%00l%00l%00o%00'
+                b'?%FF%FEw%00h%00o%00=%FF%FEy%00o%00u%00'
+            ),
             Headers({b'accept-encoding': [b'gzip']}),
             None,
         )

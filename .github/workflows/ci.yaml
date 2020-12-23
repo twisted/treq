@@ -125,6 +125,7 @@ jobs:
     - run: coveralls
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        COVERALLS_REPO_TOKEN: 4nctuKHTnVtbdmty2FgdO3iiWm1nb7xc4
         COVERALLS_FLAG_NAME: python_${{ matrix.python-version }}-twisted_${{ matrix.twisted-version }}
         COVERALLS_PARALLEL: true
 
@@ -142,3 +143,4 @@ jobs:
     - run: coveralls --finish
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        COVERALLS_REPO_TOKEN: 4nctuKHTnVtbdmty2FgdO3iiWm1nb7xc4

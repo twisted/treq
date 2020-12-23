@@ -20,13 +20,13 @@ def main(reactor):
 
     print('Multi value dictionary')
     resp = yield treq.get('https://httpbin.org/get',
-                          params={'foo': ['bar', 'baz', 'bax']})
+                          params={b'foo': [b'bar', b'baz', b'bax']})
     content = yield resp.text()
     print(content)
 
     print('Mixed value dictionary')
     resp = yield treq.get('https://httpbin.org/get',
-                          params={'foo': ['bar', 'baz'], 'bax': 'quux'})
+                          params={'foo': [1, 2, 3], 'bax': 'quux'})
     content = yield resp.text()
     print(content)
 

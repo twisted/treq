@@ -1,0 +1,1 @@
+Support for Python 2.7, which has reached end of support, is deprecated and will be dropped in the next treq release.

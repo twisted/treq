@@ -119,3 +119,7 @@ jobs:
     - run: python -m pip install tox
 
     - run: tox -e ${{ steps.pyfactor.outputs.value }}-twisted_${{ matrix.twisted-version }}
+
+    - run: python -m pip install coveralls
+
+    - run: coveralls

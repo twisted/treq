@@ -2,7 +2,8 @@
 # See LICENSE for details.
 from __future__ import absolute_import, division, print_function
 
-import base64
+import binascii
+from typing import Union
 
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IAgent
@@ -46,6 +47,7 @@ class _RequestHeaderSettingAgent(object):
 
 
 def add_basic_auth(agent, username, password):
+    # type: (IAgent, Union[str, bytes], Union[str, bytes]) -> IAgent
     """
     Wrap an agent to add HTTP basic authentication
 
@@ -59,16 +61,21 @@ def add_basic_auth(agent, username, password):
     of the *Authorization* header is server-defined.
 
     :param agent: Agent to wrap.
-    :param username: Username as an ASCII string.
-    :param password: Password as an ASCII string.
+    :param username: The username.
+    :param password: The password.
 
     :returns: :class:`~twisted.web.iweb.IAgent`
     """
-    creds = base64.b64encode(
-        '{0}:{1}'.format(username, password).encode('ascii'))
+    if not isinstance(username, bytes):
+        username = username.encode('utf-8')
+    if not isinstance(password, bytes):
+        password = password.encode('utf-8')
+
+    creds = binascii.b2a_base64(b'%s:%s' % (username, password)).rstrip(b'\n')
     return _RequestHeaderSettingAgent(
         agent,
-        Headers({b'Authorization': [b'Basic ' + creds]}))
+        Headers({b'Authorization': [b'Basic ' + creds]}),
+    )
 
 
 def add_auth(agent, auth_config):

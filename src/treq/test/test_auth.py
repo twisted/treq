@@ -93,6 +93,39 @@ class AddAuthTests(SynchronousTestCase):
             Headers({b'authorization': [auth]}),
         )
 
+    def test_add_basic_auth_utf8(self):
+        """
+        Basic auth username and passwords given as `str` are encoded as UTF-8.
+
+        https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#Character_encoding_of_HTTP_authentication
+        """
+        agent, requests = recorder()
+        auth = (u'\u16d7', u'\u16b9')
+        authAgent = add_auth(agent, auth)
+
+        authAgent.request(b'method', b'uri')
+
+        self.assertEqual(
+            requests[0].headers,
+            Headers({b'Authorization': [b'Basic 4ZuXOuGauQ==']}),
+        )
+
+    def test_add_basic_auth_bytes(self):
+        """
+        Basic auth can be passed as `bytes`, allowing the user full control
+        over the encoding.
+        """
+        agent, requests = recorder()
+        auth = (b'\x01\x0f\xff', b'\xff\xf0\x01')
+        authAgent = add_auth(agent, auth)
+
+        authAgent.request(b'method', b'uri')
+
+        self.assertEqual(
+            requests[0].headers,
+            Headers({b'Authorization': [b'Basic AQ//Ov/wAQ==']}),
+        )
+
     def test_add_unknown_auth(self):
         """
         add_auth() raises UnknownAuthConfig when given anything other than

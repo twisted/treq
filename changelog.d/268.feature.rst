@@ -1,0 +1,1 @@
+The *auth* parameter now accepts arbitrary text and `bytes` for usernames and passwords. Text is encoded as UTF-8, per :rfc:`7617`. Previously only ASCII was allowed.

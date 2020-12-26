@@ -35,14 +35,14 @@ class _RequestHeaderSettingAgent(object):
 
     def request(self, method, uri, headers=None, bodyProducer=None):
         if headers is None:
-            headers = self._request_headers
+            new = self._request_headers
         else:
-            # FIXME: This mutates *headers*
+            new = headers.copy()
             for header, values in self._request_headers.getAllRawHeaders():
-                headers.setRawHeaders(header, values)
+                new.setRawHeaders(header, values)
 
         return self._agent.request(
-            method, uri, headers=headers, bodyProducer=bodyProducer)
+            method, uri, headers=new, bodyProducer=bodyProducer)
 
 
 def add_basic_auth(agent, username, password):

@@ -39,6 +39,22 @@ class RequestHeaderSettingAgentTests(SynchronousTestCase):
             Headers({b'X-Test-Header': [b'Test-Header-Value']}),
         )
 
+    def test_no_mutation(self):
+        """
+        The agent never mutates the headers passed to its request method.
+
+        This reproduces https://github.com/twisted/treq/issues/314
+        """
+        requestHeaders = Headers({})
+        agent = _RequestHeaderSettingAgent(
+            self.agent,
+            Headers({b'Added': [b'1']}),
+        )
+
+        agent.request(b'method', b'uri', headers=requestHeaders)
+
+        self.assertEqual(requestHeaders, Headers({}))
+
 
 class AddAuthTests(SynchronousTestCase):
     def test_add_basic_auth(self):

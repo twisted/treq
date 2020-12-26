@@ -1,7 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-from twisted.web.http_headers import Headers
 import base64
+
+from twisted.web.http_headers import Headers
+from twisted.web.iweb import IAgent
+from zope.interface import implementer
 
 
 class UnknownAuthConfig(Exception):
@@ -10,6 +13,7 @@ class UnknownAuthConfig(Exception):
             '{0!r} not of a known type.'.format(config))
 
 
+@implementer(IAgent)
 class _RequestHeaderSettingAgent(object):
     def __init__(self, agent, request_headers):
         self._agent = agent

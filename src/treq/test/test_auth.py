@@ -1,4 +1,5 @@
 from twisted.trial.unittest import SynchronousTestCase
+from twisted.web.iweb import IAgent
 from twisted.web.http_headers import Headers
 
 from treq.auth import _RequestHeaderSettingAgent, add_auth, UnknownAuthConfig
@@ -50,6 +51,7 @@ class AddAuthTests(SynchronousTestCase):
 
         authAgent.request(b'method', b'uri')
 
+        self.assertTrue(IAgent.providedBy(authAgent))
         self.assertEqual(
             requests[0].headers,
             Headers({b'authorization': [b'Basic dXNlcm5hbWU6cGFzc3dvcmQ=']})

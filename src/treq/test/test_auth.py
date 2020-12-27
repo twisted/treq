@@ -2,16 +2,16 @@ from twisted.trial.unittest import SynchronousTestCase
 from twisted.web.iweb import IAgent
 from twisted.web.http_headers import Headers
 
-from treq.auth import _RequestHeaderSettingAgent, add_auth, UnknownAuthConfig
+from treq.auth import _RequestHeaderSetterAgent, add_auth, UnknownAuthConfig
 from treq._recorder import recorder
 
 
-class RequestHeaderSettingAgentTests(SynchronousTestCase):
+class RequestHeaderSetterAgentTests(SynchronousTestCase):
     def setUp(self):
         self.agent, self.requests = recorder()
 
     def test_sets_headers(self):
-        agent = _RequestHeaderSettingAgent(
+        agent = _RequestHeaderSetterAgent(
             self.agent,
             Headers({b'X-Test-Header': [b'Test-Header-Value']}),
         )
@@ -24,7 +24,7 @@ class RequestHeaderSettingAgentTests(SynchronousTestCase):
         )
 
     def test_overrides_per_request_headers(self):
-        agent = _RequestHeaderSettingAgent(
+        agent = _RequestHeaderSetterAgent(
             self.agent,
             Headers({b'X-Test-Header': [b'Test-Header-Value']})
         )
@@ -46,7 +46,7 @@ class RequestHeaderSettingAgentTests(SynchronousTestCase):
         This reproduces https://github.com/twisted/treq/issues/314
         """
         requestHeaders = Headers({})
-        agent = _RequestHeaderSettingAgent(
+        agent = _RequestHeaderSetterAgent(
             self.agent,
             Headers({b'Added': [b'1']}),
         )

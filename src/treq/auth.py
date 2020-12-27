@@ -20,7 +20,7 @@ class UnknownAuthConfig(Exception):
 
 
 @implementer(IAgent)
-class _RequestHeaderSettingAgent(object):
+class _RequestHeaderSetterAgent(object):
     """
     Wrap an agent to set request headers
 
@@ -30,20 +30,20 @@ class _RequestHeaderSettingAgent(object):
         Headers to set on each request before forwarding it to the wrapped
         agent.
     """
-    def __init__(self, agent, request_headers):
+    def __init__(self, agent, headers):
         self._agent = agent
-        self._request_headers = request_headers
+        self._headers = headers
 
     def request(self, method, uri, headers=None, bodyProducer=None):
         if headers is None:
-            new = self._request_headers
+            requestHeaders = self._headers
         else:
-            new = headers.copy()
-            for header, values in self._request_headers.getAllRawHeaders():
-                new.setRawHeaders(header, values)
+            requestHeaders = headers.copy()
+            for header, values in self._headers.getAllRawHeaders():
+                requestHeaders.setRawHeaders(header, values)
 
         return self._agent.request(
-            method, uri, headers=new, bodyProducer=bodyProducer)
+            method, uri, headers=requestHeaders, bodyProducer=bodyProducer)
 
 
 def add_basic_auth(agent, username, password):
@@ -72,7 +72,7 @@ def add_basic_auth(agent, username, password):
         password = password.encode('utf-8')
 
     creds = binascii.b2a_base64(b'%s:%s' % (username, password)).rstrip(b'\n')
-    return _RequestHeaderSettingAgent(
+    return _RequestHeaderSetterAgent(
         agent,
         Headers({b'Authorization': [b'Basic ' + creds]}),
     )

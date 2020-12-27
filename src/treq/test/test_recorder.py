@@ -4,11 +4,11 @@
 from io import BytesIO
 
 from twisted.trial.unittest import SynchronousTestCase
-from twisted.web.iweb import IAgent
-from twisted.web.http_headers import Headers
 from twisted.web.client import FileBodyProducer
+from twisted.web.http_headers import Headers
+from twisted.web.iweb import IAgent
 
-from treq._recorder import recorder, RequestRecord
+from treq._recorder import RequestRecord, recorder
 
 
 class RecorderTests(SynchronousTestCase):
@@ -30,16 +30,19 @@ class RecorderTests(SynchronousTestCase):
         """
         agent, requests = recorder()
 
-        body = FileBodyProducer(BytesIO(b'...'))
-        d1 = agent.request(b'GET', b'https://foo')
-        d2 = agent.request(b'POST', b'http://bar', Headers({}))
-        d3 = agent.request(b'PUT', b'https://baz', None, bodyProducer=body)
+        body = FileBodyProducer(BytesIO(b"..."))
+        d1 = agent.request(b"GET", b"https://foo")
+        d2 = agent.request(b"POST", b"http://bar", Headers({}))
+        d3 = agent.request(b"PUT", b"https://baz", None, bodyProducer=body)
 
-        self.assertEqual(requests, [
-            RequestRecord(b'GET', b'https://foo', None, None, d1),
-            RequestRecord(b'POST', b'http://bar', Headers({}), None, d2),
-            RequestRecord(b'PUT', b'https://baz', None, body, d3),
-        ])
+        self.assertEqual(
+            requests,
+            [
+                RequestRecord(b"GET", b"https://foo", None, None, d1),
+                RequestRecord(b"POST", b"http://bar", Headers({}), None, d2),
+                RequestRecord(b"PUT", b"https://baz", None, body, d3),
+            ],
+        )
 
     def test_record_attributes(self):
         """
@@ -49,13 +52,13 @@ class RecorderTests(SynchronousTestCase):
         """
         agent, requests = recorder()
         headers = Headers()
-        body = FileBodyProducer(BytesIO(b'...'))
+        body = FileBodyProducer(BytesIO(b"..."))
 
-        deferred = agent.request(b'method', b'uri', headers=headers, bodyProducer=body)
+        deferred = agent.request(b"method", b"uri", headers=headers, bodyProducer=body)
 
         [rr] = requests
-        self.assertIs(rr.method, b'method')
-        self.assertIs(rr.uri, b'uri')
+        self.assertIs(rr.method, b"method")
+        self.assertIs(rr.uri, b"uri")
         self.assertIs(rr.headers, headers)
         self.assertIs(rr.bodyProducer, body)
         self.assertIs(rr.deferred, deferred)
@@ -67,7 +70,11 @@ class RecorderTests(SynchronousTestCase):
         """
         agent, _ = recorder()
 
-        self.assertRaises(TypeError, agent.request, u'method not bytes', b'uri')
-        self.assertRaises(TypeError, agent.request, b'method', u'uri not bytes')
-        self.assertRaises(TypeError, agent.request, b'method', b'uri', {'not': 'headers'})
-        self.assertRaises(TypeError, agent.request, b'method', b'uri', None, b'not ibodyproducer')
+        self.assertRaises(TypeError, agent.request, u"method not bytes", b"uri")
+        self.assertRaises(TypeError, agent.request, b"method", u"uri not bytes")
+        self.assertRaises(
+            TypeError, agent.request, b"method", b"uri", {"not": "headers"}
+        )
+        self.assertRaises(
+            TypeError, agent.request, b"method", b"uri", None, b"not ibodyproducer"
+        )

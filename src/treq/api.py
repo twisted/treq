@@ -91,7 +91,8 @@ def request(method, url, **kwargs):
     :param bool persistent: Use persistent HTTP connections.  Default: ``True``
     :param bool allow_redirects: Follow HTTP redirects.  Default: ``True``
 
-    :param auth: HTTP Basic Authentication information --- see :func:`treq.auth.add_auth`.
+    :param auth: HTTP Basic Authentication information --- see
+        :func:`treq.auth.add_auth`.
     :type auth: tuple of ``('username', 'password')``.
 
     :param cookies: Cookies to send with this request.  The HTTP kind, not the

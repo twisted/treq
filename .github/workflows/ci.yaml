@@ -29,14 +29,7 @@ jobs:
 
     - run: python -m pip install tox
 
-    - run: tox -q -e flake8
-
-    - run: tox -q -e towncrier
-
-    - run: tox -q -e twine
-
-    - run: tox -q -e check-manifest
-
+    - run: tox -q -p all -e flake8,towncrier,twine,check-manifest
 
   docs:
     runs-on: ubuntu-20.04

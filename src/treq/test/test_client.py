@@ -404,7 +404,11 @@ class HTTPClientTests(TestCase):
         2 or 3. It raises `TypeError` when the tuple is too short.
         """
         with self.assertRaises(TypeError) as c:
-            self.client.request("POST", b"http://example.com/", files=[("t1", ("foo.txt",))])
+            self.client.request(
+                "POST",
+                b"http://example.com/",
+                files=[("t1", ("foo.txt",))],
+            )
 
         self.assertIn("'t1' tuple has length 1", str(c.exception))
 

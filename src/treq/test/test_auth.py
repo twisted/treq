@@ -82,15 +82,17 @@ class AddAuthTests(SynchronousTestCase):
         agent, requests = recorder()
         pwd = ('verylongpasswordthatextendsbeyondthepointwheremultiplel'
                'inesaregenerated')
-        auth = (b'Basic dXNlcm5hbWU6dmVyeWxvbmdwYXNzd29yZHRoYXRleHRlbmRzY'
-                b'mV5b25kdGhlcG9pbnR3aGVyZW11bHRpcGxlbGluZXNhcmVnZW5lcmF0ZWQ=')
+        expectedAuth = (
+            b'Basic dXNlcm5hbWU6dmVyeWxvbmdwYXNzd29yZHRoYXRleHRlbmRzY'
+            b'mV5b25kdGhlcG9pbnR3aGVyZW11bHRpcGxlbGluZXNhcmVnZW5lcmF0ZWQ='
+        )
         authAgent = add_auth(agent, ('username', pwd))
 
         authAgent.request(b'method', b'uri')
 
         self.assertEqual(
             requests[0].headers,
-            Headers({b'authorization': [auth]}),
+            Headers({b'authorization': [expectedAuth]}),
         )
 
     def test_add_basic_auth_utf8(self):

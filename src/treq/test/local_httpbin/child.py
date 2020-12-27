@@ -35,7 +35,7 @@ from cryptography.hazmat.primitives.serialization import Encoding
 from .shared import _HTTPBinDescription
 
 
-def _certificates_for_authority_and_server(service_identity, key_size=1024):
+def _certificates_for_authority_and_server(service_identity, key_size=2048):
     """
     Create a self-signed CA certificate and server certificate signed
     by the CA.
@@ -44,8 +44,8 @@ def _certificates_for_authority_and_server(service_identity, key_size=1024):
     :type service_identity: :py:class:`unicode`
 
     :param key_size: (optional) The size of CA's and server's private
-        RSA keys.  Defaults to 1024 bits, which is the minimum allowed
-        by OpenSSL Contexts at the default security level as of 1.1.
+        RSA keys.  Defaults to 2048 bits, which is the minimum allowed
+        by OpenSSL Contexts at the default security level.
     :type key_size: :py:class:`int`
 
     :return: a 3-tuple of ``(certificate_authority_certificate,

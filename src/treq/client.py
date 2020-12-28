@@ -400,7 +400,7 @@ def _convert_files(files):
                 # TypeError about being unable to coerce None.
                 raise TypeError(
                     (
-                        "Files must given as tuples of the form (file_name, file_obj)"
+                        "`files` argument must be a sequence of tuples of (file_name, file_obj)"
                         " or (file_name, content_type, file_obj), but the {!r} tuple"
                         " has length {}: {!r}"
                     ).format(param, len(val), val),

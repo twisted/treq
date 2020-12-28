@@ -1,6 +1,5 @@
 # Copyright (c) The treq Authors.
 # See LICENSE for details.
-
 from io import BytesIO
 
 from twisted.trial.unittest import SynchronousTestCase
@@ -8,19 +7,19 @@ from twisted.web.client import FileBodyProducer
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IAgent
 
-from treq._recorder import RequestRecord, recorder
+from treq._agentspy import RequestRecord, agent_spy
 
 
-class RecorderTests(SynchronousTestCase):
+class APISpyTests(SynchronousTestCase):
     """
-    The recorder API provides an agent that records each request made to it.
+    The agent_spy API provides an agent that records each request made to it.
     """
 
     def test_provides_iagent(self):
         """
-        The agent recorder() returns provides the IAgent interface.
+        The agent returned by agent_spy() provides the IAgent interface.
         """
-        agent, _ = recorder()
+        agent, _ = agent_spy()
 
         self.assertTrue(IAgent.providedBy(agent))
 
@@ -28,7 +27,7 @@ class RecorderTests(SynchronousTestCase):
         """
         Each request made with the agent is recorded.
         """
-        agent, requests = recorder()
+        agent, requests = agent_spy()
 
         body = FileBodyProducer(BytesIO(b"..."))
         d1 = agent.request(b"GET", b"https://foo")
@@ -50,7 +49,7 @@ class RecorderTests(SynchronousTestCase):
         RequestRecord. Additionally, the deferred returned by the call is
         available.
         """
-        agent, requests = recorder()
+        agent, requests = agent_spy()
         headers = Headers()
         body = FileBodyProducer(BytesIO(b"..."))
 
@@ -68,7 +67,7 @@ class RecorderTests(SynchronousTestCase):
         The request method enforces correctness by raising TypeError when
         passed parameters of the wrong type.
         """
-        agent, _ = recorder()
+        agent, _ = agent_spy()
 
         self.assertRaises(TypeError, agent.request, u"method not bytes", b"uri")
         self.assertRaises(TypeError, agent.request, b"method", u"uri not bytes")

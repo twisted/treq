@@ -12,7 +12,7 @@ from zope.interface import implementer
 @attr.s(frozen=True, order=False, slots=True)
 class RequestRecord(object):
     """
-    The details of a call to :meth:`IAgent.request`
+    The details of a call to :meth:`_AgentSpy.request`
 
     :ivar method: The *method* argument to :meth:`IAgent.request`
     :ivar uri: The *uri* argument to :meth:`IAgent.request`
@@ -30,7 +30,7 @@ class RequestRecord(object):
 
 @implementer(IAgent)
 @attr.s
-class _RequestRecordAgent(object):
+class _AgentSpy(object):
     """
     An agent that records HTTP requests
 
@@ -69,7 +69,7 @@ class _RequestRecordAgent(object):
         return d
 
 
-def recorder():
+def agent_spy():
     # type: () -> Tuple[IAgent, List[RequestRecord]]
     """
     Record HTTP requests made with an agent
@@ -88,5 +88,5 @@ def recorder():
            :meth:`~twisted.web.iweb.IAgent.request()` method
     """
     records = []
-    agent = _RequestRecordAgent(records.append)
+    agent = _AgentSpy(records.append)
     return agent, records

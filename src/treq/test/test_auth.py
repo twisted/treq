@@ -1,14 +1,16 @@
+# Copyright (c) The treq Authors.
+# See LICENSE for details.
 from twisted.trial.unittest import SynchronousTestCase
-from twisted.web.iweb import IAgent
 from twisted.web.http_headers import Headers
+from twisted.web.iweb import IAgent
 
+from treq._agentspy import agent_spy
 from treq.auth import _RequestHeaderSetterAgent, add_auth, UnknownAuthConfig
-from treq._recorder import recorder
 
 
 class RequestHeaderSetterAgentTests(SynchronousTestCase):
     def setUp(self):
-        self.agent, self.requests = recorder()
+        self.agent, self.requests = agent_spy()
 
     def test_sets_headers(self):
         agent = _RequestHeaderSetterAgent(
@@ -62,7 +64,7 @@ class AddAuthTests(SynchronousTestCase):
         add_auth() wraps the given agent with one that adds an ``Authorization:
         Basic ...`` HTTP header that contains the given credentials.
         """
-        agent, requests = recorder()
+        agent, requests = agent_spy()
         authAgent = add_auth(agent, ('username', 'password'))
 
         authAgent.request(b'method', b'uri')
@@ -79,7 +81,7 @@ class AddAuthTests(SynchronousTestCase):
         credentials are so long that Python's base64 implementation inserts
         them.
         """
-        agent, requests = recorder()
+        agent, requests = agent_spy()
         pwd = ('verylongpasswordthatextendsbeyondthepointwheremultiplel'
                'inesaregenerated')
         expectedAuth = (
@@ -101,7 +103,7 @@ class AddAuthTests(SynchronousTestCase):
 
         https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#Character_encoding_of_HTTP_authentication
         """
-        agent, requests = recorder()
+        agent, requests = agent_spy()
         auth = (u'\u16d7', u'\u16b9')
         authAgent = add_auth(agent, auth)
 
@@ -117,7 +119,7 @@ class AddAuthTests(SynchronousTestCase):
         Basic auth can be passed as `bytes`, allowing the user full control
         over the encoding.
         """
-        agent, requests = recorder()
+        agent, requests = agent_spy()
         auth = (b'\x01\x0f\xff', b'\xff\xf0\x01')
         authAgent = add_auth(agent, auth)
 
@@ -133,7 +135,7 @@ class AddAuthTests(SynchronousTestCase):
         add_auth() raises UnknownAuthConfig when given anything other than
         a tuple.
         """
-        agent, _ = recorder()
+        agent, _ = agent_spy()
         invalidAuth = 1234
 
         self.assertRaises(UnknownAuthConfig, add_auth, agent, invalidAuth)

@@ -1,0 +1,1 @@
+treq produces a more helpful exception when passed a tuple of the wrong size in the *files* parameter.

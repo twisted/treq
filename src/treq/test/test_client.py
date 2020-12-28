@@ -398,6 +398,36 @@ class HTTPClientTests(TestCase):
                 boundary=b'heyDavid'),
             self.MultiPartProducer.call_args)
 
+    def test_request_files_tuple_too_short(self):
+        """
+        The `HTTPClient.request()` *files* argument requires tuples of length
+        2 or 3. It raises `TypeError` when the tuple is too short.
+        """
+        with self.assertRaises(TypeError) as c:
+            self.client.request(
+                "POST",
+                b"http://example.com/",
+                files=[("t1", ("foo.txt",))],
+            )
+
+        self.assertIn("'t1' tuple has length 1", str(c.exception))
+
+    def test_request_files_tuple_too_long(self):
+        """
+        The `HTTPClient.request()` *files* argument requires tuples of length
+        2 or 3. It raises `TypeError` when the tuple is too long.
+        """
+        with self.assertRaises(TypeError) as c:
+            self.client.request(
+                "POST",
+                b"http://example.com/",
+                files=[
+                    ("t4", ("foo.txt", "text/plain", BytesIO(b"...\n"), "extra!")),
+                ],
+            )
+
+        self.assertIn("'t4' tuple has length 4", str(c.exception))
+
     @mock.patch('treq.client.uuid.uuid4', mock.Mock(return_value="heyDavid"))
     def test_request_mixed_params(self):
 

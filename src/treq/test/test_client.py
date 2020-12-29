@@ -592,6 +592,27 @@ class HTTPClientTests(TestCase):
                      b'Accept': [b'application/json', b'text/plain']}),
             None)
 
+    def test_request_headers_object(self):
+        """
+        The *headers* parameter accepts a `twisted.web.http_headers.Headers`
+        instance.
+        """
+        self.client.request(
+            "GET",
+            "https://example.com",
+            headers=Headers({"X-Foo": ["bar"]}),
+        )
+
+        self.agent.request.assert_called_once_with(
+            b"GET",
+            b"https://example.com",
+            Headers({
+                "X-Foo": ["bar"],
+                "Accept-Encoding": ["gzip"],
+            }),
+            None,
+        )
+
     def test_request_headers_invalid_type(self):
         """
         `HTTPClient.request()` warns that headers of an unexpected type are

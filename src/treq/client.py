@@ -420,6 +420,28 @@ def _convert_files(files):
         yield (param, (file_name, content_type, IBodyProducer(fobj)))
 
 
+def _query_quote(v):
+    # (Any) -> Text
+    """
+    Percent-encode a querystring name or value.
+
+    :param v: A value.
+
+    :returns:
+        The value, coerced to a string and percent-encoded as appropriate for
+        a querystring (with space as ``+``).
+    """
+    if not isinstance(v, (str, bytes)):
+        v = six.text_type(v)
+    if not isinstance(v, bytes):
+        v = v.encode("utf-8")
+    q = quote_plus(v)
+    if isinstance(q, bytes):
+        # Python 2.7 returnes bytes, Python 3.x returns str.
+        q = q.decode("ascii")
+    return q
+
+
 def _coerced_query_params(params):
     """
     Carefully coerce *params* in the same way as `urllib.parse.urlencode()`
@@ -445,15 +467,12 @@ def _coerced_query_params(params):
         items = params
 
     for key, values in items:
-        if not isinstance(key, (six.text_type, bytes)):
-            key = six.text_type(key).encode("utf-8")
+        key_quoted = _query_quote(key)
 
         if not isinstance(values, (list, tuple)):
-            values = [values]
+            values = (values,)
         for value in values:
-            if not isinstance(value, (six.text_type, bytes)):
-                value = six.text_type(value)
-            yield quote_plus(key), quote_plus(value)
+            yield key_quoted, _query_quote(value)
 
 
 def _from_bytes(orig_bytes):

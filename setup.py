@@ -32,7 +32,7 @@ if __name__ == "__main__":
         install_requires=[
             "incremental",
             "requests >= 2.1.0",
-            "hyperlink >= 19.0.0",
+            "hyperlink >= 21.0.0",
             "six >= 1.13.0",
             "Twisted[tls] >= 18.7.0",
             "attrs",

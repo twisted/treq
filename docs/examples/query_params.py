@@ -26,7 +26,7 @@ def main(reactor):
 
     print('Mixed value dictionary')
     resp = yield treq.get('https://httpbin.org/get',
-                          params={'foo': [1, 2, 3], 'bax': 'quux'})
+                          params={'foo': [1, 2, 3], 'bax': b'quux', b'bar': 'foo'})
     content = yield resp.text()
     print(content)
 

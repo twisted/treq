@@ -9,7 +9,7 @@ import io
 import six
 from six.moves.collections_abc import Mapping
 from six.moves.http_cookiejar import CookieJar
-from six.moves.urllib.parse import urlencode as _urlencode
+from six.moves.urllib.parse import quote_plus, urlencode as _urlencode
 
 from twisted.internet.interfaces import IProtocol
 from twisted.internet.defer import Deferred
@@ -153,13 +153,15 @@ class HTTPClient(object):
         stacklevel = kwargs.pop('_stacklevel', 2)
 
         if isinstance(url, DecodedURL):
-            parsed_url = url
+            parsed_url = url.encoded_url
         elif isinstance(url, EncodedURL):
-            parsed_url = DecodedURL(url)
+            parsed_url = url
         elif isinstance(url, six.text_type):
-            parsed_url = DecodedURL.from_text(url)
+            # We use hyperlink in lazy mode so that users can pass arbitrary
+            # bytes in the path and querystring.
+            parsed_url = EncodedURL.from_text(url)
         else:
-            parsed_url = DecodedURL.from_text(url.decode('ascii'))
+            parsed_url = EncodedURL.from_text(url.decode('ascii'))
 
         # Join parameters provided in the URL
         # and the ones passed as argument.
@@ -418,12 +420,37 @@ def _convert_files(files):
         yield (param, (file_name, content_type, IBodyProducer(fobj)))
 
 
+def _query_quote(v):
+    # (Any) -> Text
+    """
+    Percent-encode a querystring name or value.
+
+    :param v: A value.
+
+    :returns:
+        The value, coerced to a string and percent-encoded as appropriate for
+        a querystring (with space as ``+``).
+    """
+    if not isinstance(v, (str, bytes)):
+        v = six.text_type(v)
+    if not isinstance(v, bytes):
+        v = v.encode("utf-8")
+    q = quote_plus(v)
+    if isinstance(q, bytes):
+        # Python 2.7 returnes bytes when given bytes, but Python 3.x always
+        # returns str.  Coverage disabled here to stop Coveralls complaining
+        # until we can drop Python 2.7 support.
+        q = q.decode("ascii")  # pragma: no cover
+    return q
+
+
 def _coerced_query_params(params):
     """
     Carefully coerce *params* in the same way as `urllib.parse.urlencode()`
 
-    Parameter names and values are coerced to unicode. As a special case,
-    `bytes` are decoded as ASCII.
+    Parameter names and values are coerced to unicode, which is encoded as
+    UTF-8 and then percent-encoded. As a special case, `bytes` are directly
+    percent-encoded.
 
     :param params:
         A mapping or sequence of (name, value) two-tuples. The value may be
@@ -431,7 +458,8 @@ def _coerced_query_params(params):
         any type.
 
     :returns:
-        A generator that yields two-tuples containing text strings.
+        A generator that yields two-tuples containing percent-encoded text
+        strings.
     :rtype:
         Iterator[Tuple[Text, Text]]
     """
@@ -441,18 +469,12 @@ def _coerced_query_params(params):
         items = params
 
     for key, values in items:
-        if isinstance(key, bytes):
-            key = key.decode('ascii')
-        elif not isinstance(key, six.text_type):
-            key = six.text_type(key)
+        key_quoted = _query_quote(key)
+
         if not isinstance(values, (list, tuple)):
-            values = [values]
+            values = (values,)
         for value in values:
-            if isinstance(value, bytes):
-                value = value.decode('ascii')
-            elif not isinstance(value, six.text_type):
-                value = six.text_type(value)
-            yield key, value
+            yield key_quoted, _query_quote(value)
 
 
 def _from_bytes(orig_bytes):

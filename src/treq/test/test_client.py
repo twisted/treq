@@ -73,6 +73,50 @@ class HTTPClientTests(TestCase):
             None,
         )
 
+    def test_request_uri_bytes_pass(self):
+        """
+        The URL parameter may contain path segments or querystring parameters
+        that are not valid UTF-8. These pass through.
+        """
+        # This URL is http://example.com/hello?who=you, but "hello", "who", and
+        # "you" are encoded as UTF-16. The particulars of the encoding aren't
+        # important; what matters is that those segments can't be decoded by
+        # Hyperlink's UTF-8 default.
+        self.client.request(
+            "GET",
+            (
+                "http://example.com/%FF%FEh%00e%00l%00l%00o%00"
+                "?%FF%FEw%00h%00o%00=%FF%FEy%00o%00u%00"
+            ),
+        )
+        self.agent.request.assert_called_once_with(
+            b'GET',
+            (
+                b'http://example.com/%FF%FEh%00e%00l%00l%00o%00'
+                b'?%FF%FEw%00h%00o%00=%FF%FEy%00o%00u%00'
+            ),
+            Headers({b'accept-encoding': [b'gzip']}),
+            None,
+        )
+
+    def test_request_uri_plus_pass(self):
+        """
+        URL parameters may contain spaces encoded as ``+``. These remain as
+        such and are not mangled.
+
+        This reproduces `Klein #339 <https://github.com/twisted/klein/issues/339>`_.
+        """
+        self.client.request(
+            "GET",
+            "https://example.com/?foo+bar=baz+biff",
+        )
+        self.agent.request.assert_called_once_with(
+            b'GET',
+            b"https://example.com/?foo+bar=baz+biff",
+            Headers({b'accept-encoding': [b'gzip']}),
+            None,
+        )
+
     def test_request_uri_idn_params(self):
         """
         A URL that contains non-ASCII characters can be augmented with
@@ -160,9 +204,13 @@ class HTTPClientTests(TestCase):
         treq coerces non-string param names passed to *params* like
         `urllib.urlencode()`
         """
+        # A value used to test that it is never encoded or decoded.
+        # It should be invalid UTF-8 or UTF-32 (at least).
+        raw_bytes = b"\x00\xff\xfb"
+
         self.client.request('GET', 'http://example.com/', params=[
             (u'text', u'A\u03a9'),
-            (b'bytes', ['ascii']),
+            (b'bytes', ['ascii', raw_bytes]),
             ('native', 'native'),
             (1, 'int'),
             (None, ['none']),
@@ -172,7 +220,7 @@ class HTTPClientTests(TestCase):
             b'GET',
             (
                 b'http://example.com/'
-                b'?text=A%CE%A9&bytes=ascii'
+                b'?text=A%CE%A9&bytes=ascii&bytes=%00%FF%FB'
                 b'&native=native&1=int&None=none'
             ),
             Headers({b'accept-encoding': [b'gzip']}),
@@ -547,6 +595,27 @@ class HTTPClientTests(TestCase):
                      b'accept-encoding': [b'gzip'],
                      b'Accept': [b'application/json', b'text/plain']}),
             None)
+
+    def test_request_headers_object(self):
+        """
+        The *headers* parameter accepts a `twisted.web.http_headers.Headers`
+        instance.
+        """
+        self.client.request(
+            "GET",
+            "https://example.com",
+            headers=Headers({"X-Foo": ["bar"]}),
+        )
+
+        self.agent.request.assert_called_once_with(
+            b"GET",
+            b"https://example.com",
+            Headers({
+                "X-Foo": ["bar"],
+                "Accept-Encoding": ["gzip"],
+            }),
+            None,
+        )
 
     def test_request_headers_invalid_type(self):
         """

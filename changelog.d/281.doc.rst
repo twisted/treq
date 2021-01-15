@@ -1,0 +1,1 @@
+The documentation of the *params* argument has been updated to more accurately describe its type-coercion behavior.

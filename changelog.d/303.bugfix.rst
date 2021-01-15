@@ -1,0 +1,1 @@
+The *params* argument once more accepts non-ASCII ``bytes``, fixing a regression first introduced in treq 20.4.1.

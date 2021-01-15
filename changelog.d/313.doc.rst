@@ -1,1 +1,0 @@
-The :mod:`treq.auth` module has been documented.

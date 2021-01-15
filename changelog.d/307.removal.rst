@@ -1,1 +1,0 @@
-The minimum supported Twisted version has increased to 18.7.0. Older versions are no longer tested in CI.

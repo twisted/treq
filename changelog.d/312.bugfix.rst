@@ -1,1 +1,0 @@
-The agent returned by :func:`treq.auth.add_auth()` and :func:`treq.auth.add_basic_auth()` is now marked to provide :class:`twisted.web.iweb.IAgent`.

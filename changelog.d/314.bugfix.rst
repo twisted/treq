@@ -1,1 +1,0 @@
-treq request APIs no longer mutates a :class:`http_headers.Headers <twisted.web.http_headers.Headers>` passed as the *headers* parameter when the *auth* parameter is also passed.

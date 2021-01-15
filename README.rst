@@ -2,7 +2,6 @@ treq: High-level Twisted HTTP Client API
 ========================================
 
 |pypi|_
-|build|_
 |coverage|_
 
 ``treq`` is an HTTP library inspired by
@@ -48,9 +47,6 @@ Copyright and License
 ``treq`` is made available under the MIT license.
 See `LICENSE <./LICENSE>`_ for legal details and copyright notices.
 
-
-.. |build| image:: https://api.travis-ci.org/twisted/treq.svg?branch=master
-.. _build: https://travis-ci.org/twisted/treq
 
 .. |coverage| image:: https://coveralls.io/repos/github/twisted/treq/badge.svg
 .. _coverage: https://coveralls.io/github/twisted/treq

@@ -204,9 +204,13 @@ class HTTPClientTests(TestCase):
         treq coerces non-string param names passed to *params* like
         `urllib.urlencode()`
         """
+        # A value used to test that it is never encoded or decoded.
+        # It should be invalid UTF-8 or UTF-32 (at least).
+        raw_bytes = b"\x00\xff\xfb"
+
         self.client.request('GET', 'http://example.com/', params=[
             (u'text', u'A\u03a9'),
-            (b'bytes', ['ascii', b'\x00\xff\xfb']),
+            (b'bytes', ['ascii', raw_bytes]),
             ('native', 'native'),
             (1, 'int'),
             (None, ['none']),

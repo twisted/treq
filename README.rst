@@ -16,13 +16,13 @@ using Twisted.
 
 .. code-block:: python
 
-    >>> from treq import get
+    >>> import treq
 
     >>> def done(response):
-    ...     print response.code
+    ...     print(response.code)
     ...     reactor.stop()
 
-    >>> get("http://www.github.com").addCallback(done)
+    >>> treq.get("https://github.com").addCallback(done)
 
     >>> from twisted.internet import reactor
     >>> reactor.run()

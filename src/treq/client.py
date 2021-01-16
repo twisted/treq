@@ -151,6 +151,7 @@ class HTTPClient(object):
         url,
         *,
         params=None,
+        headers=None,
         cookies=None,
         allow_redirects=True,
         browser_like_redirects=False,
@@ -185,7 +186,7 @@ class HTTPClient(object):
 
         url = parsed_url.to_uri().to_text().encode('ascii')
 
-        headers = self._request_headers(kwargs.pop('headers', None), stacklevel + 1)
+        headers = self._request_headers(headers, stacklevel + 1)
 
         bodyProducer, contentType = self._request_body(
             data=kwargs.pop('data', None),

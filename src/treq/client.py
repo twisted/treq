@@ -145,7 +145,16 @@ class HTTPClient(object):
         kwargs.setdefault('_stacklevel', 3)
         return self.request('DELETE', url, **kwargs)
 
-    def request(self, method, url, *, allow_redirects=True, browser_like_redirects=False, unbuffered=False, **kwargs):
+    def request(
+        self,
+        method,
+        url,
+        *,
+        allow_redirects=True,
+        browser_like_redirects=False,
+        unbuffered=False,
+        **kwargs
+    ):
         """
         See :func:`treq.request()`.
         """

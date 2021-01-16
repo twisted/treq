@@ -163,7 +163,6 @@ class HTTPClient(object):
         reactor=None,
         timeout=None,
         _stacklevel=2,
-        **kwargs
     ):
         """
         See :func:`treq.request()`.
@@ -233,9 +232,6 @@ class HTTPClient(object):
 
         if not unbuffered:
             d.addCallback(_BufferedResponse)
-
-        if kwargs:
-            raise TypeError("Unexpected keyword arguments: {!r}".format(kwargs))
 
         return d.addCallback(_Response, cookies)
 

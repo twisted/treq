@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 In-memory version of treq for testing.
 """
-
-from __future__ import absolute_import, division, print_function
-
-from six import text_type, PY3
 
 from contextlib import contextmanager
 from functools import wraps
@@ -120,10 +115,7 @@ class RequestTraversalAgent(object):
         # the tcpClients list.  Alternately, it will try to establish an HTTPS
         # connection with the reactor's connectSSL method, and MemoryReactor
         # will place it into the sslClients list.  We'll extract that.
-        if PY3:
-            scheme = URLPath.fromBytes(uri).scheme
-        else:
-            scheme = URLPath.fromString(uri).scheme
+        scheme = URLPath.fromBytes(uri).scheme
 
         host, port, factory, timeout, bindAddress = (
             self._memoryReactor.tcpClients[-1])
@@ -197,8 +189,8 @@ class _SynchronousProducer(object):
         self.body = body
         msg = ("StubTreq currently only supports url-encodable types, bytes, "
                "or unicode as data.")
-        assert isinstance(body, (bytes, text_type)), msg
-        if isinstance(body, text_type):
+        assert isinstance(body, (bytes, str)), msg
+        if isinstance(body, str):
             self.body = body.encode('utf-8')
         self.length = len(body)
 
@@ -328,7 +320,7 @@ def _maybeEncode(someStr):
     """
     Encode `someStr` to ASCII if required.
     """
-    if isinstance(someStr, text_type):
+    if isinstance(someStr, str):
         return someStr.encode('ascii')
     return someStr
 

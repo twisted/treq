@@ -4,7 +4,7 @@ In-memory treq returns stubbed responses.
 from functools import partial
 from inspect import getmembers, isfunction
 
-from mock import ANY
+from unittest.mock import ANY
 
 from twisted.trial.unittest import TestCase
 from twisted.web.client import ResponseFailed

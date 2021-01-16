@@ -161,13 +161,13 @@ class HTTPClient(object):
         unbuffered=False,
         reactor=None,
         timeout=None,
+        _stacklevel=2,
         **kwargs
     ):
         """
         See :func:`treq.request()`.
         """
         method = method.encode('ascii').upper()
-        stacklevel = kwargs.pop('_stacklevel', 2)
 
         if isinstance(url, DecodedURL):
             parsed_url = url.encoded_url
@@ -189,10 +189,10 @@ class HTTPClient(object):
 
         url = parsed_url.to_uri().to_text().encode('ascii')
 
-        headers = self._request_headers(headers, stacklevel + 1)
+        headers = self._request_headers(headers, _stacklevel + 1)
 
         bodyProducer, contentType = self._request_body(data, files, json,
-                                                       stacklevel=stacklevel + 1)
+                                                       stacklevel=_stacklevel + 1)
         if contentType is not None:
             headers.setRawHeaders(b'Content-Type', [contentType])
 

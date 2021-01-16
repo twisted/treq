@@ -153,6 +153,7 @@ class HTTPClient(object):
         allow_redirects=True,
         browser_like_redirects=False,
         unbuffered=False,
+        reactor=None,
         **kwargs
     ):
         """
@@ -218,7 +219,6 @@ class HTTPClient(object):
             method, url, headers=headers,
             bodyProducer=bodyProducer)
 
-        reactor = kwargs.pop('reactor', None)
         if reactor is None:
             from twisted.internet import reactor
         timeout = kwargs.pop('timeout', None)

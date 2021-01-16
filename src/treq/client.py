@@ -150,6 +150,7 @@ class HTTPClient(object):
         method,
         url,
         *,
+        params=None,
         cookies=None,
         allow_redirects=True,
         browser_like_redirects=False,
@@ -177,7 +178,6 @@ class HTTPClient(object):
 
         # Join parameters provided in the URL
         # and the ones passed as argument.
-        params = kwargs.pop('params', None)
         if params:
             parsed_url = parsed_url.replace(
                 query=parsed_url.query + tuple(_coerced_query_params(params))

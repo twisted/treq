@@ -145,7 +145,7 @@ class HTTPClient(object):
         kwargs.setdefault('_stacklevel', 3)
         return self.request('DELETE', url, **kwargs)
 
-    def request(self, method, url, *, unbuffered=False, **kwargs):
+    def request(self, method, url, *, allow_redirects=True, browser_like_redirects=False, unbuffered=False, **kwargs):
         """
         See :func:`treq.request()`.
         """
@@ -192,8 +192,7 @@ class HTTPClient(object):
         cookies = merge_cookies(self._cookiejar, cookies)
         wrapped_agent = CookieAgent(self._agent, cookies)
 
-        browser_like_redirects = kwargs.pop('browser_like_redirects', False)
-        if kwargs.pop('allow_redirects', True):
+        if allow_redirects:
             if browser_like_redirects:
                 wrapped_agent = BrowserLikeRedirectAgent(wrapped_agent)
             else:

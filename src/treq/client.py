@@ -155,6 +155,7 @@ class HTTPClient(object):
         data=None,
         files=None,
         json=_NOTHING,
+        auth=None,
         cookies=None,
         allow_redirects=True,
         browser_like_redirects=False,
@@ -211,7 +212,6 @@ class HTTPClient(object):
         wrapped_agent = ContentDecoderAgent(wrapped_agent,
                                             [(b'gzip', GzipDecoder)])
 
-        auth = kwargs.pop('auth', None)
         if auth:
             wrapped_agent = add_auth(wrapped_agent, auth)
 

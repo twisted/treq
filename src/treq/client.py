@@ -150,6 +150,7 @@ class HTTPClient(object):
         method,
         url,
         *,
+        cookies=None,
         allow_redirects=True,
         browser_like_redirects=False,
         unbuffered=False,
@@ -194,8 +195,6 @@ class HTTPClient(object):
         )
         if contentType is not None:
             headers.setRawHeaders(b'Content-Type', [contentType])
-
-        cookies = kwargs.pop('cookies', {})
 
         if not isinstance(cookies, CookieJar):
             cookies = cookiejar_from_dict(cookies)

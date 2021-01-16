@@ -1,13 +1,9 @@
 # Copyright (c) Twisted Matrix Laboratories.
 # See LICENSE for details.
 
-from __future__ import absolute_import, division, print_function
-
 from uuid import uuid4
 from io import BytesIO
 from contextlib import closing
-
-from six import integer_types, text_type
 
 from twisted.internet import defer, task
 from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
@@ -60,7 +56,7 @@ class MultiPartProducer(object):
 
         self.boundary = boundary or uuid4().hex
 
-        if isinstance(self.boundary, text_type):
+        if isinstance(self.boundary, str):
             self.boundary = self.boundary.encode('ascii')
 
         self.length = self._calculateLength()
@@ -169,7 +165,7 @@ class MultiPartProducer(object):
         consumer.write(CRLF + self._getBoundary(final=True) + CRLF)
 
     def _writeField(self, name, value, consumer):
-        if isinstance(value, text_type):
+        if isinstance(value, str):
             self._writeString(name, value, consumer)
         elif isinstance(value, tuple):
             filename, content_type, producer = value
@@ -218,8 +214,8 @@ def _escape(value):
     a newline in the file name parameter makes form-data request unreadable
     for majority of parsers.
     """
-    if not isinstance(value, (bytes, text_type)):
-        value = text_type(value)
+    if not isinstance(value, (bytes, str)):
+        value = str(value)
     if isinstance(value, bytes):
         value = value.decode('utf-8')
     return value.replace(u"\r", u"").replace(u"\n", u"").replace(u'"', u'\\"')
@@ -232,14 +228,14 @@ def _enforce_unicode(value):
     If someone needs to pass the binary string, use BytesIO and wrap it with
     `FileBodyProducer`.
     """
-    if isinstance(value, text_type):
+    if isinstance(value, str):
         return value
 
     elif isinstance(value, bytes):
         # we got a byte string, and we have no ide what's the encoding of it
         # we can only assume that it's something cool
         try:
-            return text_type(value, "utf-8")
+            return str(value, "utf-8")
         except UnicodeDecodeError:
             raise ValueError(
                 "Supplied raw bytes that are not ascii/utf-8."
@@ -267,7 +263,7 @@ def _converted(fields):
             filename = _enforce_unicode(filename) if filename else None
             yield name, (filename, content_type, producer)
 
-        elif isinstance(value, (bytes, text_type)):
+        elif isinstance(value, (bytes, str)):
             yield name, _enforce_unicode(value)
 
         else:
@@ -300,7 +296,7 @@ class _LengthConsumer(object):
 
         if value is UNKNOWN_LENGTH:
             self.length = value
-        elif isinstance(value, integer_types):
+        elif isinstance(value, int):
             self.length += value
         else:
             self.length += len(value)
@@ -347,7 +343,7 @@ def _sorted_by_type(fields):
     """
     def key(p):
         key, val = p
-        if isinstance(val, (bytes, text_type)):
+        if isinstance(val, (bytes, str)):
             return (0, key)
         else:
             return (1, key)

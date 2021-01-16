@@ -152,6 +152,9 @@ class HTTPClient(object):
         *,
         params=None,
         headers=None,
+        data=None,
+        files=None,
+        json=_NOTHING,
         cookies=None,
         allow_redirects=True,
         browser_like_redirects=False,
@@ -188,12 +191,8 @@ class HTTPClient(object):
 
         headers = self._request_headers(headers, stacklevel + 1)
 
-        bodyProducer, contentType = self._request_body(
-            data=kwargs.pop('data', None),
-            files=kwargs.pop('files', None),
-            json=kwargs.pop('json', _NOTHING),
-            stacklevel=stacklevel + 1,
-        )
+        bodyProducer, contentType = self._request_body(data, files, json,
+                                                       stacklevel=stacklevel + 1)
         if contentType is not None:
             headers.setRawHeaders(b'Content-Type', [contentType])
 

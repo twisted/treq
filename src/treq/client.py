@@ -154,6 +154,7 @@ class HTTPClient(object):
         browser_like_redirects=False,
         unbuffered=False,
         reactor=None,
+        timeout=None,
         **kwargs
     ):
         """
@@ -221,7 +222,6 @@ class HTTPClient(object):
 
         if reactor is None:
             from twisted.internet import reactor
-        timeout = kwargs.pop('timeout', None)
         if timeout:
             delayedCall = reactor.callLater(timeout, d.cancel)
 

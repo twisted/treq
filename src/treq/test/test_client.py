@@ -656,19 +656,15 @@ class HTTPClientTests(TestCase):
 
     def test_request_invalid_param(self):
         """
-        `HTTPClient.request()` warns that invalid parameters are ignored and
-        that this is deprecated.
+        `HTTPClient.request()` rejects invalid keyword parameters with
+        `TypeError`.
         """
-        self.client.request('GET', b'http://example.com', invalid=True)
-
-        [w] = self.flushWarnings([self.test_request_invalid_param])
-        self.assertEqual(
-            (
-                "Got unexpected keyword argument: 'invalid'."
-                " treq will ignore this argument,"
-                " but will raise TypeError in the next treq release."
-            ),
-            w['message'],
+        self.assertRaises(
+            TypeError,
+            self.client.request,
+            "GET",
+            b"http://example.com",
+            invalid=True,
         )
 
     @with_clock

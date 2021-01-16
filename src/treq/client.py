@@ -228,15 +228,7 @@ class HTTPClient(object):
             d.addCallback(_BufferedResponse)
 
         if kwargs:
-            warnings.warn(
-                (
-                    "Got unexpected keyword argument: {}."
-                    " treq will ignore this argument,"
-                    " but will raise TypeError in the next treq release."
-                ).format(", ".join(repr(k) for k in kwargs)),
-                DeprecationWarning,
-                stacklevel=stacklevel,
-            )
+            raise TypeError("Unexpected keyword arguments: {!r}".format(kwargs))
 
         return d.addCallback(_Response, cookies)
 

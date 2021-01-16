@@ -145,7 +145,7 @@ class HTTPClient(object):
         kwargs.setdefault('_stacklevel', 3)
         return self.request('DELETE', url, **kwargs)
 
-    def request(self, method, url, **kwargs):
+    def request(self, method, url, *, unbuffered=False, **kwargs):
         """
         See :func:`treq.request()`.
         """
@@ -224,7 +224,7 @@ class HTTPClient(object):
 
             d.addBoth(gotResult)
 
-        if not kwargs.pop('unbuffered', False):
+        if not unbuffered:
             d.addCallback(_BufferedResponse)
 
         if kwargs:

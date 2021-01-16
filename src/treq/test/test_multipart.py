@@ -1,4 +1,3 @@
-# coding: utf-8
 # Copyright (c) Twisted Matrix Laboratories.
 # See LICENSE for details.
 
@@ -10,16 +9,11 @@ from io import BytesIO
 from twisted.trial import unittest
 from zope.interface.verify import verifyObject
 
-from six import PY3, text_type
-
 from twisted.internet import task
 from twisted.web.client import FileBodyProducer
 from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
 
 from treq.multipart import MultiPartProducer, _LengthConsumer
-
-if PY3:
-    long = int
 
 
 class MultiPartProducerTestCase(unittest.TestCase):
@@ -65,7 +59,7 @@ class MultiPartProducerTestCase(unittest.TestCase):
 
     def newLines(self, value):
 
-        if isinstance(value, text_type):
+        if isinstance(value, str):
             return value.replace(u"\n", u"\r\n")
         else:
             return value.replace(b"\n", b"\r\n")
@@ -622,15 +616,15 @@ class LengthConsumerTestCase(unittest.TestCase):
 
     def test_scalarsUpdateCounter(self):
         """
-        When a long or an int are written, _LengthConsumer updates its internal
+        When an int is written, _LengthConsumer updates its internal
         counter.
         """
         consumer = _LengthConsumer()
         self.assertEqual(consumer.length, 0)
-        consumer.write(long(1))
+        consumer.write(1)
         self.assertEqual(consumer.length, 1)
         consumer.write(2147483647)
-        self.assertEqual(consumer.length, long(2147483648))
+        self.assertEqual(consumer.length, 2147483648)
 
     def test_stringUpdatesCounter(self):
         """

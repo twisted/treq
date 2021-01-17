@@ -63,5 +63,5 @@ See `LICENSE <./LICENSE>`_ for legal details and copyright notices.
     :alt: Coverage
 
 .. _documentation: https://treq.readthedocs.org
-.. |documentation| image:: https://readthedocs.org/projects/pip/badge/
+.. |documentation| image:: https://readthedocs.org/projects/treq/badge/
     :alt: Documentation

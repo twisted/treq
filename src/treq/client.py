@@ -1,15 +1,10 @@
-from __future__ import absolute_import, division, print_function
-
+import io
 import mimetypes
 import uuid
 import warnings
-
-import io
-
-import six
-from six.moves.collections_abc import Mapping
-from six.moves.http_cookiejar import CookieJar
-from six.moves.urllib.parse import quote_plus, urlencode as _urlencode
+from collections.abc import Mapping
+from http.cookiejar import CookieJar
+from urllib.parse import quote_plus, urlencode as _urlencode
 
 from twisted.internet.interfaces import IProtocol
 from twisted.internet.defer import Deferred
@@ -42,7 +37,10 @@ _NOTHING = object()
 
 
 def urlencode(query, doseq):
-    return six.ensure_binary(_urlencode(query, doseq), encoding='ascii')
+    s = _urlencode(query, doseq)
+    if not isinstance(s, bytes):
+        s = s.encode("ascii")
+    return s
 
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
@@ -96,7 +94,7 @@ class _BufferedResponse(proxyForInterface(IResponse)):
             self._waiters.append(protocol)
 
 
-class HTTPClient(object):
+class HTTPClient:
     def __init__(self, agent, cookiejar=None,
                  data_to_body_producer=IBodyProducer):
         self._agent = agent
@@ -156,7 +154,7 @@ class HTTPClient(object):
             parsed_url = url.encoded_url
         elif isinstance(url, EncodedURL):
             parsed_url = url
-        elif isinstance(url, six.text_type):
+        elif isinstance(url, str):
             # We use hyperlink in lazy mode so that users can pass arbitrary
             # bytes in the path and querystring.
             parsed_url = EncodedURL.from_text(url)
@@ -250,7 +248,7 @@ class HTTPClient(object):
         if isinstance(headers, dict):
             h = Headers({})
             for k, v in headers.items():
-                if isinstance(v, (bytes, six.text_type)):
+                if isinstance(v, (bytes, str)):
                     h.addRawHeader(k, v)
                 elif isinstance(v, list):
                     h.setRawHeaders(k, v)
@@ -432,7 +430,7 @@ def _query_quote(v):
         a querystring (with space as ``+``).
     """
     if not isinstance(v, (str, bytes)):
-        v = six.text_type(v)
+        v = str(v)
     if not isinstance(v, bytes):
         v = v.encode("utf-8")
     q = quote_plus(v)
@@ -496,10 +494,5 @@ def _guess_content_type(filename):
 registerAdapter(_from_bytes, bytes, IBodyProducer)
 registerAdapter(_from_file, io.BytesIO, IBodyProducer)
 
-if six.PY2:
-    registerAdapter(_from_file, six.StringIO, IBodyProducer)
-    # Suppress lint failure on Python 3.
-    registerAdapter(_from_file, file, IBodyProducer)  # noqa: F821
-else:
-    # file()/open() equiv on Py3
-    registerAdapter(_from_file, io.BufferedReader, IBodyProducer)
+# file()/open() equiv
+registerAdapter(_from_file, io.BufferedReader, IBodyProducer)

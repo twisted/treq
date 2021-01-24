@@ -33,13 +33,15 @@ Download: :download:`testing_seq.py <examples/testing_seq.py>`.
 Loosely matching the request
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you don't care about certain parts of the request, you can pass :data:`mock.ANY`, which compares equal to anything.
+If you don't care about certain parts of the request, you can pass :data:`unittest.mock.ANY`, which compares equal to anything.
 This sequence matches a single GET request with any parameters or headers:
 
 .. code-block:: python
 
+    from unittest.mock import ANY
+
     RequestSequence([
-        ((b'get', mock.ANY, mock.ANY, b''), (200, {}, b'ok'))
+        ((b'get', ANY, ANY, b''), (200, {}, b'ok'))
     ])
 
 

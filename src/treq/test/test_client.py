@@ -1,8 +1,7 @@
-# -*- encoding: utf-8 -*-
 from collections import OrderedDict
 from io import BytesIO
 
-import mock
+from unittest import mock
 
 from hyperlink import DecodedURL, EncodedURL
 from twisted.internet.defer import Deferred, succeed, CancelledError

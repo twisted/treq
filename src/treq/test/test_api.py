@@ -15,7 +15,7 @@ except ImportError:
     from twisted.test.proto_helpers import MemoryReactorClock
 
 
-class SyntacticAbominationHTTPConnectionPool(object):
+class SyntacticAbominationHTTPConnectionPool:
     """
     A HTTP connection pool that always fails to return a connection,
     but counts the number of requests made.
@@ -80,7 +80,7 @@ class TreqAPITests(TestCase):
         """
 
         @implementer(IAgent)
-        class CounterAgent(object):
+        class CounterAgent:
             requests = 0
 
             def request(self, method, uri, headers=None, bodyProducer=None):

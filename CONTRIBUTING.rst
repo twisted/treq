@@ -1,28 +1,23 @@
 Developing
 ==========
 
-Install dependencies:
+This project uses `Tox <https://tox.readthedocs.io/en/latest/config.html>`_ to manage virtual environments.
 
-::
+To run the tests::
 
-    pip install treq[dev]
+    tox -e py38-twisted_latest
 
-Run Tests (unit & integration):
+Lint::
 
-::
-
-    trial treq
-
-Lint:
-
-::
-
-    pep8 treq
-    pyflakes treq
+    tox -e flake8
 
 Build docs::
 
     tox -e docs
+
+To do it all::
+
+    tox -p
 
 Release notes
 -------------

@@ -26,7 +26,7 @@ if __name__ == "__main__":
         package_dir={"": "src"},
         setup_requires=["incremental"],
         use_incremental=True,
-        python_requires='>=3.5',
+        python_requires='>=3.6',
         install_requires=[
             "incremental",
             "requests >= 2.1.0",

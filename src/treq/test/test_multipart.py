@@ -80,11 +80,17 @@ class MultiPartProducerTestCase(unittest.TestCase):
         """
         class HasSeek:
             def seek(self, offset, whence):
-                pass
+                """
+                A C{seek} method that is never called because there is no
+                matching C{tell} method.
+                """
 
         class HasTell:
             def tell(self):
-                pass
+                """
+                A C{tell} method that is never called because there is no
+                matching C{seek} method.
+                """
 
         producer = MultiPartProducer(
             {"f": ("name", None, FileBodyProducer(HasSeek()))})

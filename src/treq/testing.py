@@ -37,7 +37,7 @@ import attr
 
 @implementer(IAgentEndpointFactory)
 @attr.s
-class _EndpointFactory(object):
+class _EndpointFactory:
     """
     An endpoint factory used by :class:`RequestTraversalAgent`.
 
@@ -72,7 +72,7 @@ class _EndpointFactory(object):
 
 
 @implementer(IAgent)
-class RequestTraversalAgent(object):
+class RequestTraversalAgent:
     """
     :obj:`~twisted.web.iweb.IAgent` implementation that issues an in-memory
     request rather than going out to a real network socket.
@@ -168,7 +168,7 @@ class RequestTraversalAgent(object):
 
 
 @implementer(IBodyProducer)
-class _SynchronousProducer(object):
+class _SynchronousProducer:
     """
     A partial implementation of an :obj:`IBodyProducer` which produces its
     entire payload immediately.  There is no way to access to an instance of
@@ -215,7 +215,7 @@ def _reject_files(f):
     return wrapper
 
 
-class StubTreq(object):
+class StubTreq:
     """
     A fake version of the treq module that can be used for testing that
     provides all the function calls exposed in :obj:`treq.__all__`.
@@ -331,7 +331,7 @@ def _maybeEncodeHeaders(headers):
             for k, vs in headers.items()}
 
 
-class HasHeaders(object):
+class HasHeaders:
     """
     Since Twisted adds headers to a request, such as the host and the content
     length, it's necessary to test whether request headers CONTAIN the expected
@@ -361,7 +361,7 @@ class HasHeaders(object):
         return not self.__eq__(other_headers)
 
 
-class RequestSequence(object):
+class RequestSequence:
     """
     For an example usage, see :meth:`RequestSequence.consume`.
 

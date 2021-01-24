@@ -10,7 +10,7 @@ from zope.interface import implementer
 
 
 @attr.s(frozen=True, order=False, slots=True)
-class RequestRecord(object):
+class RequestRecord:
     """
     The details of a call to :meth:`_AgentSpy.request`
 
@@ -30,7 +30,7 @@ class RequestRecord(object):
 
 @implementer(IAgent)
 @attr.s
-class _AgentSpy(object):
+class _AgentSpy:
     """
     An agent that records HTTP requests
 

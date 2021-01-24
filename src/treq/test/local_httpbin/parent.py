@@ -59,7 +59,7 @@ class _HTTPBinServerProcessProtocol(basic.LineOnlyReceiver):
 
 
 @attr.s
-class _HTTPBinProcess(object):
+class _HTTPBinProcess:
     """
     Manage an ``httpbin`` server process.
 

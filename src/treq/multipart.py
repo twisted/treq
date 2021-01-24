@@ -14,7 +14,7 @@ CRLF = b"\r\n"
 
 
 @implementer(IBodyProducer)
-class MultiPartProducer(object):
+class MultiPartProducer:
     """
     :class:`MultiPartProducer` takes parameters for a HTTP request and
     produces bytes in multipart/form-data format defined in :rfc:`2388` and
@@ -272,7 +272,7 @@ def _converted(fields):
                 "or tuple (filename, content type, IBodyProducer)")
 
 
-class _LengthConsumer(object):
+class _LengthConsumer:
     """
     `_LengthConsumer` is used to calculate the length of the multi-part
     request. The easiest way to do that is to consume all the fields,
@@ -302,7 +302,7 @@ class _LengthConsumer(object):
             self.length += len(value)
 
 
-class _Header(object):
+class _Header:
     """
     `_Header` This class is a tiny wrapper that produces
     request headers. We can't use standard python header

@@ -20,7 +20,7 @@ class UnknownAuthConfig(Exception):
 
 
 @implementer(IAgent)
-class _RequestHeaderSetterAgent(object):
+class _RequestHeaderSetterAgent:
     """
     Wrap an agent to set request headers
 

@@ -78,11 +78,11 @@ class MultiPartProducerTestCase(unittest.TestCase):
         passed as a parameter without either a C{seek} or C{tell} method,
         its C{length} attribute is set to C{UNKNOWN_LENGTH}.
         """
-        class HasSeek(object):
+        class HasSeek:
             def seek(self, offset, whence):
                 pass
 
-        class HasTell(object):
+        class HasTell:
             def tell(self):
                 pass
 
@@ -193,7 +193,7 @@ Hello, World
         L{MultiPartProducer.startProducing} fires with a L{Failure} wrapping
         that exception.
         """
-        class BrokenFile(object):
+        class BrokenFile:
             def read(self, count):
                 raise IOError("Simulated bad thing")
 

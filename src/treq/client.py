@@ -94,7 +94,7 @@ class _BufferedResponse(proxyForInterface(IResponse)):
             self._waiters.append(protocol)
 
 
-class HTTPClient(object):
+class HTTPClient:
     def __init__(self, agent, cookiejar=None,
                  data_to_body_producer=IBodyProducer):
         self._agent = agent

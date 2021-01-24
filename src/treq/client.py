@@ -494,5 +494,5 @@ def _guess_content_type(filename):
 registerAdapter(_from_bytes, bytes, IBodyProducer)
 registerAdapter(_from_file, io.BytesIO, IBodyProducer)
 
-# file()/open() equiv on Py3
+# file()/open() equiv
 registerAdapter(_from_file, io.BufferedReader, IBodyProducer)

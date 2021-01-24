@@ -223,7 +223,7 @@ def _escape(value):
 
 def _enforce_unicode(value):
     """
-    This function enforces the stings passed to be unicode, so we won't
+    This function enforces the strings passed to be unicode, so we won't
     need to guess what's the encoding of the binary strings passed in.
     If someone needs to pass the binary string, use BytesIO and wrap it with
     `FileBodyProducer`.
@@ -232,10 +232,10 @@ def _enforce_unicode(value):
         return value
 
     elif isinstance(value, bytes):
-        # we got a byte string, and we have no ide what's the encoding of it
+        # we got a byte string, and we have no idea what's the encoding of it
         # we can only assume that it's something cool
         try:
-            return str(value, "utf-8")
+            return value.decode("utf-8")
         except UnicodeDecodeError:
             raise ValueError(
                 "Supplied raw bytes that are not ascii/utf-8."

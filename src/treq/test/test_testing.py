@@ -4,9 +4,7 @@ In-memory treq returns stubbed responses.
 from functools import partial
 from inspect import getmembers, isfunction
 
-from mock import ANY
-
-from six import text_type, binary_type, PY3
+from unittest.mock import ANY
 
 from twisted.trial.unittest import TestCase
 from twisted.web.client import ResponseFailed
@@ -163,9 +161,9 @@ class StubbingTests(TestCase):
         self.successResultOf(stub.request('method', 'http://url', data=[]))
         self.successResultOf(stub.request('method', 'http://url', data=()))
         self.successResultOf(
-            stub.request('method', 'http://url', data=binary_type(b"")))
+            stub.request('method', 'http://url', data=b""))
         self.successResultOf(
-            stub.request('method', 'http://url', data=text_type("")))
+            stub.request('method', 'http://url', data=""))
 
     def test_handles_failing_asynchronous_requests(self):
         """
@@ -306,11 +304,10 @@ class HasHeadersTests(TestCase):
         """
         :obj:`HasHeaders` returns a nice string repr.
         """
-        if PY3:
-            reprOutput = "HasHeaders({b'a': [b'b']})"
-        else:
-            reprOutput = "HasHeaders({'a': ['b']})"
-        self.assertEqual(reprOutput, repr(HasHeaders({b'A': [b'b']})))
+        self.assertEqual(
+            "HasHeaders({b'a': [b'b']})",
+            repr(HasHeaders({b"A": [b"b"]})),
+        )
 
 
 class StringStubbingTests(TestCase):

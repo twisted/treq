@@ -10,9 +10,7 @@ import sys
 
 import httpbin
 
-import six
-
-from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
+from twisted.internet.defer import Deferred, inlineCallbacks
 from twisted.internet.endpoints import TCP4ServerEndpoint, SSL4ServerEndpoint
 from twisted.internet.task import react
 from twisted.internet.ssl import (Certificate,
@@ -158,11 +156,9 @@ def _serve_tls(reactor, host, port, site):
     :return: A :py:class:`Deferred` that fires with a
              :py:class:`_HTTPBinDescription`
     """
-    cert_host = host.decode('ascii') if six.PY2 else host
-
     (
         ca_cert, private_key, certificate,
-    ) = _certificates_for_authority_and_server(cert_host)
+    ) = _certificates_for_authority_and_server(host)
 
     context_factory = CertificateOptions(privateKey=private_key,
                                          certificate=certificate)
@@ -178,7 +174,7 @@ def _serve_tls(reactor, host, port, site):
                                       port=port.getHost().port,
                                       cacert=ca_cert.dumpPEM().decode('ascii'))
 
-    returnValue(description)
+    return description
 
 
 @inlineCallbacks
@@ -202,7 +198,7 @@ def _serve_tcp(reactor, host, port, site):
 
     description = _HTTPBinDescription(host=host, port=port.getHost().port)
 
-    returnValue(description)
+    return description
 
 
 def _output_process_description(description, stdout=sys.stdout):
@@ -214,15 +210,8 @@ def _output_process_description(description, stdout=sys.stdout):
 
     :param stdout: (optional) Standard out.
     """
-    if six.PY2:
-        write = stdout.write
-        flush = stdout.flush
-    else:
-        write = stdout.buffer.write
-        flush = stdout.buffer.flush
-
-    write(description.to_json_bytes() + b'\n')
-    flush()
+    stdout.buffer.write(description.to_json_bytes() + b'\n')
+    stdout.buffer.flush()
 
 
 def _forever_httpbin(reactor, argv,

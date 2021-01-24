@@ -11,6 +11,5 @@ MANIFEST
 .coverage
 coverage
 htmlcov
-_trial_temp
+_trial_temp*
 .tox
-_trial_temp.lock

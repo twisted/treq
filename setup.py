@@ -38,8 +38,10 @@ if __name__ == "__main__":
             "dev": [
                 "pep8",
                 "pyflakes",
-                "sphinx",
                 "httpbin==0.5.0",
+            ],
+            "docs": [
+                "sphinx>=1.4.8",
             ],
         },
         package_data={"treq": ["_version"]},

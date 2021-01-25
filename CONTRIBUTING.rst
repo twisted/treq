@@ -14,6 +14,7 @@ Lint::
 Build docs::
 
     tox -e docs
+    firefox docs/html/index.html
 
 To do it all::
 

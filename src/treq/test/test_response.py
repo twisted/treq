@@ -10,7 +10,7 @@ from twisted.web.http_headers import Headers
 from treq.response import _Response
 
 
-class FakeResponse(object):
+class FakeResponse:
     def __init__(self, code, headers, body=()):
         self.code = code
         self.headers = headers

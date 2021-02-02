@@ -1,1 +1,0 @@
-The *url* parameter of :meth:`HTTPClient.request()` (and shortcuts like :meth:`~HTTPClient.get()`) now accept :class:`hyperlink.DecodedURL` and :class:`hyperlink.URL` in addition to :class:`str` and :class:`bytes`.

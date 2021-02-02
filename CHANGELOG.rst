@@ -8,6 +8,61 @@ Changelog
 
 .. towncrier release notes start
 
+21.1.0 (2021-01-14)
+===================
+
+Features
+--------
+
+- Support for Python 3.9: treq is now tested with CPython 3.9. (`#305 <https://github.com/twisted/treq/issues/305>`__)
+- The *auth* parameter now accepts arbitrary text and `bytes` for usernames and passwords. Text is encoded as UTF-8, per :rfc:`7617`. Previously only ASCII was allowed. (`#268 <https://github.com/twisted/treq/issues/268>`__)
+- treq produces a more helpful exception when passed a tuple of the wrong size in the *files* parameter. (`#299 <https://github.com/twisted/treq/issues/299>`__)
+
+
+Bugfixes
+--------
+
+- The *params* argument once more accepts non-ASCII ``bytes``, fixing a regression first introduced in treq 20.4.1. (`#303 <https://github.com/twisted/treq/issues/303>`__)
+- treq request APIs no longer mutates a :class:`http_headers.Headers <twisted.web.http_headers.Headers>` passed as the *headers* parameter when the *auth* parameter is also passed. (`#314 <https://github.com/twisted/treq/issues/314>`__)
+- The agent returned by :func:`treq.auth.add_auth()` and :func:`treq.auth.add_basic_auth()` is now marked to provide :class:`twisted.web.iweb.IAgent`. (`#312 <https://github.com/twisted/treq/issues/312>`__)
+- treq's package metadata has been updated to require ``six >= 1.13``, noting a dependency introduced in treq 20.9.0. (`#295 <https://github.com/twisted/treq/issues/295>`__)
+
+
+Improved Documentation
+----------------------
+
+- The documentation of the *params* argument has been updated to more accurately describe its type-coercion behavior. (`#281 <https://github.com/twisted/treq/issues/281>`__)
+- The :mod:`treq.auth` module has been documented. (`#313 <https://github.com/twisted/treq/issues/313>`__)
+
+
+Deprecations and Removals
+-------------------------
+
+- Support for Python 2.7, which has reached end of support, is deprecated. This is the last release with support for Python 2.7. (`#309 <https://github.com/twisted/treq/issues/309>`__)
+- Support for Python 3.5, which has reached end of support, is deprecated. This is the last release with support for Python 3.5. (`#306 <https://github.com/twisted/treq/issues/306>`__)
+- Deprecate tolerance of non-string values when passing headers as a dict. They have historically been silently dropped, but will raise TypeError in the next treq release. Also deprecate passing headers other than :class:`dict`, :class:`~twisted.web.http_headers.Headers`, or ``None``. Historically falsy values like ``[]`` or ``()`` were accepted. (`#294 <https://github.com/twisted/treq/issues/294>`__)
+- treq request functions and methods like :func:`treq.get()` and :meth:`HTTPClient.post()` now issue a ``DeprecationWarning`` when passed unknown keyword arguments, rather than ignoring them.
+  Mixing the *json* argument with *files* or *data* is also deprecated.
+  These warnings will change to a ``TypeError`` in the next treq release. (`#297 <https://github.com/twisted/treq/issues/297>`__)
+- The minimum supported Twisted version has increased to 18.7.0. Older versions are no longer tested in CI. (`#307 <https://github.com/twisted/treq/issues/307>`__)
+
+
+20.9.0 (2020-09-27)
+===================
+
+Features
+--------
+
+- The *url* parameter of :meth:`HTTPClient.request()` (and shortcuts like :meth:`~HTTPClient.get()`) now accept :class:`hyperlink.DecodedURL` and :class:`hyperlink.URL` in addition to :class:`str` and :class:`bytes`. (`#212 <https://github.com/twisted/treq/issues/212>`__)
+- Compatibility with the upcoming Twisted 20.9.0 release (`#290 <https://github.com/twisted/treq/issues/290>`__).
+
+
+Improved Documentation
+----------------------
+
+- An example of sending and receiving JSON has been added. (`#278 <https://github.com/twisted/treq/issues/278>`__)
+
+
 20.4.1 (2020-04-16)
 ===================
 

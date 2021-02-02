@@ -78,20 +78,26 @@ class MultiPartProducerTestCase(unittest.TestCase):
         passed as a parameter without either a C{seek} or C{tell} method,
         its C{length} attribute is set to C{UNKNOWN_LENGTH}.
         """
-        class HasSeek:
+        class CantTell:
             def seek(self, offset, whence):
-                pass
+                """
+                A C{seek} method that is never called because there is no
+                matching C{tell} method.
+                """
 
-        class HasTell:
+        class CantSeek:
             def tell(self):
-                pass
+                """
+                A C{tell} method that is never called because there is no
+                matching C{seek} method.
+                """
 
         producer = MultiPartProducer(
-            {"f": ("name", None, FileBodyProducer(HasSeek()))})
+            {"f": ("name", None, FileBodyProducer(CantTell()))})
         self.assertEqual(UNKNOWN_LENGTH, producer.length)
 
         producer = MultiPartProducer(
-            {"f": ("name", None, FileBodyProducer(HasTell()))})
+            {"f": ("name", None, FileBodyProducer(CantSeek()))})
         self.assertEqual(UNKNOWN_LENGTH, producer.length)
 
     def test_knownLengthOnFile(self):

@@ -595,15 +595,15 @@ my lovely bytes
         # Since Python 3.7, the value for a non-file field is now a list
         # of strings, not bytes.
         if sys.version_info >= (3, 7):
-            self.assertEqual(set(['just a string\r\n', 'another string']),
+            self.assertEqual({'just a string\r\n', 'another string'},
                              set(form['cfield']))
         else:
-            self.assertEqual(set([b'just a string\r\n', b'another string']),
+            self.assertEqual({b'just a string\r\n', b'another string'},
                              set(form['cfield']))
 
-        self.assertEqual(set([b'my lovely bytes2']), set(form['efield']))
-        self.assertEqual(set([b'my lovely bytes219']), set(form['xfield']))
-        self.assertEqual(set([b'my lovely bytes22']), set(form['afield']))
+        self.assertEqual({b'my lovely bytes2'}, set(form['efield']))
+        self.assertEqual({b'my lovely bytes219'}, set(form['xfield']))
+        self.assertEqual({b'my lovely bytes22'}, set(form['afield']))
 
 
 class LengthConsumerTestCase(unittest.TestCase):

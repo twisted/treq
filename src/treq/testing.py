@@ -354,8 +354,8 @@ class HasHeaders:
         compare_to = _maybeEncodeHeaders(other_headers)
 
         return (set(self._headers.keys()).issubset(set(compare_to.keys())) and
-                all([set(v).issubset(set(compare_to[k]))
-                     for k, v in self._headers.items()]))
+                all(set(v).issubset(set(compare_to[k]))
+                     for k, v in self._headers.items()))
 
     def __ne__(self, other_headers):
         return not self.__eq__(other_headers)

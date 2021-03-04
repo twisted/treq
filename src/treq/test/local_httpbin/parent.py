@@ -151,8 +151,7 @@ class _HTTPBinProcess:
                 return self._process_description
 
             return ready.addCallback(store_and_schedule_termination)
-        else:
-            return succeed(self._process_description)
+        return succeed(self._process_description)
 
     def kill(self):
         """

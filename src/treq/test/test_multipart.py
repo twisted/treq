@@ -54,15 +54,13 @@ class MultiPartProducerTestCase(unittest.TestCase):
 
         if with_producer:
             return (output.getvalue(), producer)
-        else:
-            return output.getvalue()
+        return output.getvalue()
 
     def newLines(self, value):
 
         if isinstance(value, str):
             return value.replace(u"\n", u"\r\n")
-        else:
-            return value.replace(b"\n", b"\r\n")
+        return value.replace(b"\n", b"\r\n")
 
     def test_interface(self):
         """

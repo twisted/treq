@@ -340,7 +340,7 @@ class HTTPClient:
                 self._data_to_body_producer(urlencode(data, doseq=True)),
                 b'application/x-www-form-urlencoded',
             )
-        elif data:
+        if data:
             return (
                 self._data_to_body_producer(data),
                 None,
@@ -360,12 +360,11 @@ class HTTPClient:
 def _convert_params(params):
     if hasattr(params, "iteritems"):
         return list(sorted(params.iteritems()))
-    elif hasattr(params, "items"):
+    if hasattr(params, "items"):
         return list(sorted(params.items()))
-    elif isinstance(params, (tuple, list)):
+    if isinstance(params, (tuple, list)):
         return list(params)
-    else:
-        raise ValueError("Unsupported format")
+    raise ValueError("Unsupported format")
 
 
 def _convert_files(files):

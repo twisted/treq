@@ -231,7 +231,7 @@ def _enforce_unicode(value):
     if isinstance(value, str):
         return value
 
-    elif isinstance(value, bytes):
+    if isinstance(value, bytes):
         # we got a byte string, and we have no idea what's the encoding of it
         # we can only assume that it's something cool
         try:
@@ -345,6 +345,5 @@ def _sorted_by_type(fields):
         key, val = p
         if isinstance(val, (bytes, str)):
             return (0, key)
-        else:
-            return (1, key)
+        return (1, key)
     return sorted(fields, key=key)

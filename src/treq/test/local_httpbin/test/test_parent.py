@@ -271,12 +271,14 @@ class MemoryProcessReactor(MemoryReactor):
         MemoryReactor.__init__(self)
         self.spawnedProcesses = []
 
-    def spawnProcess(self, processProtocol, executable, args=(), env={},
+    def spawnProcess(self, processProtocol, executable, args=(), env=None,
                      path=None, uid=None, gid=None, usePTY=0, childFDs=None):
         """
         :ivar process_protocol: Stores the protocol passed to the reactor.
         :return: An L{IProcessTransport} provider.
         """
+        if env is None:
+            env = {}
         transport_state = FakeProcessTransportState()
         transport = FakeProcessTransport(transport_state)
 

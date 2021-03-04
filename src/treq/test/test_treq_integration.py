@@ -169,7 +169,7 @@ class TreqIntegrationTests(TestCase):
                 BytesIO.__init__(self, val)
                 self.name = "david.png"
 
-            def read(*args, **kwargs):
+            def read(self, *args, **kwargs):
                 return BytesIO.read(*args, **kwargs)
 
         response = yield self.post(

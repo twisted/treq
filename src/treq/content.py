@@ -96,7 +96,7 @@ def json_content(response, **kwargs):
     # RFC7159 (8.1): Default JSON character encoding is UTF-8
     d = text_content(response, encoding='utf-8')
 
-    d.addCallback(lambda text: json.loads(text, **kwargs))
+    d.addCallback(json.loads)
     return d
 
 

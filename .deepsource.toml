@@ -1,6 +1,6 @@
 version = 1
 
-test_patterns = ["src/treq/test/test_*.py"]
+test_patterns = ["src/treq/test/**/test_*.py"]
 
 exclude_patterns = [
     "changelog.d/**",

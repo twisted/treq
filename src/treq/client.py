@@ -143,12 +143,29 @@ class HTTPClient:
         kwargs.setdefault('_stacklevel', 3)
         return self.request('DELETE', url, **kwargs)
 
-    def request(self, method, url, **kwargs):
+    def request(
+        self,
+        method,
+        url,
+        *,
+        params=None,
+        headers=None,
+        data=None,
+        files=None,
+        json=_NOTHING,
+        auth=None,
+        cookies=None,
+        allow_redirects=True,
+        browser_like_redirects=False,
+        unbuffered=False,
+        reactor=None,
+        timeout=None,
+        _stacklevel=2,
+    ):
         """
         See :func:`treq.request()`.
         """
         method = method.encode('ascii').upper()
-        stacklevel = kwargs.pop('_stacklevel', 2)
 
         if isinstance(url, DecodedURL):
             parsed_url = url.encoded_url
@@ -163,7 +180,6 @@ class HTTPClient:
 
         # Join parameters provided in the URL
         # and the ones passed as argument.
-        params = kwargs.pop('params', None)
         if params:
             parsed_url = parsed_url.replace(
                 query=parsed_url.query + tuple(_coerced_query_params(params))
@@ -171,18 +187,12 @@ class HTTPClient:
 
         url = parsed_url.to_uri().to_text().encode('ascii')
 
-        headers = self._request_headers(kwargs.pop('headers', None), stacklevel + 1)
+        headers = self._request_headers(headers, _stacklevel + 1)
 
-        bodyProducer, contentType = self._request_body(
-            data=kwargs.pop('data', None),
-            files=kwargs.pop('files', None),
-            json=kwargs.pop('json', _NOTHING),
-            stacklevel=stacklevel + 1,
-        )
+        bodyProducer, contentType = self._request_body(data, files, json,
+                                                       stacklevel=_stacklevel + 1)
         if contentType is not None:
             headers.setRawHeaders(b'Content-Type', [contentType])
-
-        cookies = kwargs.pop('cookies', {})
 
         if not isinstance(cookies, CookieJar):
             cookies = cookiejar_from_dict(cookies)
@@ -190,8 +200,7 @@ class HTTPClient:
         cookies = merge_cookies(self._cookiejar, cookies)
         wrapped_agent = CookieAgent(self._agent, cookies)
 
-        browser_like_redirects = kwargs.pop('browser_like_redirects', False)
-        if kwargs.pop('allow_redirects', True):
+        if allow_redirects:
             if browser_like_redirects:
                 wrapped_agent = BrowserLikeRedirectAgent(wrapped_agent)
             else:
@@ -200,7 +209,6 @@ class HTTPClient:
         wrapped_agent = ContentDecoderAgent(wrapped_agent,
                                             [(b'gzip', GzipDecoder)])
 
-        auth = kwargs.pop('auth', None)
         if auth:
             wrapped_agent = add_auth(wrapped_agent, auth)
 
@@ -208,10 +216,8 @@ class HTTPClient:
             method, url, headers=headers,
             bodyProducer=bodyProducer)
 
-        reactor = kwargs.pop('reactor', None)
         if reactor is None:
             from twisted.internet import reactor
-        timeout = kwargs.pop('timeout', None)
         if timeout:
             delayedCall = reactor.callLater(timeout, d.cancel)
 
@@ -222,19 +228,8 @@ class HTTPClient:
 
             d.addBoth(gotResult)
 
-        if not kwargs.pop('unbuffered', False):
+        if not unbuffered:
             d.addCallback(_BufferedResponse)
-
-        if kwargs:
-            warnings.warn(
-                (
-                    "Got unexpected keyword argument: {}."
-                    " treq will ignore this argument,"
-                    " but will raise TypeError in the next treq release."
-                ).format(", ".join(repr(k) for k in kwargs)),
-                DeprecationWarning,
-                stacklevel=stacklevel,
-            )
 
         return d.addCallback(_Response, cookies)
 

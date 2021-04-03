@@ -5,6 +5,7 @@ include .coveragerc
 recursive-include docs *
 prune docs/_build
 prune docs/html
+include *.toml
 
 exclude tox.ini
 exclude tox2travis.py

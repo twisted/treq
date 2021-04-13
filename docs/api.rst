@@ -114,6 +114,14 @@ StubTreq Objects
         asynchronous. In that case, after each write from the server,
         :meth:`flush()` must be called so the client can see it.
 
+    .. method:: cleanSessions()
+
+        Clean up sessions to prevent leaving behind a dirty reactor.
+
+        If you are using :obj:`StubTreq` with :obj:`twisted.web.server.Session`
+        objects, you most likely have to call this method once you are done,
+        for example during the tearDown of a unittest TestCase.
+
     As the methods on :class:`treq.client.HTTPClient`:
 
     .. method:: request

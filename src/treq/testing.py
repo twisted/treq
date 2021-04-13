@@ -88,6 +88,7 @@ class RequestTraversalAgent:
             reactor=self._memoryReactor,
             endpointFactory=_EndpointFactory(self._memoryReactor))
         self._rootResource = rootResource
+        self._serverFactory = Site(self._rootResource, reactor=self._memoryReactor)
         self._pumps = set()
 
     def request(self, method, uri, headers=None, bodyProducer=None):
@@ -126,8 +127,7 @@ class RequestTraversalAgent:
         # Create the protocol and fake transport for the client and server,
         # using the factory that was passed to the MemoryReactor for the
         # client, and a Site around our rootResource for the server.
-        serverFactory = Site(self._rootResource, reactor=self._memoryReactor)
-        serverProtocol = serverFactory.buildProtocol(clientAddress)
+        serverProtocol = self._serverFactory.buildProtocol(clientAddress)
         serverTransport = iosim.FakeTransport(
             serverProtocol, isServer=True,
             hostAddress=serverAddress, peerAddress=clientAddress)
@@ -228,8 +228,8 @@ class StubTreq:
         :param resource: A :obj:`Resource` object that provides the fake
             responses
         """
-        _agent = RequestTraversalAgent(resource)
-        _client = HTTPClient(agent=_agent,
+        self._agent = RequestTraversalAgent(resource)
+        _client = HTTPClient(agent=self._agent,
                              data_to_body_producer=_SynchronousProducer)
         for function_name in treq.__all__:
             function = getattr(_client, function_name, None)
@@ -239,7 +239,17 @@ class StubTreq:
                 function = _reject_files(function)
 
             setattr(self, function_name, function)
-        self.flush = _agent.flush
+        self.flush = self._agent.flush
+
+    def cleanSessions(self):
+        """
+        Clean up sessions to prevent leaving behind a dirty reactor.
+        If you are using :obj:`StubTreq` with :obj:`twisted.web.server.Session`
+        objects, you most likely have to call this method once you are done,
+        for example during the tearDown of a unittest TestCase.
+        """
+        for sid in list(self._agent._serverFactory.sessions.keys()):
+            self._agent._serverFactory.sessions[sid].expire()
 
 
 class StringStubbingResource(Resource):

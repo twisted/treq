@@ -273,7 +273,11 @@ class StubbingTests(TestCase):
         self.assertEqual(sid_1, sid_2)
         # request 3, ensuring the session IDs are different after cleaning
         # or expiring the sessions
-        stub.cleanSessions()
+
+        # manually expire the sessions.
+        for sid in list(stub._agent._serverFactory.sessions.keys()):
+            stub._agent._serverFactory.sessions[sid].expire()
+
         d = stub.request("method", "http://example.com/")
         resp = self.successResultOf(d)
         cookies = resp.cookies()
@@ -284,8 +288,12 @@ class StubbingTests(TestCase):
         resp = self.successResultOf(d)
         sid_4 = self.successResultOf(resp.content())
         self.assertEqual(sid_3, sid_4)
+
         # when done, clean sessions to avoid leaving a dirty reactor behind
-        stub.cleanSessions()
+        # NOTE: this is a temporary fix discussed in #328.
+        # This should be removed once twisted ticked #10177 is fixed
+        for sid in list(stub._agent._serverFactory.sessions.keys()):
+            stub._agent._serverFactory.sessions[sid].expire()
 
 
 class HasHeadersTests(TestCase):

@@ -241,16 +241,6 @@ class StubTreq:
             setattr(self, function_name, function)
         self.flush = self._agent.flush
 
-    def cleanSessions(self):
-        """
-        Clean up sessions to prevent leaving behind a dirty reactor.
-        If you are using :obj:`StubTreq` with :obj:`twisted.web.server.Session`
-        objects, you most likely have to call this method once you are done,
-        for example during the tearDown of a unittest TestCase.
-        """
-        for sid in list(self._agent._serverFactory.sessions.keys()):
-            self._agent._serverFactory.sessions[sid].expire()
-
 
 class StringStubbingResource(Resource):
     """

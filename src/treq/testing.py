@@ -26,7 +26,7 @@ from twisted.web.client import Agent
 from twisted.web.error import SchemeNotSupported
 from twisted.web.iweb import IAgent, IAgentEndpointFactory, IBodyProducer
 from twisted.web.resource import Resource
-from twisted.web.server import Site
+from twisted.web.server import Session, Site
 
 from zope.interface import directlyProvides, implementer
 
@@ -89,6 +89,7 @@ class RequestTraversalAgent:
             endpointFactory=_EndpointFactory(self._memoryReactor))
         self._rootResource = rootResource
         self._serverFactory = Site(self._rootResource, reactor=self._memoryReactor)
+        self._serverFactory.sessionFactory = lambda site, uid: Session(site, uid, reactor=self._memoryReactor)
         self._pumps = set()
 
     def request(self, method, uri, headers=None, bodyProducer=None):

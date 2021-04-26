@@ -58,10 +58,26 @@ class _SessionIdTestResource(Resource):
     """
     isLeaf = True
 
+    def __init__(self):
+        super().__init__()
+        # keep track of all sessions created, so we can manually expire them later
+        self.sessions = []
+
     def render(self, request):
         session = request.getSession()
+        if session not in self.sessions:
+            # new session, add to internal list
+            self.sessions.append(session)
         uid = session.uid
         return uid
+
+    def expire_sessions(self):
+        """
+        Manually expire all sessions created by this resource.
+        """
+        for session in self.sessions:
+            session.expire()
+        self.sessions = []
 
 
 class StubbingTests(TestCase):
@@ -275,8 +291,7 @@ class StubbingTests(TestCase):
         # or expiring the sessions
 
         # manually expire the sessions.
-        for sid in list(stub._agent._serverFactory.sessions.keys()):
-            stub._agent._serverFactory.sessions[sid].expire()
+        rsrc.expire_sessions()
 
         d = stub.request("method", "http://example.com/")
         resp = self.successResultOf(d)
@@ -288,12 +303,6 @@ class StubbingTests(TestCase):
         resp = self.successResultOf(d)
         sid_4 = self.successResultOf(resp.content())
         self.assertEqual(sid_3, sid_4)
-
-        # when done, clean sessions to avoid leaving a dirty reactor behind
-        # NOTE: this is a temporary fix discussed in #328.
-        # This should be removed once twisted ticked #10177 is fixed
-        for sid in list(stub._agent._serverFactory.sessions.keys()):
-            stub._agent._serverFactory.sessions[sid].expire()
 
 
 class HasHeadersTests(TestCase):

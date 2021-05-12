@@ -103,9 +103,11 @@ def request(method, url, **kwargs):
         received within this timeframe, a connection is aborted with
         ``CancelledError``.
 
-    :param bool browser_like_redirects: Use browser like redirects
-        (i.e. Ignore  RFC2616 section 10.3 and follow redirects from
-        POST requests).  Default: ``False``
+    :param bool browser_like_redirects: Follow redirects like a web browser:
+        When a 301 or 302 redirect is received in response to a POST request
+        convert the method to GET.
+        See :rfc:`7231#section-6.4.3` and
+        :class:`~twisted.web.client.BrowserLikeRedirectAgent`). Default: ``False``
 
     :param bool unbuffered: Pass ``True`` to to disable response buffering.  By
         default treq buffers the entire response body in memory.

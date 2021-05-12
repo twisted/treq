@@ -89,7 +89,11 @@ class RequestTraversalAgent:
             endpointFactory=_EndpointFactory(self._memoryReactor))
         self._rootResource = rootResource
         self._serverFactory = Site(self._rootResource, reactor=self._memoryReactor)
-        self._serverFactory.sessionFactory = lambda site, uid: Session(site, uid, reactor=self._memoryReactor)
+        self._serverFactory.sessionFactory = lambda site, uid: Session(
+            site,
+            uid,
+            reactor=self._memoryReactor,
+        )
         self._pumps = set()
 
     def request(self, method, uri, headers=None, bodyProducer=None):

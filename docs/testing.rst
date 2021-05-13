@@ -57,3 +57,4 @@ This is superior to calling your resource's methods directly or passing mock obj
 Thus, the ``request`` object your code interacts with is a *real* :class:`twisted.web.server.Request` and behaves the same as it would in production.
 
 Note that if your resource returns :data:`~twisted.web.server.NOT_DONE_YET` you must keep a reference to the :class:`~treq.testing.RequestTraversalAgent` and call its :meth:`~treq.testing.RequestTraversalAgent.flush()` method to spin the memory reactor once the server writes additional data before the client will receive it.
+

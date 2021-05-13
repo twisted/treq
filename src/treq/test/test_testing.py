@@ -52,6 +52,34 @@ class _EventuallyResponsiveTestResource(Resource):
         return NOT_DONE_YET
 
 
+class _SessionIdTestResource(Resource):
+    """
+    Resource that returns the current session ID.
+    """
+    isLeaf = True
+
+    def __init__(self):
+        super().__init__()
+        # keep track of all sessions created, so we can manually expire them later
+        self.sessions = []
+
+    def render(self, request):
+        session = request.getSession()
+        if session not in self.sessions:
+            # new session, add to internal list
+            self.sessions.append(session)
+        uid = session.uid
+        return uid
+
+    def expire_sessions(self):
+        """
+        Manually expire all sessions created by this resource.
+        """
+        for session in self.sessions:
+            session.expire()
+        self.sessions = []
+
+
 class StubbingTests(TestCase):
     """
     Tests for :class:`StubTreq`.
@@ -241,6 +269,40 @@ class StubbingTests(TestCase):
         rsrc.stored_request.finish()
         stub.flush()
         self.successResultOf(d)
+
+    def test_session_persistence_between_requests(self):
+        """
+        Calling request.getSession() in the wrapped resource will return
+        a session with the same ID, until the sessions are cleaned.
+        """
+        rsrc = _SessionIdTestResource()
+        stub = StubTreq(rsrc)
+        # request 1, getting original session ID
+        d = stub.request("method", "http://example.com/")
+        resp = self.successResultOf(d)
+        cookies = resp.cookies()
+        sid_1 = self.successResultOf(resp.content())
+        # request 2, ensuring session ID stays the same
+        d = stub.request("method", "http://example.com/", cookies=cookies)
+        resp = self.successResultOf(d)
+        sid_2 = self.successResultOf(resp.content())
+        self.assertEqual(sid_1, sid_2)
+        # request 3, ensuring the session IDs are different after cleaning
+        # or expiring the sessions
+
+        # manually expire the sessions.
+        rsrc.expire_sessions()
+
+        d = stub.request("method", "http://example.com/")
+        resp = self.successResultOf(d)
+        cookies = resp.cookies()
+        sid_3 = self.successResultOf(resp.content())
+        self.assertNotEqual(sid_1, sid_3)
+        # request 4, ensuring that once again the session IDs are the same
+        d = stub.request("method", "http://example.com/", cookies=cookies)
+        resp = self.successResultOf(d)
+        sid_4 = self.successResultOf(resp.content())
+        self.assertEqual(sid_3, sid_4)
 
 
 class HasHeadersTests(TestCase):

@@ -92,8 +92,9 @@ def request(method, url, **kwargs):
 
         Otherwise, any non-``None`` value is passed to the client's
         *data_to_body_producer* callable (by default, :class:`IBodyProducer`),
-        which accepts :class:`io.BytesIO` objects, such as files.
-    :type data: `bytes`, `io.BytesIO`, `IBodyProducer`, or `None`
+        which accepts :class:`bytes` and binary files like returned by
+        ``open(..., "rb")``.
+    :type data: `bytes`, `typing.BinaryIO`, `IBodyProducer`, or `None`
 
     :param files:
         Files to include in the request body, in any of the several formats:

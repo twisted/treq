@@ -1,1 +1,0 @@
-PEP 517/518 ``build-system`` metadata is now provided in ``pyproject.toml``.

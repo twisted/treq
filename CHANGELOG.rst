@@ -8,6 +8,33 @@ Changelog
 
 .. towncrier release notes start
 
+21.5.0 (2021-05-24)
+===================
+
+Features
+--------
+
+- PEP 517/518 ``build-system`` metadata is now provided in ``pyproject.toml``. (`#329 <https://github.com/twisted/treq/issues/329>`__)
+
+
+Bugfixes
+--------
+
+- ``treq.testing.StubTreq`` now persists ``twisted.web.server.Session`` instances between requests. (`#327 <https://github.com/twisted/treq/issues/327>`__)
+
+
+Improved Documentation
+----------------------
+
+- The dependency on Sphinx required to build the documentation has been moved from the ``dev`` extra to the new ``docs`` extra. (`#296 <https://github.com/twisted/treq/issues/296>`__)
+
+
+Deprecations and Removals
+-------------------------
+
+- Support for Python 2.7 and 3.5 has been dropped. treq no longer depends on ``six`` or ``mock``. (`#318 <https://github.com/twisted/treq/issues/318>`__)
+
+
 21.1.0 (2021-01-14)
 ===================
 

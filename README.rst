@@ -28,7 +28,7 @@ using Twisted.
     >>> reactor.run()
     200
 
-For more info `read the docs <documentation>`_.
+For more info `read the docs <https://treq.readthedocs.org>`_.
 
 Contributing
 ------------

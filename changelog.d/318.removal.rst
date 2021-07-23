@@ -1,1 +1,0 @@
-Support for Python 2.7 and 3.5 has been dropped. treq no longer depends on ``six`` or ``mock``.

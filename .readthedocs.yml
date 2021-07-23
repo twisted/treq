@@ -1,5 +1,17 @@
+# https://docs.readthedocs.io/en/stable/config-file/v2.html
+version: 2
+
+sphinx:
+  fail_on_warning: false
+
+formats:
+  - pdf
+  - epub
+
 python:
-  version: 2.7
-  pip_install: true
-  extra_requirements:
-    - dev
+  version: 3.8
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs

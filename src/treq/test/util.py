@@ -1,7 +1,7 @@
 import os
 import platform
 
-import mock
+from unittest import mock
 
 from twisted.internet import reactor
 from twisted.internet.task import Clock

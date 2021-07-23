@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 In-memory version of treq for testing.
 """
-
-from __future__ import absolute_import, division, print_function
-
-from six import text_type, PY3
 
 from contextlib import contextmanager
 from functools import wraps
@@ -31,7 +26,7 @@ from twisted.web.client import Agent
 from twisted.web.error import SchemeNotSupported
 from twisted.web.iweb import IAgent, IAgentEndpointFactory, IBodyProducer
 from twisted.web.resource import Resource
-from twisted.web.server import Site
+from twisted.web.server import Session, Site
 
 from zope.interface import directlyProvides, implementer
 
@@ -42,7 +37,7 @@ import attr
 
 @implementer(IAgentEndpointFactory)
 @attr.s
-class _EndpointFactory(object):
+class _EndpointFactory:
     """
     An endpoint factory used by :class:`RequestTraversalAgent`.
 
@@ -77,7 +72,7 @@ class _EndpointFactory(object):
 
 
 @implementer(IAgent)
-class RequestTraversalAgent(object):
+class RequestTraversalAgent:
     """
     :obj:`~twisted.web.iweb.IAgent` implementation that issues an in-memory
     request rather than going out to a real network socket.
@@ -93,6 +88,12 @@ class RequestTraversalAgent(object):
             reactor=self._memoryReactor,
             endpointFactory=_EndpointFactory(self._memoryReactor))
         self._rootResource = rootResource
+        self._serverFactory = Site(self._rootResource, reactor=self._memoryReactor)
+        self._serverFactory.sessionFactory = lambda site, uid: Session(
+            site,
+            uid,
+            reactor=self._memoryReactor,
+        )
         self._pumps = set()
 
     def request(self, method, uri, headers=None, bodyProducer=None):
@@ -120,10 +121,7 @@ class RequestTraversalAgent(object):
         # the tcpClients list.  Alternately, it will try to establish an HTTPS
         # connection with the reactor's connectSSL method, and MemoryReactor
         # will place it into the sslClients list.  We'll extract that.
-        if PY3:
-            scheme = URLPath.fromBytes(uri).scheme
-        else:
-            scheme = URLPath.fromString(uri).scheme
+        scheme = URLPath.fromBytes(uri).scheme
 
         host, port, factory, timeout, bindAddress = (
             self._memoryReactor.tcpClients[-1])
@@ -134,8 +132,7 @@ class RequestTraversalAgent(object):
         # Create the protocol and fake transport for the client and server,
         # using the factory that was passed to the MemoryReactor for the
         # client, and a Site around our rootResource for the server.
-        serverFactory = Site(self._rootResource, reactor=self._memoryReactor)
-        serverProtocol = serverFactory.buildProtocol(clientAddress)
+        serverProtocol = self._serverFactory.buildProtocol(clientAddress)
         serverTransport = iosim.FakeTransport(
             serverProtocol, isServer=True,
             hostAddress=serverAddress, peerAddress=clientAddress)
@@ -176,7 +173,7 @@ class RequestTraversalAgent(object):
 
 
 @implementer(IBodyProducer)
-class _SynchronousProducer(object):
+class _SynchronousProducer:
     """
     A partial implementation of an :obj:`IBodyProducer` which produces its
     entire payload immediately.  There is no way to access to an instance of
@@ -197,8 +194,8 @@ class _SynchronousProducer(object):
         self.body = body
         msg = ("StubTreq currently only supports url-encodable types, bytes, "
                "or unicode as data.")
-        assert isinstance(body, (bytes, text_type)), msg
-        if isinstance(body, text_type):
+        assert isinstance(body, (bytes, str)), msg
+        if isinstance(body, str):
             self.body = body.encode('utf-8')
         self.length = len(body)
 
@@ -223,7 +220,7 @@ def _reject_files(f):
     return wrapper
 
 
-class StubTreq(object):
+class StubTreq:
     """
     A fake version of the treq module that can be used for testing that
     provides all the function calls exposed in :obj:`treq.__all__`.
@@ -236,8 +233,8 @@ class StubTreq(object):
         :param resource: A :obj:`Resource` object that provides the fake
             responses
         """
-        _agent = RequestTraversalAgent(resource)
-        _client = HTTPClient(agent=_agent,
+        self._agent = RequestTraversalAgent(resource)
+        _client = HTTPClient(agent=self._agent,
                              data_to_body_producer=_SynchronousProducer)
         for function_name in treq.__all__:
             function = getattr(_client, function_name, None)
@@ -247,7 +244,7 @@ class StubTreq(object):
                 function = _reject_files(function)
 
             setattr(self, function_name, function)
-        self.flush = _agent.flush
+        self.flush = self._agent.flush
 
 
 class StringStubbingResource(Resource):
@@ -328,7 +325,7 @@ def _maybeEncode(someStr):
     """
     Encode `someStr` to ASCII if required.
     """
-    if isinstance(someStr, text_type):
+    if isinstance(someStr, str):
         return someStr.encode('ascii')
     return someStr
 
@@ -339,7 +336,7 @@ def _maybeEncodeHeaders(headers):
             for k, vs in headers.items()}
 
 
-class HasHeaders(object):
+class HasHeaders:
     """
     Since Twisted adds headers to a request, such as the host and the content
     length, it's necessary to test whether request headers CONTAIN the expected
@@ -369,7 +366,7 @@ class HasHeaders(object):
         return not self.__eq__(other_headers)
 
 
-class RequestSequence(object):
+class RequestSequence:
     """
     For an example usage, see :meth:`RequestSequence.consume`.
 

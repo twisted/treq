@@ -25,8 +25,6 @@ from twisted.web.resource import Resource
 
 from service_identity.cryptography import verify_certificate_hostname
 
-import six
-
 from .. import child, shared
 
 
@@ -263,14 +261,13 @@ class FlushableBytesIO(object):
         self._state.flush_count += 1
 
 
-if not six.PY2:
-    @attr.s
-    class BufferedStandardOut(object):
-        """
-        A standard out that whose ``buffer`` is a
-        :py:class:`FlushableBytesIO` instance.
-        """
-        buffer = attr.ib()
+@attr.s
+class BufferedStandardOut(object):
+    """
+    A standard out that whose ``buffer`` is a
+    :py:class:`FlushableBytesIO` instance.
+    """
+    buffer = attr.ib()
 
 
 class OutputProcessDescriptionTests(SynchronousTestCase):
@@ -280,9 +277,7 @@ class OutputProcessDescriptionTests(SynchronousTestCase):
 
     def setUp(self):
         self.stdout_state = FlushableBytesIOState()
-        self.stdout = FlushableBytesIO(self.stdout_state)
-        if not six.PY2:
-            self.stdout = BufferedStandardOut(self.stdout)
+        self.stdout = BufferedStandardOut(FlushableBytesIO(self.stdout_state))
 
     def test_description_written(self):
         """

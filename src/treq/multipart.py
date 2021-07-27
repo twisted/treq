@@ -155,7 +155,7 @@ class MultiPartProducer:
 
             # It's also important to note that the boundary in the message
             # is defined not only by "--boundary-value" but
-            # but with CRLF characers before it and after the line.
+            # but with CRLF characters before it and after the line.
             # This is very important.
             # proper boundary is "CRLF--boundary-valueCRLF"
             consumer.write(

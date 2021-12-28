@@ -429,11 +429,6 @@ def _query_quote(v):
     if not isinstance(v, bytes):
         v = v.encode("utf-8")
     q = quote_plus(v)
-    if isinstance(q, bytes):
-        # Python 2.7 returnes bytes when given bytes, but Python 3.x always
-        # returns str.  Coverage disabled here to stop Coveralls complaining
-        # until we can drop Python 2.7 support.
-        q = q.decode("ascii")  # pragma: no cover
     return q
 
 

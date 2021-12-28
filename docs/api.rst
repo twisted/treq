@@ -78,6 +78,16 @@ Augmented Response Objects
 
         See :meth:`IResponse.setPreviousResponse() <twisted.web.iweb.IResponse.setPreviousResponse>`
 
+Authentication
+--------------
+
+.. module:: treq.auth
+
+.. autofunction:: add_auth
+
+.. autofunction:: add_basic_auth
+
+.. autoexception:: UnknownAuthConfig
 
 Test Helpers
 ------------

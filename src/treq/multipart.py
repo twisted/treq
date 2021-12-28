@@ -1,26 +1,20 @@
 # Copyright (c) Twisted Matrix Laboratories.
 # See LICENSE for details.
 
-from __future__ import absolute_import, division, print_function
-
 from uuid import uuid4
 from io import BytesIO
 from contextlib import closing
 
 from twisted.internet import defer, task
-from twisted.python.compat import unicode, _PY3
 from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
 
 from zope.interface import implementer
-
-if _PY3:
-    long = int
 
 CRLF = b"\r\n"
 
 
 @implementer(IBodyProducer)
-class MultiPartProducer(object):
+class MultiPartProducer:
     """
     :class:`MultiPartProducer` takes parameters for a HTTP request and
     produces bytes in multipart/form-data format defined in :rfc:`2388` and
@@ -62,7 +56,7 @@ class MultiPartProducer(object):
 
         self.boundary = boundary or uuid4().hex
 
-        if isinstance(self.boundary, unicode):
+        if isinstance(self.boundary, str):
             self.boundary = self.boundary.encode('ascii')
 
         self.length = self._calculateLength()
@@ -161,7 +155,7 @@ class MultiPartProducer(object):
 
             # It's also important to note that the boundary in the message
             # is defined not only by "--boundary-value" but
-            # but with CRLF characers before it and after the line.
+            # but with CRLF characters before it and after the line.
             # This is very important.
             # proper boundary is "CRLF--boundary-valueCRLF"
             consumer.write(
@@ -171,7 +165,7 @@ class MultiPartProducer(object):
         consumer.write(CRLF + self._getBoundary(final=True) + CRLF)
 
     def _writeField(self, name, value, consumer):
-        if isinstance(value, unicode):
+        if isinstance(value, str):
             self._writeString(name, value, consumer)
         elif isinstance(value, tuple):
             filename, content_type, producer = value
@@ -220,8 +214,8 @@ def _escape(value):
     a newline in the file name parameter makes form-data request unreadable
     for majority of parsers.
     """
-    if not isinstance(value, (bytes, unicode)):
-        value = unicode(value)
+    if not isinstance(value, (bytes, str)):
+        value = str(value)
     if isinstance(value, bytes):
         value = value.decode('utf-8')
     return value.replace(u"\r", u"").replace(u"\n", u"").replace(u'"', u'\\"')
@@ -229,19 +223,19 @@ def _escape(value):
 
 def _enforce_unicode(value):
     """
-    This function enforces the stings passed to be unicode, so we won't
+    This function enforces the strings passed to be unicode, so we won't
     need to guess what's the encoding of the binary strings passed in.
     If someone needs to pass the binary string, use BytesIO and wrap it with
     `FileBodyProducer`.
     """
-    if isinstance(value, unicode):
+    if isinstance(value, str):
         return value
 
     elif isinstance(value, bytes):
-        # we got a byte string, and we have no ide what's the encoding of it
+        # we got a byte string, and we have no idea what's the encoding of it
         # we can only assume that it's something cool
         try:
-            return unicode(value, "utf-8")
+            return value.decode("utf-8")
         except UnicodeDecodeError:
             raise ValueError(
                 "Supplied raw bytes that are not ascii/utf-8."
@@ -269,7 +263,7 @@ def _converted(fields):
             filename = _enforce_unicode(filename) if filename else None
             yield name, (filename, content_type, producer)
 
-        elif isinstance(value, (bytes, unicode)):
+        elif isinstance(value, (bytes, str)):
             yield name, _enforce_unicode(value)
 
         else:
@@ -278,7 +272,7 @@ def _converted(fields):
                 "or tuple (filename, content type, IBodyProducer)")
 
 
-class _LengthConsumer(object):
+class _LengthConsumer:
     """
     `_LengthConsumer` is used to calculate the length of the multi-part
     request. The easiest way to do that is to consume all the fields,
@@ -302,13 +296,13 @@ class _LengthConsumer(object):
 
         if value is UNKNOWN_LENGTH:
             self.length = value
-        elif isinstance(value, (int, long)):
+        elif isinstance(value, int):
             self.length += value
         else:
             self.length += len(value)
 
 
-class _Header(object):
+class _Header:
     """
     `_Header` This class is a tiny wrapper that produces
     request headers. We can't use standard python header
@@ -349,7 +343,7 @@ def _sorted_by_type(fields):
     """
     def key(p):
         key, val = p
-        if isinstance(val, (bytes, unicode)):
+        if isinstance(val, (bytes, str)):
             return (0, key)
         else:
             return (1, key)

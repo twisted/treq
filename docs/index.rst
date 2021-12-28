@@ -29,8 +29,7 @@ GET
 +++
 
 .. literalinclude:: examples/basic_get.py
-    :linenos:
-    :lines: 7-10
+    :pyobject: main
 
 Full example: :download:`basic_get.py <examples/basic_get.py>`
 
@@ -38,8 +37,7 @@ POST
 ++++
 
 .. literalinclude:: examples/basic_post.py
-    :linenos:
-    :lines: 9-14
+    :pyobject: main
 
 Full example: :download:`basic_post.py <examples/basic_post.py>`
 
@@ -85,7 +83,7 @@ Here is a list of `requests`_ features and their status in treq.
 +----------------------------------+----------+----------+
 | Connection Timeouts              | yes      | yes      |
 +----------------------------------+----------+----------+
-| HTTP(S) Proxy Suport             | yes      | no       |
+| HTTP(S) Proxy Support             | yes      | no       |
 +----------------------------------+----------+----------+
 | .netrc support                   | yes      | no       |
 +----------------------------------+----------+----------+

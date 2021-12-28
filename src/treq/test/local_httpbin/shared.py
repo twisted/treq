@@ -6,7 +6,7 @@ import json
 
 
 @attr.s
-class _HTTPBinDescription(object):
+class _HTTPBinDescription:
     """
     Describe an ``httpbin`` process.
 

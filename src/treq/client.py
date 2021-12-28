@@ -364,17 +364,18 @@ def _convert_params(params):
 
 
 def _convert_files(files):
-    """Files can be passed in a variety of formats:
+    """
+    Files can be passed in a variety of formats:
 
-        * {'file': open("bla.f")}
-        * {'file': (name, open("bla.f"))}
-        * {'file': (name, content-type, open("bla.f"))}
-        * Anything that has iteritems method, e.g. MultiDict:
-          MultiDict([(name, open()), (name, open())]
+    * {"fieldname": open("bla.f", "rb")}
+    * {"fieldname": ("filename", open("bla.f", "rb"))}
+    * {"fieldname": ("filename", "content-type", open("bla.f", "rb"))}
+    * Anything that has iteritems method, e.g. MultiDict:
+      MultiDict([(name, open()), (name, open())]
 
-        Our goal is to standardize it to unified form of:
+    Our goal is to standardize it to unified form of:
 
-        * [(param, (file name, content type, producer))]
+    * [(param, (file name, content type, producer))]
     """
 
     if hasattr(files, "iteritems"):

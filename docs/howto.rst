@@ -145,10 +145,10 @@ Customizing the Twisted Agent
 
 The main :py:mod:`treq` module has helper functions that automatically instantiate
 an instance of :py:class:`treq.client.HTTPClient`.  You can create an instance
-of :py:class:`~treq.client.HTTPClient` directly in order to customize the 
-paramaters used to initialize it.
-Internally, the :py:class:`~treq.client.HTTPClient` wraps an instance of 
-:py:class:`twisted.web.client.Agent`.  When you create an instance of 
+of :py:class:`~treq.client.HTTPClient` directly in order to customize the
+parameters used to initialize it.
+Internally, the :py:class:`~treq.client.HTTPClient` wraps an instance of
+:py:class:`twisted.web.client.Agent`.  When you create an instance of
 :py:class:`~treq.client.HTTPClient`, you must initialize it with an instance of
 :py:class:`~twisted.web.client.Agent`.  This allows you to customize its
 behavior.

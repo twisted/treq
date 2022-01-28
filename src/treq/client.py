@@ -3,7 +3,7 @@ import mimetypes
 import uuid
 import warnings
 from collections.abc import Mapping
-from http.cookiejar import CookieJar
+from http.cookiejar import CookieJar, Cookie
 from urllib.parse import quote_plus, urlencode as _urlencode
 
 from twisted.internet.interfaces import IProtocol
@@ -30,7 +30,7 @@ from json import dumps as json_dumps
 from treq.auth import add_auth
 from treq import multipart
 from treq.response import _Response
-from requests.cookies import cookiejar_from_dict, merge_cookies
+from requests.cookies import merge_cookies
 
 
 _NOTHING = object()
@@ -41,6 +41,45 @@ def urlencode(query, doseq):
     if not isinstance(s, bytes):
         s = s.encode("ascii")
     return s
+
+
+def _scoped_cookiejar_from_dict(url_object, cookie_dict):
+    """
+    Create a CookieJar from a dictionary whose cookies are all scoped to the
+    given URL's origin.
+
+    @note: This does not scope the cookies to any particular path, only the
+        host, port, and scheme of the given URL.
+    """
+    cookie_jar = CookieJar()
+    if cookie_dict is None:
+        return cookie_jar
+    for k, v in cookie_dict.items():
+        cookie_jar.set_cookie(
+            Cookie(
+                version=0,
+                name=k,
+                value=v,
+                domain=url_object.host,
+                port=str(url_object.port),
+                path="",
+                secure=(url_object.scheme == 'https'),
+                expires=None,
+                discard=False,
+                comment=None,
+                comment_url=None,
+                rfc2109=False,
+                port_specified=(
+                    not (url_object.scheme == "https" and url_object.port == 443)
+                    or (url_object.scheme == "http" and url_object.port == 80)
+                ),
+                path_specified=False,
+                domain_specified=False,
+                domain_initial_dot=False,
+                rest=[],
+            )
+        )
+    return cookie_jar
 
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
@@ -98,7 +137,9 @@ class HTTPClient:
     def __init__(self, agent, cookiejar=None,
                  data_to_body_producer=IBodyProducer):
         self._agent = agent
-        self._cookiejar = cookiejar or cookiejar_from_dict({})
+        if cookiejar is None:
+            cookiejar = CookieJar()
+        self._cookiejar = cookiejar
         self._data_to_body_producer = data_to_body_producer
 
     def get(self, url, **kwargs):
@@ -195,7 +236,7 @@ class HTTPClient:
             headers.setRawHeaders(b'Content-Type', [contentType])
 
         if not isinstance(cookies, CookieJar):
-            cookies = cookiejar_from_dict(cookies)
+            cookies = _scoped_cookiejar_from_dict(parsed_url, cookies)
 
         cookies = merge_cookies(self._cookiejar, cookies)
         wrapped_agent = CookieAgent(self._agent, cookies)

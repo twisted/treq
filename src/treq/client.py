@@ -55,24 +55,35 @@ def _scoped_cookiejar_from_dict(url_object, cookie_dict):
     if cookie_dict is None:
         return cookie_jar
     for k, v in cookie_dict.items():
+        secure=(url_object.scheme == 'https')
+        port_specified = not (
+            (url_object.scheme == "https" and url_object.port == 443)
+            or (url_object.scheme == "http" and url_object.port == 80)
+        )
+        port = str(url_object.port)
+        domain = url_object.host
+        netscape_domain = domain if '.' in domain else domain + '.local'
+
         cookie_jar.set_cookie(
             Cookie(
-                version=0,
+                # Scoping
+                domain=netscape_domain,
+                port=port,
+                secure=secure,
+                port_specified=port_specified,
+
+                # Contents
                 name=k,
                 value=v,
-                domain=url_object.host,
-                port=str(url_object.port),
-                path="",
-                secure=(url_object.scheme == 'https'),
+
+                # Constant/always-the-same stuff
+                version=0,
+                path="/",
                 expires=None,
                 discard=False,
                 comment=None,
                 comment_url=None,
                 rfc2109=False,
-                port_specified=(
-                    not (url_object.scheme == "https" and url_object.port == 443)
-                    or (url_object.scheme == "http" and url_object.port == 80)
-                ),
                 path_specified=False,
                 domain_specified=False,
                 domain_initial_dot=False,

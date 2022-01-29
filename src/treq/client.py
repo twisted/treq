@@ -55,7 +55,7 @@ def _scoped_cookiejar_from_dict(url_object, cookie_dict):
     if cookie_dict is None:
         return cookie_jar
     for k, v in cookie_dict.items():
-        secure=(url_object.scheme == 'https')
+        secure = url_object.scheme == 'https'
         port_specified = not (
             (url_object.scheme == "https" and url_object.port == 443)
             or (url_object.scheme == "http" and url_object.port == 80)

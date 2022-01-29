@@ -38,6 +38,7 @@ class _RedirectResource(Resource):
     Resource that redirects to a different domain.
     """
     isLeaf = True
+
     def render(self, request):
         if b'redirected' not in request.uri:
             request.redirect(b'https://example.org/redirected')
@@ -50,6 +51,7 @@ class _RedirectResource(Resource):
                 for key, values in
                 request.requestHeaders.getAllRawHeaders()}
         ).encode("utf-8")
+
 
 class _NonResponsiveTestResource(Resource):
     """Resource that returns NOT_DONE_YET and never finishes the request"""
@@ -342,7 +344,6 @@ class StubbingTests(TestCase):
         resp = self.successResultOf(d)
         received = self.successResultOf(resp.json())
         self.assertNotIn('not-across-redirect', received.get('Cookie', [''])[0])
-
 
 
 class HasHeadersTests(TestCase):

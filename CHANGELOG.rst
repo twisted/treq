@@ -8,6 +8,15 @@ Changelog
 
 .. towncrier release notes start
 
+22.1.0 (2022-01-29)
+===================
+
+Bugfixes
+--------
+
+- Cookies specified as a dict were sent to every domain, not just the domain of the request, potentially exposing them on redirect. See `GHSA-fhpf-pp6p-55qc <https://github.com/twisted/treq/security/advisories/GHSA-fhpf-pp6p-55qc>`_. (`#339 <https://github.com/twisted/treq/issues/339>`__)
+
+
 21.5.0 (2021-05-24)
 ===================
 

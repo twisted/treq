@@ -3,6 +3,7 @@ In-memory treq returns stubbed responses.
 """
 from functools import partial
 from inspect import getmembers, isfunction
+from json import dumps
 
 from unittest.mock import ANY
 
@@ -30,6 +31,26 @@ class _StaticTestResource(Resource):
         request.setResponseCode(418)
         request.setHeader(b"x-teapot", b"teapot!")
         return b"I'm a teapot"
+
+
+class _RedirectResource(Resource):
+    """
+    Resource that redirects to a different domain.
+    """
+    isLeaf = True
+
+    def render(self, request):
+        if b'redirected' not in request.uri:
+            request.redirect(b'https://example.org/redirected')
+        return dumps(
+            {
+                key.decode("charmap"): [
+                    value.decode("charmap")
+                    for value in values
+                ]
+                for key, values in
+                request.requestHeaders.getAllRawHeaders()}
+        ).encode("utf-8")
 
 
 class _NonResponsiveTestResource(Resource):
@@ -272,8 +293,10 @@ class StubbingTests(TestCase):
 
     def test_session_persistence_between_requests(self):
         """
-        Calling request.getSession() in the wrapped resource will return
-        a session with the same ID, until the sessions are cleaned.
+        Calling request.getSession() in the wrapped resource will return a
+        session with the same ID, until the sessions are cleaned; in other
+        words, cookies are propagated between requests when the result of
+        C{response.cookies()} is passed to the next request.
         """
         rsrc = _SessionIdTestResource()
         stub = StubTreq(rsrc)
@@ -303,6 +326,24 @@ class StubbingTests(TestCase):
         resp = self.successResultOf(d)
         sid_4 = self.successResultOf(resp.content())
         self.assertEqual(sid_3, sid_4)
+
+    def test_different_domains(self):
+        """
+        Cookies manually specified as part of a dictionary are not relayed
+        through redirects.
+
+        (This is really more of a test for scoping of cookies within treq
+        itself, rather than just for testing.)
+        """
+        rsrc = _RedirectResource()
+        stub = StubTreq(rsrc)
+        d = stub.request(
+            "GET", "http://example.com/",
+            cookies={"not-across-redirect": "nope"}
+        )
+        resp = self.successResultOf(d)
+        received = self.successResultOf(resp.json())
+        self.assertNotIn('not-across-redirect', received.get('Cookie', [''])[0])
 
 
 class HasHeadersTests(TestCase):

@@ -1,0 +1,1 @@
+Cookies specified as a dict were sent to every domain, not just the domain of the request, potentially exposing them on redirect. See `GHSA-fhpf-pp6p-55qc <https://github.com/twisted/treq/security/advisories/GHSA-fhpf-pp6p-55qc>`_.

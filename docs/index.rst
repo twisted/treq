@@ -83,7 +83,7 @@ Here is a list of `requests`_ features and their status in treq.
 +----------------------------------+----------+----------+
 | Connection Timeouts              | yes      | yes      |
 +----------------------------------+----------+----------+
-| HTTP(S) Proxy Suport             | yes      | no       |
+| HTTP(S) Proxy Support             | yes      | no       |
 +----------------------------------+----------+----------+
 | .netrc support                   | yes      | no       |
 +----------------------------------+----------+----------+

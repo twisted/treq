@@ -327,10 +327,10 @@ class StubbingTests(TestCase):
         sid_4 = self.successResultOf(resp.content())
         self.assertEqual(sid_3, sid_4)
 
-    def test_different_domains(self):
+    def test_cookies_not_sent_to_different_domains(self):
         """
         Cookies manually specified as part of a dictionary are not relayed
-        through redirects.
+        through redirects to different domains.
 
         (This is really more of a test for scoping of cookies within treq
         itself, rather than just for testing.)
@@ -344,6 +344,50 @@ class StubbingTests(TestCase):
         resp = self.successResultOf(d)
         received = self.successResultOf(resp.json())
         self.assertNotIn('not-across-redirect', received.get('Cookie', [''])[0])
+
+    def test_cookies_sent_for_same_domain(self):
+        """
+        Cookies manually specified as part of a dictionary are relayed
+        through redirects to the same domain.
+
+        (This is really more of a test for scoping of cookies within treq
+        itself, rather than just for testing.)
+        """
+        rsrc = _RedirectResource()
+        stub = StubTreq(rsrc)
+        d = stub.request(
+            "GET", "https://example.org/",
+            cookies={'sent-to-same-domain': 'yes'}
+        )
+        resp = self.successResultOf(d)
+        received = self.successResultOf(resp.json())
+        self.assertIn('sent-to-same-domain', received.get('Cookie', [''])[0])
+
+    def test_cookies_sent_with_explicit_port(self):
+        """
+        Cookies will be sent for URLs that specify a non-default port for their scheme.
+
+        (This is really more of a test for scoping of cookies within treq
+        itself, rather than just for testing.)
+        """
+        rsrc = _RedirectResource()
+        stub = StubTreq(rsrc)
+
+        d = stub.request(
+            "GET", "http://example.org:8080/redirected",
+            cookies={'sent-to-non-default-port': 'yes'}
+        )
+        resp = self.successResultOf(d)
+        received = self.successResultOf(resp.json())
+        self.assertIn('sent-to-non-default-port', received.get('Cookie', [''])[0])
+
+        d = stub.request(
+            "GET", "https://example.org:8443/redirected",
+            cookies={'sent-to-non-default-port': 'yes'}
+        )
+        resp = self.successResultOf(d)
+        received = self.successResultOf(resp.json())
+        self.assertIn('sent-to-non-default-port', received.get('Cookie', [''])[0])
 
 
 class HasHeadersTests(TestCase):

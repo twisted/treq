@@ -60,7 +60,7 @@ def _scoped_cookiejar_from_dict(url_object, cookie_dict):
             (url_object.scheme == "https" and url_object.port == 443)
             or (url_object.scheme == "http" and url_object.port == 80)
         )
-        port = str(url_object.port)
+        port = str(url_object.port) if port_specified else None
         domain = url_object.host
         netscape_domain = domain if '.' in domain else domain + '.local'
 

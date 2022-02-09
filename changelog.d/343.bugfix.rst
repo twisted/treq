@@ -1,1 +1,0 @@
-Address a regression introduced in Treq 22.1.0 that prevented transmission of cookies with requests to ports other than 80, including HTTPS (443).

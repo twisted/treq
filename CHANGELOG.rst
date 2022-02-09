@@ -8,6 +8,27 @@ Changelog
 
 .. towncrier release notes start
 
+22.2.0 (2022-02-08)
+===================
+
+Features
+--------
+
+- Python 3.10 and PyPy 3.8 are now supported. (`#338 <https://github.com/twisted/treq/issues/338>`__)
+
+
+Bugfixes
+--------
+
+- Address a regression introduced in Treq 22.1.0 that prevented transmission of cookies with requests to ports other than 80, including HTTPS (443). (`#343 <https://github.com/twisted/treq/issues/343>`__)
+
+
+Deprecations and Removals
+-------------------------
+
+- Support for Python 3.6, which has reached end of support, is deprecated. This is the last release with support for Python 3.6. (`#338 <https://github.com/twisted/treq/issues/338>`__)
+
+
 22.1.0 (2022-01-29)
 ===================
 

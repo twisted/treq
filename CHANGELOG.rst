@@ -14,7 +14,7 @@ Changelog
 Bugfixes
 --------
 
-- Cookies specified as a dict were sent to every domain, not just the domain of the request, potentially exposing them on redirect. See `GHSA-fhpf-pp6p-55qc <https://github.com/twisted/treq/security/advisories/GHSA-fhpf-pp6p-55qc>`_. (`#339 <https://github.com/twisted/treq/issues/339>`__)
+- Cookies specified as a dict were sent to every domain, not just the domain of the request, potentially exposing them on redirect. See `GHSA-fhpf-pp6p-55qc <https://github.com/twisted/treq/security/advisories/GHSA-fhpf-pp6p-55qc>`_. (`#339 <https://github.com/twisted/treq/issues/339>`__, CVE-2022-23607)
 
 
 21.5.0 (2021-05-24)

@@ -6,9 +6,12 @@ from twisted.trial.unittest import TestCase
 from twisted.web.http_headers import Headers
 from twisted.web.client import ResponseDone, ResponseFailed
 from twisted.web.http import PotentialDataLoss
+from twisted.web.resource import Resource
+from twisted.web.server import NOT_DONE_YET
 
 from treq import collect, content, json_content, text_content
 from treq.client import _BufferedResponse
+from treq.testing import StubTreq
 
 
 class ContentTests(TestCase):
@@ -215,3 +218,45 @@ class ContentTests(TestCase):
         self.protocol.connectionLost(Failure(ResponseDone()))
 
         self.assertEqual(self.successResultOf(d), u'ᚠᚡ')
+
+
+class UnfinishedResponse(Resource):
+    """Write some data, but never finish."""
+
+    isLeaf = True
+
+    def render(self, request):
+        request.write(b"HELLO")
+        return NOT_DONE_YET
+
+
+class MoreRealisticContentTests(TestCase):
+    """Tests involve less mocking."""
+
+    def test_exception_handling(self):
+        """
+        An exception in the collector function:
+
+            1. Always gets returned in the result ``Deferred`` from
+               ``treq.collect()``.
+
+            2. Closes the transport to be closed.
+        """
+        stub = StubTreq(UnfinishedResponse())
+        response = self.successResultOf(stub.request("GET", "http://127.0.0.1/"))
+        self.assertEqual(response.code, 200)
+
+        def error(data):
+            1 / 0
+
+        d = collect(response, error)
+
+        # Exceptions in the collector are passed on to the caller via the
+        # response Deferred:
+        self.assertFailure(d, ZeroDivisionError)
+
+        # An exception in the protocol results in the transport for the request
+        # being closed.
+        self.assertTrue(
+            response.original.original._transport._producer.disconnecting
+        )

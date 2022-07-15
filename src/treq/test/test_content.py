@@ -231,7 +231,7 @@ class UnfinishedResponse(Resource):
 
 
 class MoreRealisticContentTests(TestCase):
-    """Tests involve less mocking."""
+    """Tests involving less mocking."""
 
     def test_exception_handling(self):
         """
@@ -240,7 +240,7 @@ class MoreRealisticContentTests(TestCase):
             1. Always gets returned in the result ``Deferred`` from
                ``treq.collect()``.
 
-            2. Closes the transport to be closed.
+            2. Closes the transport.
         """
         stub = StubTreq(UnfinishedResponse())
         response = self.successResultOf(stub.request("GET", "http://127.0.0.1/"))

@@ -19,7 +19,7 @@ from treq.multipart import MultiPartProducer, _LengthConsumer
 class MultiPartProducerTestCase(unittest.TestCase):
     """
     Tests for the L{MultiPartProducer} which gets dictionary like object
-    with post parameters, converts them to mutltipart/form-data format
+    with post parameters, converts them to multipart/form-data format
     and feeds them to an L{IConsumer}.
     """
     def _termination(self):
@@ -43,7 +43,7 @@ class MultiPartProducerTestCase(unittest.TestCase):
 
     def getOutput(self, producer, with_producer=False):
         """
-        A convenience function to consume and return outpute.
+        A convenience function to consume and return output.
         """
         consumer = output = BytesIO()
 

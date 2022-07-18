@@ -253,7 +253,7 @@ class MoreRealisticContentTests(TestCase):
 
         # Exceptions in the collector are passed on to the caller via the
         # response Deferred:
-        self.assertFailure(d, ZeroDivisionError)
+        self.failureResultOf(d, ZeroDivisionError)
 
         # An exception in the protocol results in the transport for the request
         # being closed.

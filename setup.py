@@ -18,16 +18,16 @@ classifiers = [
 
 if __name__ == "__main__":
 
-    with open('README.rst') as f:
+    with open("README.rst") as f:
         readme = f.read()
 
     setup(
         name="treq",
-        packages=find_packages('src'),
+        packages=find_packages("src"),
         package_dir={"": "src"},
         setup_requires=["incremental"],
         use_incremental=True,
-        python_requires='>=3.6',
+        python_requires=">=3.6",
         install_requires=[
             "incremental",
             "requests >= 2.1.0",
@@ -39,7 +39,8 @@ if __name__ == "__main__":
             "dev": [
                 "pep8",
                 "pyflakes",
-                "httpbin==0.5.0",
+                "httpbin==0.7.0",
+                "werkzeug==2.0.3",
             ],
             "docs": [
                 "sphinx>=1.4.8",
@@ -55,5 +56,5 @@ if __name__ == "__main__":
         license="MIT/X",
         url="https://github.com/twisted/treq",
         long_description=readme,
-        long_description_content_type='text/x-rst',
+        long_description_content_type="text/x-rst",
     )

@@ -46,7 +46,7 @@ if __name__ == "__main__":
                 "sphinx<7.0.0",  # Removal of 'style' key breaks RTD.
             ],
         },
-        package_data={"treq": ["_version"]},
+        package_data={"treq": ["py.typed"]},
         author="David Reid",
         author_email="dreid@dreid.org",
         maintainer="Tom Most",

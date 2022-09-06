@@ -23,7 +23,7 @@ from treq.test.util import skip_on_windows_because_of_199
 from twisted.web.server import Site
 from twisted.web.resource import Resource
 
-from service_identity.cryptography import verify_certificate_hostname
+from service_identity.cryptography import verify_certificate_hostname  # type: ignore
 
 from .. import child, shared
 

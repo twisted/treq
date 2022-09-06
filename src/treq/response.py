@@ -1,13 +1,12 @@
-from twisted.python.components import proxyForInterface
-from twisted.web.iweb import IResponse, UNKNOWN_LENGTH
-from twisted.python import reflect
-
 from requests.cookies import cookiejar_from_dict
+from twisted.python import reflect
+from twisted.python.components import proxyForInterface
+from twisted.web.iweb import UNKNOWN_LENGTH, IResponse
 
 from treq.content import collect, content, json_content, text_content
 
 
-class _Response(proxyForInterface(IResponse)):
+class _Response(proxyForInterface(IResponse)):  # type: ignore
     """
     A wrapper for :class:`twisted.web.iweb.IResponse` which manages cookies and
     adds a few convenience methods.
@@ -23,14 +22,15 @@ class _Response(proxyForInterface(IResponse)):
         status code, Content-Type header, and body size, if available.
         """
         if self.original.length == UNKNOWN_LENGTH:
-            size = 'unknown size'
+            size = "unknown size"
         else:
-            size = '{:,d} bytes'.format(self.original.length)
+            size = "{:,d} bytes".format(self.original.length)
         # Display non-ascii bits of the content-type header as backslash
         # escapes.
-        content_type_bytes = b', '.join(
-            self.original.headers.getRawHeaders(b'content-type', ()))
-        content_type = repr(content_type_bytes).lstrip('b')[1:-1]
+        content_type_bytes = b", ".join(
+            self.original.headers.getRawHeaders(b"content-type", ())
+        )
+        content_type = repr(content_type_bytes).lstrip("b")[1:-1]
         return "<{} {} '{:.40s}' {}>".format(
             reflect.qual(self.__class__),
             self.original.code,
@@ -71,7 +71,7 @@ class _Response(proxyForInterface(IResponse)):
         """
         return json_content(self.original, **kwargs)
 
-    def text(self, encoding='ISO-8859-1'):
+    def text(self, encoding="ISO-8859-1"):
         """
         Read the entire body all at once as text, per
         :func:`treq.text_content()`.
@@ -93,8 +93,7 @@ class _Response(proxyForInterface(IResponse)):
         history = []
 
         while response.previousResponse is not None:
-            history.append(_Response(response.previousResponse,
-                                     self._cookiejar))
+            history.append(_Response(response.previousResponse, self._cookiejar))
             response = response.previousResponse
 
         history.reverse()

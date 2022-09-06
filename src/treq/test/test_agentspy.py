@@ -15,7 +15,7 @@ class APISpyTests(SynchronousTestCase):
     The agent_spy API provides an agent that records each request made to it.
     """
 
-    def test_provides_iagent(self):
+    def test_provides_iagent(self) -> None:
         """
         The agent returned by agent_spy() provides the IAgent interface.
         """
@@ -23,7 +23,7 @@ class APISpyTests(SynchronousTestCase):
 
         self.assertTrue(IAgent.providedBy(agent))
 
-    def test_records(self):
+    def test_records(self) -> None:
         """
         Each request made with the agent is recorded.
         """
@@ -43,7 +43,7 @@ class APISpyTests(SynchronousTestCase):
             ],
         )
 
-    def test_record_attributes(self):
+    def test_record_attributes(self) -> None:
         """
         Each parameter passed to `request` is available as an attribute of the
         RequestRecord. Additionally, the deferred returned by the call is
@@ -62,15 +62,15 @@ class APISpyTests(SynchronousTestCase):
         self.assertIs(rr.bodyProducer, body)
         self.assertIs(rr.deferred, deferred)
 
-    def test_type_validation(self):
+    def test_type_validation(self) -> None:
         """
         The request method enforces correctness by raising TypeError when
         passed parameters of the wrong type.
         """
         agent, _ = agent_spy()
 
-        self.assertRaises(TypeError, agent.request, u"method not bytes", b"uri")
-        self.assertRaises(TypeError, agent.request, b"method", u"uri not bytes")
+        self.assertRaises(TypeError, agent.request, "method not bytes", b"uri")
+        self.assertRaises(TypeError, agent.request, b"method", "uri not bytes")
         self.assertRaises(
             TypeError, agent.request, b"method", b"uri", {"not": "headers"}
         )

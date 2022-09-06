@@ -8,7 +8,7 @@ import argparse
 import datetime
 import sys
 
-import httpbin
+import httpbin  # type: ignore
 
 from twisted.internet.defer import Deferred, inlineCallbacks
 from twisted.internet.endpoints import TCP4ServerEndpoint, SSL4ServerEndpoint
@@ -16,7 +16,7 @@ from twisted.internet.task import react
 from twisted.internet.ssl import (Certificate,
                                   CertificateOptions)
 
-from OpenSSL.crypto import PKey, X509
+from OpenSSL.crypto import PKey, X509  # type: ignore
 
 from twisted.python.threadpool import ThreadPool
 from twisted.web.server import Site

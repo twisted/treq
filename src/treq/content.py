@@ -32,7 +32,7 @@ class _BodyCollector(Protocol):
     def dataReceived(self, data):
         try:
             self.collector(data)
-        except:  # noqa: bare-except
+        except BaseException:
             self.transport.loseConnection()
             self.finished.errback(Failure())
             self.finished = None

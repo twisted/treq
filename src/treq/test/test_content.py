@@ -2,6 +2,7 @@ from unittest import mock
 
 from twisted.python.failure import Failure
 
+from twisted.internet.error import ConnectionDone
 from twisted.trial.unittest import TestCase
 from twisted.web.http_headers import Headers
 from twisted.web.client import ResponseDone, ResponseFailed
@@ -225,8 +226,14 @@ class UnfinishedResponse(Resource):
 
     isLeaf = True
 
+    def __init__(self):
+        Resource.__init__(self)
+        # Track how requests finished.
+        self.request_finishes = []
+
     def render(self, request):
         request.write(b"HELLO")
+        request.notifyFinish().addBoth(self.request_finishes.append)
         return NOT_DONE_YET
 
 
@@ -242,7 +249,8 @@ class MoreRealisticContentTests(TestCase):
 
             2. Closes the transport.
         """
-        stub = StubTreq(UnfinishedResponse())
+        resource = UnfinishedResponse()
+        stub = StubTreq(resource)
         response = self.successResultOf(stub.request("GET", "http://127.0.0.1/"))
         self.assertEqual(response.code, 200)
 
@@ -257,6 +265,8 @@ class MoreRealisticContentTests(TestCase):
 
         # An exception in the protocol results in the transport for the request
         # being closed.
-        self.assertTrue(
-            response.original.original._transport._producer.disconnecting
+        stub.flush()
+        self.assertEqual(len(resource.request_finishes), 1)
+        self.assertIsInstance(
+            resource.request_finishes[0].value, ConnectionDone
         )

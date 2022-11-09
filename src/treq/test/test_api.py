@@ -15,7 +15,7 @@ except ImportError:
     from twisted.test.proto_helpers import MemoryReactorClock
 
 
-class SyntacticAbominationHTTPConnectionPool(object):
+class SyntacticAbominationHTTPConnectionPool:
     """
     A HTTP connection pool that always fails to return a connection,
     but counts the number of requests made.
@@ -80,7 +80,7 @@ class TreqAPITests(TestCase):
         """
 
         @implementer(IAgent)
-        class CounterAgent(object):
+        class CounterAgent:
             requests = 0
 
             def request(self, method, uri, headers=None, bodyProducer=None):
@@ -101,25 +101,15 @@ class TreqAPITests(TestCase):
         This test verifies that stacklevel is set appropriately when issuing
         the warning.
         """
-        self.failureResultOf(
+        with self.assertRaises(TypeError) as c:
             treq.request(
                 "GET",
                 "https://foo.bar",
                 invalid=True,
                 pool=SyntacticAbominationHTTPConnectionPool(),
             )
-        )
 
-        [w] = self.flushWarnings([self.test_request_invalid_param])
-        self.assertEqual(DeprecationWarning, w["category"])
-        self.assertEqual(
-            (
-                "Got unexpected keyword argument: 'invalid'."
-                " treq will ignore this argument,"
-                " but will raise TypeError in the next treq release."
-            ),
-            w["message"],
-        )
+        self.assertIn("invalid", str(c.exception))
 
     def test_post_json_with_data(self):
         """

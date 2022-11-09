@@ -2,8 +2,9 @@ treq: High-level Twisted HTTP Client API
 ========================================
 
 |pypi|_
-|build|_
+|calver|_
 |coverage|_
+|documentation|_
 
 ``treq`` is an HTTP library inspired by
 `requests <https://requests.readthedocs.io/>`_ but written on top of
@@ -15,13 +16,13 @@ using Twisted.
 
 .. code-block:: python
 
-    >>> from treq import get
+    >>> import treq
 
     >>> def done(response):
-    ...     print response.code
+    ...     print(response.code)
     ...     reactor.stop()
 
-    >>> get("http://www.github.com").addCallback(done)
+    >>> treq.get("https://github.com").addCallback(done)
 
     >>> from twisted.internet import reactor
     >>> reactor.run()
@@ -49,11 +50,18 @@ Copyright and License
 See `LICENSE <./LICENSE>`_ for legal details and copyright notices.
 
 
-.. |build| image:: https://api.travis-ci.org/twisted/treq.svg?branch=master
-.. _build: https://travis-ci.org/twisted/treq
-
-.. |coverage| image:: https://coveralls.io/repos/github/twisted/treq/badge.svg
-.. _coverage: https://coveralls.io/github/twisted/treq
-
-.. |pypi| image:: https://img.shields.io/pypi/v/treq.svg
 .. _pypi: https://pypi.org/project/treq/
+.. |pypi| image:: https://img.shields.io/pypi/v/treq.svg
+    :alt: PyPI
+
+.. _calver: https://calver.org/
+.. |calver| image:: https://img.shields.io/badge/calver-YY.MM.MICRO-22bfda.svg
+    :alt: calver: YY.MM.MICRO
+
+.. _coverage: https://coveralls.io/github/twisted/treq
+.. |coverage| image:: https://coveralls.io/repos/github/twisted/treq/badge.svg
+    :alt: Coverage
+
+.. _documentation: https://treq.readthedocs.org
+.. |documentation| image:: https://readthedocs.org/projects/treq/badge/
+    :alt: Documentation

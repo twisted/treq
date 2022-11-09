@@ -31,6 +31,7 @@ def print_response(response):
         print('---')
         print(response.code)
         print(response.headers)
+        print(response.request.headers)
         text = yield treq.text_content(response)
         print(text)
         print('---')

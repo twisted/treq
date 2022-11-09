@@ -1,15 +1,18 @@
-# -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
 from twisted.python.failure import Failure
 
+from twisted.internet.error import ConnectionDone
 from twisted.trial.unittest import TestCase
 from twisted.web.http_headers import Headers
 from twisted.web.client import ResponseDone, ResponseFailed
 from twisted.web.http import PotentialDataLoss
+from twisted.web.resource import Resource
+from twisted.web.server import NOT_DONE_YET
 
 from treq import collect, content, json_content, text_content
 from treq.client import _BufferedResponse
+from treq.testing import StubTreq
 
 
 class ContentTests(TestCase):
@@ -216,3 +219,54 @@ class ContentTests(TestCase):
         self.protocol.connectionLost(Failure(ResponseDone()))
 
         self.assertEqual(self.successResultOf(d), u'ᚠᚡ')
+
+
+class UnfinishedResponse(Resource):
+    """Write some data, but never finish."""
+
+    isLeaf = True
+
+    def __init__(self):
+        Resource.__init__(self)
+        # Track how requests finished.
+        self.request_finishes = []
+
+    def render(self, request):
+        request.write(b"HELLO")
+        request.notifyFinish().addBoth(self.request_finishes.append)
+        return NOT_DONE_YET
+
+
+class MoreRealisticContentTests(TestCase):
+    """Tests involving less mocking."""
+
+    def test_exception_handling(self):
+        """
+        An exception in the collector function:
+
+            1. Always gets returned in the result ``Deferred`` from
+               ``treq.collect()``.
+
+            2. Closes the transport.
+        """
+        resource = UnfinishedResponse()
+        stub = StubTreq(resource)
+        response = self.successResultOf(stub.request("GET", "http://127.0.0.1/"))
+        self.assertEqual(response.code, 200)
+
+        def error(data):
+            1 / 0
+
+        d = collect(response, error)
+
+        # Exceptions in the collector are passed on to the caller via the
+        # response Deferred:
+        self.failureResultOf(d, ZeroDivisionError)
+
+        # An exception in the protocol results in the transport for the request
+        # being closed.
+        stub.flush()
+        self.assertEqual(len(resource.request_finishes), 1)
+        self.assertIsInstance(
+            resource.request_finishes[0].value, ConnectionDone
+        )

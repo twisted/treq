@@ -1,5 +1,6 @@
 include pyproject.toml
 include *.rst
+include *.md
 include LICENSE
 include .coveragerc
 recursive-include docs *
@@ -7,8 +8,7 @@ prune docs/_build
 prune docs/html
 
 exclude tox.ini
-exclude tox2travis.py
-exclude .travis.yml
+exclude .github
 exclude .readthedocs.yml
 
 # This directory will be empty at release time.

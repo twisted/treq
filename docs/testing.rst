@@ -33,13 +33,15 @@ Download: :download:`testing_seq.py <examples/testing_seq.py>`.
 Loosely matching the request
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you don't care about certain parts of the request, you can pass :data:`mock.ANY`, which compares equal to anything.
+If you don't care about certain parts of the request, you can pass :data:`unittest.mock.ANY`, which compares equal to anything.
 This sequence matches a single GET request with any parameters or headers:
 
 .. code-block:: python
 
+    from unittest.mock import ANY
+
     RequestSequence([
-        ((b'get', mock.ANY, mock.ANY, b''), (200, {}, b'ok'))
+        ((b'get', ANY, ANY, b''), (200, {}, b'ok'))
     ])
 
 
@@ -55,3 +57,4 @@ This is superior to calling your resource's methods directly or passing mock obj
 Thus, the ``request`` object your code interacts with is a *real* :class:`twisted.web.server.Request` and behaves the same as it would in production.
 
 Note that if your resource returns :data:`~twisted.web.server.NOT_DONE_YET` you must keep a reference to the :class:`~treq.testing.RequestTraversalAgent` and call its :meth:`~treq.testing.RequestTraversalAgent.flush()` method to spin the memory reactor once the server writes additional data before the client will receive it.
+

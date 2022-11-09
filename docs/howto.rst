@@ -49,14 +49,18 @@ parameters that may already exist.
 The ``params`` argument may be either a ``dict`` or a ``list`` of
 ``(key, value)`` tuples.
 
-If it is a ``dict`` then the values in the dict may either be a ``str`` value
-or a ``list`` of ``str`` values.
+If it is a ``dict`` then the values in the dict may either be scalar values or a ``list`` or ``tuple`` thereof.
+Scalar values means ``str``, ``bytes``, or anything else — even ``None`` — which will be coerced to ``str``.
+Strings are UTF-8 encoded.
 
 .. literalinclude:: examples/query_params.py
     :linenos:
     :lines: 7-37
 
 Full example: :download:`query_params.py <examples/query_params.py>`
+
+If you prefer a strictly-typed API, try :class:`hyperlink.DecodedURL`.
+Use its :meth:`~hyperlink.URL.add` and :meth:`~hyperlink.URL.set` methods to add query parameters without risk of accidental type coercion.
 
 JSON
 ----
@@ -161,10 +165,10 @@ Customizing the Twisted Agent
 
 The main :py:mod:`treq` module has helper functions that automatically instantiate
 an instance of :py:class:`treq.client.HTTPClient`.  You can create an instance
-of :py:class:`~treq.client.HTTPClient` directly in order to customize the 
-paramaters used to initialize it.
-Internally, the :py:class:`~treq.client.HTTPClient` wraps an instance of 
-:py:class:`twisted.web.client.Agent`.  When you create an instance of 
+of :py:class:`~treq.client.HTTPClient` directly in order to customize the
+parameters used to initialize it.
+Internally, the :py:class:`~treq.client.HTTPClient` wraps an instance of
+:py:class:`twisted.web.client.Agent`.  When you create an instance of
 :py:class:`~treq.client.HTTPClient`, you must initialize it with an instance of
 :py:class:`~twisted.web.client.Agent`.  This allows you to customize its
 behavior.

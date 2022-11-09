@@ -1,15 +1,10 @@
-from __future__ import absolute_import, division, print_function
-
+import io
 import mimetypes
 import uuid
 import warnings
-
-import io
-
-import six
-from six.moves.collections_abc import Mapping
-from six.moves.http_cookiejar import CookieJar
-from six.moves.urllib.parse import urlencode as _urlencode
+from collections.abc import Mapping
+from http.cookiejar import CookieJar, Cookie
+from urllib.parse import quote_plus, urlencode as _urlencode
 
 from twisted.internet.interfaces import IProtocol
 from twisted.internet.defer import Deferred
@@ -35,14 +30,67 @@ from json import dumps as json_dumps
 from treq.auth import add_auth
 from treq import multipart
 from treq.response import _Response
-from requests.cookies import cookiejar_from_dict, merge_cookies
+from requests.cookies import merge_cookies
 
 
 _NOTHING = object()
 
 
 def urlencode(query, doseq):
-    return six.ensure_binary(_urlencode(query, doseq), encoding='ascii')
+    s = _urlencode(query, doseq)
+    if not isinstance(s, bytes):
+        s = s.encode("ascii")
+    return s
+
+
+def _scoped_cookiejar_from_dict(url_object, cookie_dict):
+    """
+    Create a CookieJar from a dictionary whose cookies are all scoped to the
+    given URL's origin.
+
+    @note: This does not scope the cookies to any particular path, only the
+        host, port, and scheme of the given URL.
+    """
+    cookie_jar = CookieJar()
+    if cookie_dict is None:
+        return cookie_jar
+    for k, v in cookie_dict.items():
+        secure = url_object.scheme == 'https'
+        port_specified = not (
+            (url_object.scheme == "https" and url_object.port == 443)
+            or (url_object.scheme == "http" and url_object.port == 80)
+        )
+        port = str(url_object.port) if port_specified else None
+        domain = url_object.host
+        netscape_domain = domain if '.' in domain else domain + '.local'
+
+        cookie_jar.set_cookie(
+            Cookie(
+                # Scoping
+                domain=netscape_domain,
+                port=port,
+                secure=secure,
+                port_specified=port_specified,
+
+                # Contents
+                name=k,
+                value=v,
+
+                # Constant/always-the-same stuff
+                version=0,
+                path="/",
+                expires=None,
+                discard=False,
+                comment=None,
+                comment_url=None,
+                rfc2109=False,
+                path_specified=False,
+                domain_specified=False,
+                domain_initial_dot=False,
+                rest=[],
+            )
+        )
+    return cookie_jar
 
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
@@ -96,11 +144,13 @@ class _BufferedResponse(proxyForInterface(IResponse)):
             self._waiters.append(protocol)
 
 
-class HTTPClient(object):
+class HTTPClient:
     def __init__(self, agent, cookiejar=None,
                  data_to_body_producer=IBodyProducer):
         self._agent = agent
-        self._cookiejar = cookiejar or cookiejar_from_dict({})
+        if cookiejar is None:
+            cookiejar = CookieJar()
+        self._cookiejar = cookiejar
         self._data_to_body_producer = data_to_body_producer
 
     def get(self, url, **kwargs):
@@ -145,25 +195,43 @@ class HTTPClient(object):
         kwargs.setdefault('_stacklevel', 3)
         return self.request('DELETE', url, **kwargs)
 
-    def request(self, method, url, **kwargs):
+    def request(
+        self,
+        method,
+        url,
+        *,
+        params=None,
+        headers=None,
+        data=None,
+        files=None,
+        json=_NOTHING,
+        auth=None,
+        cookies=None,
+        allow_redirects=True,
+        browser_like_redirects=False,
+        unbuffered=False,
+        reactor=None,
+        timeout=None,
+        _stacklevel=2,
+    ):
         """
         See :func:`treq.request()`.
         """
         method = method.encode('ascii').upper()
-        stacklevel = kwargs.pop('_stacklevel', 2)
 
         if isinstance(url, DecodedURL):
-            parsed_url = url
+            parsed_url = url.encoded_url
         elif isinstance(url, EncodedURL):
-            parsed_url = DecodedURL(url)
-        elif isinstance(url, six.text_type):
-            parsed_url = DecodedURL.from_text(url)
+            parsed_url = url
+        elif isinstance(url, str):
+            # We use hyperlink in lazy mode so that users can pass arbitrary
+            # bytes in the path and querystring.
+            parsed_url = EncodedURL.from_text(url)
         else:
-            parsed_url = DecodedURL.from_text(url.decode('ascii'))
+            parsed_url = EncodedURL.from_text(url.decode('ascii'))
 
         # Join parameters provided in the URL
         # and the ones passed as argument.
-        params = kwargs.pop('params', None)
         if params:
             parsed_url = parsed_url.replace(
                 query=parsed_url.query + tuple(_coerced_query_params(params))
@@ -171,27 +239,20 @@ class HTTPClient(object):
 
         url = parsed_url.to_uri().to_text().encode('ascii')
 
-        headers = self._request_headers(kwargs.pop('headers', None), stacklevel + 1)
+        headers = self._request_headers(headers, _stacklevel + 1)
 
-        bodyProducer, contentType = self._request_body(
-            data=kwargs.pop('data', None),
-            files=kwargs.pop('files', None),
-            json=kwargs.pop('json', _NOTHING),
-            stacklevel=stacklevel + 1,
-        )
+        bodyProducer, contentType = self._request_body(data, files, json,
+                                                       stacklevel=_stacklevel + 1)
         if contentType is not None:
             headers.setRawHeaders(b'Content-Type', [contentType])
 
-        cookies = kwargs.pop('cookies', {})
-
         if not isinstance(cookies, CookieJar):
-            cookies = cookiejar_from_dict(cookies)
+            cookies = _scoped_cookiejar_from_dict(parsed_url, cookies)
 
         cookies = merge_cookies(self._cookiejar, cookies)
         wrapped_agent = CookieAgent(self._agent, cookies)
 
-        browser_like_redirects = kwargs.pop('browser_like_redirects', False)
-        if kwargs.pop('allow_redirects', True):
+        if allow_redirects:
             if browser_like_redirects:
                 wrapped_agent = BrowserLikeRedirectAgent(wrapped_agent)
             else:
@@ -200,7 +261,6 @@ class HTTPClient(object):
         wrapped_agent = ContentDecoderAgent(wrapped_agent,
                                             [(b'gzip', GzipDecoder)])
 
-        auth = kwargs.pop('auth', None)
         if auth:
             wrapped_agent = add_auth(wrapped_agent, auth)
 
@@ -208,10 +268,8 @@ class HTTPClient(object):
             method, url, headers=headers,
             bodyProducer=bodyProducer)
 
-        reactor = kwargs.pop('reactor', None)
         if reactor is None:
             from twisted.internet import reactor
-        timeout = kwargs.pop('timeout', None)
         if timeout:
             delayedCall = reactor.callLater(timeout, d.cancel)
 
@@ -222,19 +280,8 @@ class HTTPClient(object):
 
             d.addBoth(gotResult)
 
-        if not kwargs.pop('unbuffered', False):
+        if not unbuffered:
             d.addCallback(_BufferedResponse)
-
-        if kwargs:
-            warnings.warn(
-                (
-                    "Got unexpected keyword argument: {}."
-                    " treq will ignore this argument,"
-                    " but will raise TypeError in the next treq release."
-                ).format(", ".join(repr(k) for k in kwargs)),
-                DeprecationWarning,
-                stacklevel=stacklevel,
-            )
 
         return d.addCallback(_Response, cookies)
 
@@ -248,7 +295,7 @@ class HTTPClient(object):
         if isinstance(headers, dict):
             h = Headers({})
             for k, v in headers.items():
-                if isinstance(v, (bytes, six.text_type)):
+                if isinstance(v, (bytes, str)):
                     h.addRawHeader(k, v)
                 elif isinstance(v, list):
                     h.setRawHeaders(k, v)
@@ -369,17 +416,18 @@ def _convert_params(params):
 
 
 def _convert_files(files):
-    """Files can be passed in a variety of formats:
+    """
+    Files can be passed in a variety of formats:
 
-        * {'file': open("bla.f")}
-        * {'file': (name, open("bla.f"))}
-        * {'file': (name, content-type, open("bla.f"))}
-        * Anything that has iteritems method, e.g. MultiDict:
-          MultiDict([(name, open()), (name, open())]
+    * {"fieldname": open("bla.f", "rb")}
+    * {"fieldname": ("filename", open("bla.f", "rb"))}
+    * {"fieldname": ("filename", "content-type", open("bla.f", "rb"))}
+    * Anything that has iteritems method, e.g. MultiDict:
+      MultiDict([(name, open()), (name, open())]
 
-        Our goal is to standardize it to unified form of:
+    Our goal is to standardize it to unified form of:
 
-        * [(param, (file name, content type, producer))]
+    * [(param, (file name, content type, producer))]
     """
 
     if hasattr(files, "iteritems"):
@@ -394,6 +442,18 @@ def _convert_files(files):
                 file_name, fobj = val
             elif len(val) == 3:
                 file_name, content_type, fobj = val
+            else:
+                # NB: This is TypeError for backward compatibility. This case
+                # used to fall through to `IBodyProducer`, below, which raised
+                # TypeError about being unable to coerce None.
+                raise TypeError(
+                    (
+                        "`files` argument must be a sequence of tuples of"
+                        " (file_name, file_obj) or"
+                        " (file_name, content_type, file_obj),"
+                        " but the {!r} tuple has length {}: {!r}"
+                    ).format(param, len(val), val),
+                )
         else:
             fobj = val
             if hasattr(fobj, "name"):
@@ -402,15 +462,36 @@ def _convert_files(files):
         if not content_type:
             content_type = _guess_content_type(file_name)
 
+        # XXX: Shouldn't this call self._data_to_body_producer?
         yield (param, (file_name, content_type, IBodyProducer(fobj)))
+
+
+def _query_quote(v):
+    # (Any) -> Text
+    """
+    Percent-encode a querystring name or value.
+
+    :param v: A value.
+
+    :returns:
+        The value, coerced to a string and percent-encoded as appropriate for
+        a querystring (with space as ``+``).
+    """
+    if not isinstance(v, (str, bytes)):
+        v = str(v)
+    if not isinstance(v, bytes):
+        v = v.encode("utf-8")
+    q = quote_plus(v)
+    return q
 
 
 def _coerced_query_params(params):
     """
     Carefully coerce *params* in the same way as `urllib.parse.urlencode()`
 
-    Parameter names and values are coerced to unicode. As a special case,
-    `bytes` are decoded as ASCII.
+    Parameter names and values are coerced to unicode, which is encoded as
+    UTF-8 and then percent-encoded. As a special case, `bytes` are directly
+    percent-encoded.
 
     :param params:
         A mapping or sequence of (name, value) two-tuples. The value may be
@@ -418,7 +499,8 @@ def _coerced_query_params(params):
         any type.
 
     :returns:
-        A generator that yields two-tuples containing text strings.
+        A generator that yields two-tuples containing percent-encoded text
+        strings.
     :rtype:
         Iterator[Tuple[Text, Text]]
     """
@@ -428,18 +510,12 @@ def _coerced_query_params(params):
         items = params
 
     for key, values in items:
-        if isinstance(key, bytes):
-            key = key.decode('ascii')
-        elif not isinstance(key, six.text_type):
-            key = six.text_type(key)
+        key_quoted = _query_quote(key)
+
         if not isinstance(values, (list, tuple)):
-            values = [values]
+            values = (values,)
         for value in values:
-            if isinstance(value, bytes):
-                value = value.decode('ascii')
-            elif not isinstance(value, six.text_type):
-                value = six.text_type(value)
-            yield key, value
+            yield key_quoted, _query_quote(value)
 
 
 def _from_bytes(orig_bytes):
@@ -461,10 +537,5 @@ def _guess_content_type(filename):
 registerAdapter(_from_bytes, bytes, IBodyProducer)
 registerAdapter(_from_file, io.BytesIO, IBodyProducer)
 
-if six.PY2:
-    registerAdapter(_from_file, six.StringIO, IBodyProducer)
-    # Suppress lint failure on Python 3.
-    registerAdapter(_from_file, file, IBodyProducer)  # noqa: F821
-else:
-    # file()/open() equiv on Py3
-    registerAdapter(_from_file, io.BufferedReader, IBodyProducer)
+# file()/open() equiv
+registerAdapter(_from_file, io.BufferedReader, IBodyProducer)

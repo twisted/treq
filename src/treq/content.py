@@ -1,10 +1,8 @@
-from __future__ import absolute_import, division, print_function
-
 import cgi
 import json
 
 from twisted.internet.defer import Deferred, succeed
-
+from twisted.python.failure import Failure
 from twisted.internet.protocol import Protocol
 from twisted.web.client import ResponseDone
 from twisted.web.http import PotentialDataLoss
@@ -32,9 +30,16 @@ class _BodyCollector(Protocol):
         self.collector = collector
 
     def dataReceived(self, data):
-        self.collector(data)
+        try:
+            self.collector(data)
+        except BaseException:
+            self.transport.loseConnection()
+            self.finished.errback(Failure())
+            self.finished = None
 
     def connectionLost(self, reason):
+        if self.finished is None:
+            return
         if reason.check(ResponseDone):
             self.finished.callback(None)
         elif reason.check(PotentialDataLoss):
@@ -50,9 +55,13 @@ def collect(response, collector):
 
     This function may only be called **once** for a given response.
 
+    If the ``collector`` raises an exception, it will be set as the error value
+    on response ``Deferred`` returned from this function, and the underlying
+    HTTP transport will be closed.
+
     :param IResponse response: The HTTP response to collect the body from.
-    :param collector: A callable to be called each time data is available
-        from the response body.
+    :param collector: A callable to be called each time data is available from
+        the response body.
     :type collector: single argument callable
 
     :rtype: Deferred that fires with None when the entire body has been read.

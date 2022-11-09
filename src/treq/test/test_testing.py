@@ -3,10 +3,9 @@ In-memory treq returns stubbed responses.
 """
 from functools import partial
 from inspect import getmembers, isfunction
+from json import dumps
 
-from mock import ANY
-
-from six import text_type, binary_type, PY3
+from unittest.mock import ANY
 
 from twisted.trial.unittest import TestCase
 from twisted.web.client import ResponseFailed
@@ -34,6 +33,26 @@ class _StaticTestResource(Resource):
         return b"I'm a teapot"
 
 
+class _RedirectResource(Resource):
+    """
+    Resource that redirects to a different domain.
+    """
+    isLeaf = True
+
+    def render(self, request):
+        if b'redirected' not in request.uri:
+            request.redirect(b'https://example.org/redirected')
+        return dumps(
+            {
+                key.decode("charmap"): [
+                    value.decode("charmap")
+                    for value in values
+                ]
+                for key, values in
+                request.requestHeaders.getAllRawHeaders()}
+        ).encode("utf-8")
+
+
 class _NonResponsiveTestResource(Resource):
     """Resource that returns NOT_DONE_YET and never finishes the request"""
     isLeaf = True
@@ -52,6 +71,34 @@ class _EventuallyResponsiveTestResource(Resource):
     def render(self, request):
         self.stored_request = request
         return NOT_DONE_YET
+
+
+class _SessionIdTestResource(Resource):
+    """
+    Resource that returns the current session ID.
+    """
+    isLeaf = True
+
+    def __init__(self):
+        super().__init__()
+        # keep track of all sessions created, so we can manually expire them later
+        self.sessions = []
+
+    def render(self, request):
+        session = request.getSession()
+        if session not in self.sessions:
+            # new session, add to internal list
+            self.sessions.append(session)
+        uid = session.uid
+        return uid
+
+    def expire_sessions(self):
+        """
+        Manually expire all sessions created by this resource.
+        """
+        for session in self.sessions:
+            session.expire()
+        self.sessions = []
 
 
 class StubbingTests(TestCase):
@@ -163,9 +210,9 @@ class StubbingTests(TestCase):
         self.successResultOf(stub.request('method', 'http://url', data=[]))
         self.successResultOf(stub.request('method', 'http://url', data=()))
         self.successResultOf(
-            stub.request('method', 'http://url', data=binary_type(b"")))
+            stub.request('method', 'http://url', data=b""))
         self.successResultOf(
-            stub.request('method', 'http://url', data=text_type("")))
+            stub.request('method', 'http://url', data=""))
 
     def test_handles_failing_asynchronous_requests(self):
         """
@@ -244,6 +291,104 @@ class StubbingTests(TestCase):
         stub.flush()
         self.successResultOf(d)
 
+    def test_session_persistence_between_requests(self):
+        """
+        Calling request.getSession() in the wrapped resource will return a
+        session with the same ID, until the sessions are cleaned; in other
+        words, cookies are propagated between requests when the result of
+        C{response.cookies()} is passed to the next request.
+        """
+        rsrc = _SessionIdTestResource()
+        stub = StubTreq(rsrc)
+        # request 1, getting original session ID
+        d = stub.request("method", "http://example.com/")
+        resp = self.successResultOf(d)
+        cookies = resp.cookies()
+        sid_1 = self.successResultOf(resp.content())
+        # request 2, ensuring session ID stays the same
+        d = stub.request("method", "http://example.com/", cookies=cookies)
+        resp = self.successResultOf(d)
+        sid_2 = self.successResultOf(resp.content())
+        self.assertEqual(sid_1, sid_2)
+        # request 3, ensuring the session IDs are different after cleaning
+        # or expiring the sessions
+
+        # manually expire the sessions.
+        rsrc.expire_sessions()
+
+        d = stub.request("method", "http://example.com/")
+        resp = self.successResultOf(d)
+        cookies = resp.cookies()
+        sid_3 = self.successResultOf(resp.content())
+        self.assertNotEqual(sid_1, sid_3)
+        # request 4, ensuring that once again the session IDs are the same
+        d = stub.request("method", "http://example.com/", cookies=cookies)
+        resp = self.successResultOf(d)
+        sid_4 = self.successResultOf(resp.content())
+        self.assertEqual(sid_3, sid_4)
+
+    def test_cookies_not_sent_to_different_domains(self):
+        """
+        Cookies manually specified as part of a dictionary are not relayed
+        through redirects to different domains.
+
+        (This is really more of a test for scoping of cookies within treq
+        itself, rather than just for testing.)
+        """
+        rsrc = _RedirectResource()
+        stub = StubTreq(rsrc)
+        d = stub.request(
+            "GET", "http://example.com/",
+            cookies={"not-across-redirect": "nope"}
+        )
+        resp = self.successResultOf(d)
+        received = self.successResultOf(resp.json())
+        self.assertNotIn('not-across-redirect', received.get('Cookie', [''])[0])
+
+    def test_cookies_sent_for_same_domain(self):
+        """
+        Cookies manually specified as part of a dictionary are relayed
+        through redirects to the same domain.
+
+        (This is really more of a test for scoping of cookies within treq
+        itself, rather than just for testing.)
+        """
+        rsrc = _RedirectResource()
+        stub = StubTreq(rsrc)
+        d = stub.request(
+            "GET", "https://example.org/",
+            cookies={'sent-to-same-domain': 'yes'}
+        )
+        resp = self.successResultOf(d)
+        received = self.successResultOf(resp.json())
+        self.assertIn('sent-to-same-domain', received.get('Cookie', [''])[0])
+
+    def test_cookies_sent_with_explicit_port(self):
+        """
+        Cookies will be sent for URLs that specify a non-default port for their scheme.
+
+        (This is really more of a test for scoping of cookies within treq
+        itself, rather than just for testing.)
+        """
+        rsrc = _RedirectResource()
+        stub = StubTreq(rsrc)
+
+        d = stub.request(
+            "GET", "http://example.org:8080/redirected",
+            cookies={'sent-to-non-default-port': 'yes'}
+        )
+        resp = self.successResultOf(d)
+        received = self.successResultOf(resp.json())
+        self.assertIn('sent-to-non-default-port', received.get('Cookie', [''])[0])
+
+        d = stub.request(
+            "GET", "https://example.org:8443/redirected",
+            cookies={'sent-to-non-default-port': 'yes'}
+        )
+        resp = self.successResultOf(d)
+        received = self.successResultOf(resp.json())
+        self.assertIn('sent-to-non-default-port', received.get('Cookie', [''])[0])
+
 
 class HasHeadersTests(TestCase):
     """
@@ -306,11 +451,10 @@ class HasHeadersTests(TestCase):
         """
         :obj:`HasHeaders` returns a nice string repr.
         """
-        if PY3:
-            reprOutput = "HasHeaders({b'a': [b'b']})"
-        else:
-            reprOutput = "HasHeaders({'a': ['b']})"
-        self.assertEqual(reprOutput, repr(HasHeaders({b'A': [b'b']})))
+        self.assertEqual(
+            "HasHeaders({b'a': [b'b']})",
+            repr(HasHeaders({b"A": [b"b"]})),
+        )
 
 
 class StringStubbingTests(TestCase):

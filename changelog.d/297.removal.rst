@@ -1,3 +1,0 @@
-treq request functions and methods like :func:`treq.get()` and :meth:`HTTPClient.post()` now issue a ``DeprecationWarning`` when passed unknown keyword arguments, rather than ignoring them.
-Mixing the *json* argument with *files* or *data* is also deprecated.
-These warnings will change to a ``TypeError`` in the next treq release.

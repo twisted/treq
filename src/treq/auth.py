@@ -77,6 +77,7 @@ class HTTPDigestAuth(object):
         See
         https://github.com/psf/requests/blob/v2.5.1/requests/auth.py#L72
             for details.
+
         :param algorithm: algorithm to be used for authentication,
             defaults to MD5, supported values are
             "MD5", "MD5-SESS" and "SHA"
@@ -91,6 +92,7 @@ class HTTPDigestAuth(object):
              authenticated request
         :param path: the URI path where we are authenticating
         :param method: HTTP method to be used when requesting
+
         :return: HTTP Digest authentication string
         """
         algo = algorithm.upper()
@@ -280,6 +282,7 @@ class _RequestDigestAuthenticationAgent:
         Handle the server`s 401 response, that is capable with authentication
             headers, build the Authorization header
         for
+
         :param www_authenticate_response: t.w.client.Response object
         :param method: HTTP method to be used to perform the request
         :param uri: URI to be used
@@ -287,6 +290,7 @@ class _RequestDigestAuthenticationAgent:
             instead of "Authorization" header
         :param bodyProducer: IBodyProducer implementer instance that would be
             used to fetch the response body
+
         :return:
         """
         assert www_authenticate_response.code == 401, \
@@ -335,6 +339,7 @@ class _RequestDigestAuthenticationAgent:
         """
         Add Authorization header and perform the request with
             actual credentials
+
         :param digest_authentication_header: HTTP Digest Authorization
             header string
         :param method: HTTP method to be used to perform the request
@@ -342,6 +347,7 @@ class _RequestDigestAuthenticationAgent:
         :param headers: Headers to be sent with the request
         :param bodyProducer: IBodyProducer implementer instance that would be
             used to fetch the response body
+
         :return: t.i.defer.Deferred (holding the result of the request)
         """
         if not headers:
@@ -358,11 +364,13 @@ class _RequestDigestAuthenticationAgent:
                 bodyProducer: Optional[IBodyProducer] = None):
         """
         Wrap the agent with HTTP Digest authentication.
+
         :param method: HTTP method to be used to perform the request
         :param uri: URI to be used
         :param headers: Headers to be sent with the request
         :param bodyProducer: IBodyProducer implementer instance that would be
             used to fetch the response body
+
         :return: t.i.defer.Deferred (holding the result of the request)
         """
 

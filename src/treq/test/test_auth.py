@@ -1,15 +1,12 @@
 # Copyright (c) The treq Authors.
 # See LICENSE for details.
-from unittest import mock
-
 from twisted.trial.unittest import SynchronousTestCase
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IAgent
 
 from treq._agentspy import agent_spy
 from treq.auth import _RequestHeaderSetterAgent, add_auth, \
-    UnknownAuthConfig, HTTPDigestAuth, UnknownDigestAuthAlgorithm, \
-    add_digest_auth
+    UnknownAuthConfig, HTTPDigestAuth, UnknownDigestAuthAlgorithm
 
 
 class RequestHeaderSetterAgentTests(SynchronousTestCase):
@@ -63,13 +60,6 @@ class RequestHeaderSetterAgentTests(SynchronousTestCase):
 
 
 class AddAuthTests(SynchronousTestCase):
-    def setUp(self):
-        self.rdaa_patcher = mock.patch(
-            'treq.auth._RequestDigestAuthenticationAgent'
-        )
-        self._RequestDigestAuthenticationAgent = self.rdaa_patcher.start()
-        self.addCleanup(self.rdaa_patcher.stop)
-
     def test_add_basic_auth(self):
         """
         add_auth() wraps the given agent with one that adds an ``Authorization:
@@ -142,15 +132,25 @@ class AddAuthTests(SynchronousTestCase):
         )
 
     def test_add_digest_auth(self):
-        agent = mock.Mock()
+        agent, requests = agent_spy()
         username = 'spam'
         password = 'eggs'
         auth = HTTPDigestAuth(username, password)
+        authAgent = add_auth(agent, auth)
 
-        add_digest_auth(agent, auth)
+        authAgent.request(b'method', b'uri')
 
-        self._RequestDigestAuthenticationAgent.assert_called_once_with(
-            agent, auth
+        self.assertEqual(
+            authAgent._auth,
+            auth,
+        )
+        self.assertEqual(
+            authAgent._auth._username,
+            username.encode('utf-8'),
+        )
+        self.assertEqual(
+            authAgent._auth._password,
+            password.encode('utf-8'),
         )
 
     def test_add_unknown_auth(self):

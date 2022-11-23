@@ -8,7 +8,6 @@ from twisted.internet.task import deferLater
 from twisted.internet import reactor
 from twisted.internet.tcp import Client
 from twisted.internet.ssl import Certificate, trustRootFromCertificates
-from twisted.python.monkey import MonkeyPatcher
 
 from twisted.web.client import (Agent, BrowserLikePolicyForHTTPS,
                                 HTTPConnectionPool, ResponseFailed)
@@ -53,7 +52,7 @@ class TreqIntegrationTests(TestCase):
     head = with_baseurl(treq.head)
     post = with_baseurl(treq.post)
     put = with_baseurl(treq.put)
-    patch = with_baseurl(treq.patch)
+    patch_req = with_baseurl(treq.patch)
     delete = with_baseurl(treq.delete)
 
     _httpbin_process = _HTTPBinProcess(https=False)
@@ -207,7 +206,7 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def test_patch(self):
-        response = yield self.patch('/patch', data=b'Hello!')
+        response = yield self.patch_req('/patch', data=b'Hello!')
         self.assertEqual(response.code, 200)
         yield self.assert_data(response, 'Hello!')
         yield print_response(response)
@@ -289,7 +288,7 @@ class TreqIntegrationTests(TestCase):
         def agent_request_patched(*args, **kwargs):
             """
                 Patched Agent.request function,
-                that inscreaces call count on every HTTP request
+                that increases call count on every HTTP request
                 and appends
             """
             response_deferred = agent_request_orig(*args, **kwargs)
@@ -297,10 +296,7 @@ class TreqIntegrationTests(TestCase):
             agent_request_call_storage['i'].append((args, kwargs))
             return response_deferred
 
-        patcher = MonkeyPatcher(
-            (Agent, 'request', agent_request_patched)
-        )
-        patcher.patch()
+        self.patch(Agent, 'request', agent_request_patched)
 
         auth = HTTPDigestAuth('treq-digest-auth-multiple', 'treq')
 
@@ -343,7 +339,6 @@ class TreqIntegrationTests(TestCase):
             agent_request_call_storage['c'],
             3
         )
-        patcher.restore()
 
     @inlineCallbacks
     def test_digest_auth_sha256(self):

@@ -96,9 +96,10 @@ HTTP Digest authentication is supported by passing an instance of
 :py:class:`treq.auth.HTTPDigestAuth` to any of the request functions by using the `auth` keyword argument.
 We support only "auth" QoP as defined at `RFC 2617`_
 or simple `RFC 2069`_ without QoP at the moment. Treq takes care of
-HTTP digest credentials caching - after authorization on any URL/method pair,
-the library will use the first time received HTTP digest credentials on that endpoint
-for further requests, and will not perform any redundant requests for obtaining the creds.
+caching HTTP digest credentials — after authorizing any URL/method pair,
+the library will use the initially received HTTP digest credentials on that endpoint
+for subsequent requests, and will not perform any redundant requests to obtain the
+credentials.
 
 :py:class:`treq.auth.HTTPDigestAuth` class accepts ``username`` and ``password``
 as constructor arguments.

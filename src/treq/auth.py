@@ -7,8 +7,8 @@ import hashlib
 
 import binascii
 from typing import Union
+from urllib.parse import urlparse
 
-from six.moves.urllib.parse import urlparse
 from twisted.python.randbytes import secureRandom
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IAgent

@@ -1,4 +1,5 @@
 from io import BytesIO
+from typing import Optional
 
 from twisted.python.url import URL
 
@@ -11,6 +12,7 @@ from twisted.internet.ssl import Certificate, trustRootFromCertificates
 
 from twisted.web.client import (Agent, BrowserLikePolicyForHTTPS,
                                 HTTPConnectionPool, ResponseFailed)
+from twisted.web.http_headers import Headers
 
 from treq.test.util import DEBUG, skip_on_windows_because_of_199
 
@@ -276,8 +278,8 @@ class TreqIntegrationTests(TestCase):
             Test proper Digest authentication credentials caching
         """
 
-        c = 0
-        i = []
+        calls = 0
+        headers_for_second_request: Optional[Headers] = None
 
         # Original Agent request call
         agent_request_orig = Agent.request
@@ -288,10 +290,11 @@ class TreqIntegrationTests(TestCase):
                 that increases call count on every HTTP request
                 and appends
             """
-            nonlocal c, i
+            nonlocal calls, headers_for_second_request
             response_deferred = agent_request_orig(*args, **kwargs)
-            c += 1
-            i.append((args, kwargs))
+            calls += 1
+            if calls == 2:
+                headers_for_second_request = args[3]
             return response_deferred
 
         self.patch(Agent, 'request', agent_request_patched)
@@ -309,10 +312,9 @@ class TreqIntegrationTests(TestCase):
         # Assume we did two actual HTTP requests - one to obtain credentials
         # and second is original request with authentication
         self.assertEqual(
-            c,
+            calls,
             2
         )
-        headers_for_second_request = i[1][0][3]
         self.assertIn(
             b'Authorization',
             dict(headers_for_second_request.getAllRawHeaders())
@@ -334,7 +336,7 @@ class TreqIntegrationTests(TestCase):
 
         # Assume we need only one call to obtain second response
         self.assertEqual(
-            c,
+            calls,
             3
         )
 

@@ -6,12 +6,12 @@ import time
 import hashlib
 
 import binascii
-from typing import Union
+from typing import Union, Optional
 from urllib.parse import urlparse
 
 from twisted.python.randbytes import secureRandom
 from twisted.web.http_headers import Headers
-from twisted.web.iweb import IAgent
+from twisted.web.iweb import IAgent, IBodyProducer, IResponse
 from zope.interface import implementer
 from requests.utils import parse_dict_header
 
@@ -19,7 +19,7 @@ from requests.utils import parse_dict_header
 _DIGEST_HEADER_PREFIX_REGEXP = re.compile(b'digest ', flags=re.IGNORECASE)
 
 
-def _generate_client_nonce(server_side_nonce):
+def _generate_client_nonce(server_side_nonce: bytes) -> str:
     return hashlib.sha1(
         hashlib.sha1(server_side_nonce).digest() +
         secureRandom(16) +
@@ -27,19 +27,19 @@ def _generate_client_nonce(server_side_nonce):
     ).hexdigest()[:16]
 
 
-def _md5_utf_digest(x):
+def _md5_utf_digest(x: bytes) -> str:
     return hashlib.md5(x).hexdigest()
 
 
-def _sha1_utf_digest(x):
+def _sha1_utf_digest(x: bytes) -> str:
     return hashlib.sha1(x).hexdigest()
 
 
-def _sha256_utf_digest(x):
+def _sha256_utf_digest(x: bytes) -> str:
     return hashlib.sha256(x).hexdigest()
 
 
-def _sha512_utf_digest(x):
+def _sha512_utf_digest(x: bytes) -> str:
     return hashlib.sha512(x).hexdigest()
 
 
@@ -51,17 +51,25 @@ class HTTPDigestAuth(object):
     in order not to recompute these for each request.
     """
 
-    def __init__(self, username, password):
-        self._username = username.encode('utf-8')
-        self._password = password.encode('utf-8')
+    def __init__(self, username: Union[str, bytes],
+                 password: Union[str, bytes]):
+        if not isinstance(username, bytes):
+            self._username = username.encode('utf-8')
+        else:
+            self._username = username
+        if not isinstance(password, bytes):
+            self._password = password.encode('utf-8')
+        else:
+            self._password = password
 
         # (method,uri) --> digest auth cache
         self._digest_auth_cache = {}
 
     def build_authentication_header(
-            self, path, method, cached, nonce, realm, qop=None,
-            algorithm=b'MD5', opaque=None
-            ):
+            self, path: bytes, method: bytes, cached: bool, nonce: bytes,
+            realm: bytes, qop: Optional[bytes] = None,
+            algorithm: bytes = b'MD5', opaque: Optional[bytes] = None
+            ) -> bytes:
         """
         Build the authorization header for credentials got from the server.
         Algorithm is accurately ported from http://python-requests.org
@@ -198,7 +206,7 @@ class HTTPDigestAuth(object):
         digest_res += hb
         return digest_res
 
-    def cached_metadata_for(self, method, uri):
+    def cached_metadata_for(self, method: bytes, uri: bytes) -> Optional[dict]:
         return self._digest_auth_cache.get((method, uri))
 
 
@@ -213,7 +221,7 @@ class UnknownAuthConfig(Exception):
 
 class UnknownQopForDigestAuth(Exception):
 
-    def __init__(self, qop):
+    def __init__(self, qop: Optional[bytes]):
         super(Exception, self).__init__(
             'Unsupported Quality Of Protection value passed: {qop}'.format(
                 qop=qop
@@ -223,7 +231,7 @@ class UnknownQopForDigestAuth(Exception):
 
 class UnknownDigestAuthAlgorithm(Exception):
 
-    def __init__(self, algorithm):
+    def __init__(self, algorithm: Optional[bytes]):
         super(Exception, self).__init__(
             'Unsupported Digest Auth algorithm identifier passed: {algorithm}'
             .format(algorithm=algorithm)
@@ -257,14 +265,17 @@ class _RequestHeaderSetterAgent:
             method, uri, headers=requestHeaders, bodyProducer=bodyProducer)
 
 
-class _RequestDigestAuthenticationAgent(object):
+@implementer(IAgent)
+class _RequestDigestAuthenticationAgent:
 
-    def __init__(self, agent, auth):
+    def __init__(self, agent: IAgent, auth: HTTPDigestAuth):
         self._agent = agent
         self._auth = auth
 
-    def _on_401_response(self, www_authenticate_response, method, uri, headers,
-                         bodyProducer):
+    def _on_401_response(self, www_authenticate_response: IResponse,
+                         method: bytes, uri: bytes,
+                         headers: Optional[Headers],
+                         bodyProducer: Optional[IBodyProducer]):
         """
         Handle the server`s 401 response, that is capable with authentication
             headers, build the Authorization header
@@ -318,8 +329,9 @@ class _RequestDigestAuthenticationAgent(object):
             digest_authentication_header, method, uri, headers, bodyProducer
         )
 
-    def _perform_request(self, digest_authentication_header, method, uri,
-                         headers, bodyProducer):
+    def _perform_request(self, digest_authentication_header: bytes,
+                         method: bytes, uri: bytes, headers: Optional[Headers],
+                         bodyProducer: Optional[IBodyProducer]):
         """
         Add Authorization header and perform the request with
             actual credentials
@@ -341,7 +353,9 @@ class _RequestDigestAuthenticationAgent(object):
             method, uri, headers=headers, bodyProducer=bodyProducer
         )
 
-    def request(self, method, uri, headers=None, bodyProducer=None):
+    def request(self, method: bytes, uri: bytes,
+                headers: Optional[Headers] = None,
+                bodyProducer: Optional[IBodyProducer] = None):
         """
         Wrap the agent with HTTP Digest authentication.
         :param method: HTTP method to be used to perform the request
@@ -415,11 +429,11 @@ def add_basic_auth(agent, username, password):
     )
 
 
-def add_digest_auth(agent, http_digest_auth):
+def add_digest_auth(agent: IAgent, http_digest_auth: HTTPDigestAuth) -> IAgent:
     return _RequestDigestAuthenticationAgent(agent, http_digest_auth)
 
 
-def add_auth(agent, auth_config):
+def add_auth(agent: IAgent, auth_config: Union[tuple, HTTPDigestAuth]):
     """
     Wrap an agent to perform authentication
 

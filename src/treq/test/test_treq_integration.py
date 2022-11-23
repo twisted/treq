@@ -276,11 +276,8 @@ class TreqIntegrationTests(TestCase):
             Test proper Digest authentication credentials caching
         """
 
-        # A mutable holder for call counter
-        agent_request_call_storage = {
-            'c': 0,
-            'i': []
-        }
+        c = 0
+        i = []
 
         # Original Agent request call
         agent_request_orig = Agent.request
@@ -291,9 +288,10 @@ class TreqIntegrationTests(TestCase):
                 that increases call count on every HTTP request
                 and appends
             """
+            nonlocal c, i
             response_deferred = agent_request_orig(*args, **kwargs)
-            agent_request_call_storage['c'] += 1
-            agent_request_call_storage['i'].append((args, kwargs))
+            c += 1
+            i.append((args, kwargs))
             return response_deferred
 
         self.patch(Agent, 'request', agent_request_patched)
@@ -311,10 +309,10 @@ class TreqIntegrationTests(TestCase):
         # Assume we did two actual HTTP requests - one to obtain credentials
         # and second is original request with authentication
         self.assertEqual(
-            agent_request_call_storage['c'],
+            c,
             2
         )
-        headers_for_second_request = agent_request_call_storage['i'][1][0][3]
+        headers_for_second_request = i[1][0][3]
         self.assertIn(
             b'Authorization',
             dict(headers_for_second_request.getAllRawHeaders())
@@ -336,7 +334,7 @@ class TreqIntegrationTests(TestCase):
 
         # Assume we need only one call to obtain second response
         self.assertEqual(
-            agent_request_call_storage['c'],
+            c,
             3
         )
 

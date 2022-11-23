@@ -72,10 +72,10 @@ class HTTPDigestAuth(object):
             ) -> bytes:
         """
         Build the authorization header for credentials got from the server.
-        Algorithm is accurately ported from http://python-requests.org
+        Algorithm is accurately ported from https://github.com/psf/requests
             with small adjustments.
         See
-        https://github.com/kennethreitz/requests/blob/v2.5.1/requests/auth.py#L72
+        https://github.com/psf/requests/blob/v2.5.1/requests/auth.py#L72
             for details.
         :param algorithm: algorithm to be used for authentication,
             defaults to MD5, supported values are

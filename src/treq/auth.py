@@ -67,7 +67,7 @@ class HTTPDigestAuth(object):
 
     def build_authentication_header(
             self, path: bytes, method: bytes, cached: bool, nonce: bytes,
-            realm: bytes, qop: Optional[bytes] = None,
+            realm: bytes, qop: Optional[Union[str, bytes]] = None,
             algorithm: bytes = b'MD5', opaque: Optional[bytes] = None
             ) -> bytes:
         """
@@ -160,7 +160,10 @@ class HTTPDigestAuth(object):
             rd += b':'
             rd += cnonce.encode('utf-8')
             rd += b':'
-            rd += b'auth'
+            if not isinstance(qop, bytes):
+                rd += qop.encode('utf-8')
+            else:
+                rd += qop
             rd += b':'
             rd += ha2.encode('utf-8')
             response_digest = digest_hash_func(rd).encode('utf-8')
@@ -184,7 +187,12 @@ class HTTPDigestAuth(object):
             hb += original_algo
             hb += b'"'
         if qop:
-            hb += b', qop="auth", nc='
+            hb += b', qop="'
+            if not isinstance(qop, bytes):
+                hb += qop.encode('utf-8')
+            else:
+                hb += qop
+            hb += b'", nc='
             hb += ncvalue.encode('utf-8')
             hb += b', cnonce="'
             hb += cnonce.encode('utf-8')

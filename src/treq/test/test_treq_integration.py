@@ -247,7 +247,7 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_digest_auth(self):
         """
-            Test successful Digest authentication
+        Test successful Digest authentication
         :return:
         """
         response = yield self.get('/digest-auth/auth/treq/treq',
@@ -261,7 +261,7 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_digest_auth_multi_qop(self):
         """
-            Test successful Digest authentication with multiple qop types
+        Test successful Digest authentication with multiple qop types
         :return:
         """
         response = yield self.get('/digest-auth/undefined/treq/treq',
@@ -275,7 +275,7 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_digest_auth_multiple_calls(self):
         """
-            Test proper Digest authentication credentials caching
+        Test proper Digest authentication credentials caching
         """
 
         calls = 0
@@ -286,9 +286,9 @@ class TreqIntegrationTests(TestCase):
 
         def agent_request_patched(*args, **kwargs):
             """
-                Patched Agent.request function,
-                that increases call count on every HTTP request
-                and appends
+            Patched Agent.request function,
+            that increases call count on every HTTP request
+            and appends
             """
             nonlocal calls, headers_for_second_request
             response_deferred = agent_request_orig(*args, **kwargs)
@@ -343,7 +343,7 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_digest_auth_sha256(self):
         """
-            Test successful Digest authentication with sha256
+        Test successful Digest authentication with sha256
         :return:
         """
         response = yield self.get('/digest-auth/auth/treq/treq/SHA-256',
@@ -357,7 +357,7 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_digest_auth_sha512(self):
         """
-            Test successful Digest authentication with sha512
+        Test successful Digest authentication with sha512
         :return:
         """
         response = yield self.get('/digest-auth/auth/treq/treq/SHA-512',
@@ -371,7 +371,7 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_failed_digest_auth(self):
         """
-            Test digest auth with invalid credentials
+        Test digest auth with invalid credentials
         """
         response = yield self.get('/digest-auth/auth/treq/treq',
                                   auth=HTTPDigestAuth('not-treq', 'not-treq'))
@@ -381,7 +381,7 @@ class TreqIntegrationTests(TestCase):
     @inlineCallbacks
     def test_failed_digest_auth_int(self):
         """
-            Test failed Digest authentication when qop type is unsupported
+        Test failed Digest authentication when qop type is unsupported
         :return:
         """
         with self.assertRaises(UnknownQopForDigestAuth):

@@ -146,11 +146,11 @@ class AddAuthTests(SynchronousTestCase):
         )
         self.assertEqual(
             authAgent._auth._username,
-            username.encode('utf-8'),
+            username,
         )
         self.assertEqual(
             authAgent._auth._password,
-            password.encode('utf-8'),
+            password,
         )
 
     def test_add_unknown_auth(self):
@@ -167,79 +167,80 @@ class AddAuthTests(SynchronousTestCase):
 class HttpDigestAuthTests(SynchronousTestCase):
 
     def setUp(self):
+        self.maxDiff = None
         self._auth = HTTPDigestAuth('spam', 'eggs')
 
-    def test_build_authentication_header_unknown_alforythm(self):
+    def test_build_authentication_header_unknown_algorythm(self):
         self.assertRaises(
             UnknownDigestAuthAlgorithm, self._auth.build_authentication_header,
             b'/spam/eggs', b'GET', False,
-            b'b7f36bc385a662ed615f27bd9e94eecd',
-            b'me@dragons', qop=None,
-            algorithm=b'UNKNOWN')
+            'b7f36bc385a662ed615f27bd9e94eecd',
+            'me@dragons', qop=None,
+            algorithm='UNKNOWN')
 
     def test_build_authentication_header_md5_no_cache_no_qop(self):
         auth_header = self._auth.build_authentication_header(
             b'/spam/eggs', b'GET', False,
-            b'b7f36bc385a662ed615f27bd9e94eecd',
-            b'me@dragons', qop=None,
-            algorithm=b'MD5'
+            'b7f36bc385a662ed615f27bd9e94eecd',
+            'me@dragons', qop=None,
+            algorithm='MD5'
         )
         self.assertEquals(
             auth_header,
-            b'Digest username="spam", realm="me@dragons", ' +
-            b'nonce="b7f36bc385a662ed615f27bd9e94eecd", ' +
-            b'uri="/spam/eggs", ' +
-            b'response="fc05d17c55156b278132a52dc0dca526", algorithm="MD5"',
+            'Digest username="spam", realm="me@dragons", ' +
+            'nonce="b7f36bc385a662ed615f27bd9e94eecd", ' +
+            'uri="/spam/eggs", ' +
+            'response="fc05d17c55156b278132a52dc0dca526", algorithm="MD5"',
         )
 
     def test_build_authentication_header_md5_sess_no_cache(self):
         auth_header = self._auth.build_authentication_header(
             b'/spam/eggs?ham=bacon', b'GET', False,
-            b'b7f36bc385a662ed615f27bd9e94eecd',
-            b'me@dragons', qop='auth',
-            algorithm=b'MD5-SESS'
+            'b7f36bc385a662ed615f27bd9e94eecd',
+            'me@dragons', qop='auth',
+            algorithm='MD5-SESS'
         )
         self.assertRegex(
             auth_header,
-            b'Digest username="spam", realm="me@dragons", ' +
-            b'nonce="b7f36bc385a662ed615f27bd9e94eecd", ' +
-            b'uri="/spam/eggs\\?ham=bacon", ' +
-            b'response="([0-9a-f]{32})", ' +
-            b'algorithm="MD5-SESS", qop="auth", ' +
-            b'nc=00000001, cnonce="([0-9a-f]{16})"',
+            'Digest username="spam", realm="me@dragons", ' +
+            'nonce="b7f36bc385a662ed615f27bd9e94eecd", ' +
+            'uri="/spam/eggs\\?ham=bacon", ' +
+            'response="([0-9a-f]{32})", ' +
+            'algorithm="MD5-SESS", qop="auth", ' +
+            'nc=00000001, cnonce="([0-9a-f]{16})"',
         )
 
     def test_build_authentication_header_sha_no_cache_no_qop(self):
         auth_header = self._auth.build_authentication_header(
             b'/spam/eggs', b'GET', False,
-            b'b7f36bc385a662ed615f27bd9e94eecd',
-            b'me@dragons', qop=None,
-            algorithm=b'SHA'
+            'b7f36bc385a662ed615f27bd9e94eecd',
+            'me@dragons', qop=None,
+            algorithm='SHA'
         )
 
         self.assertEquals(
             auth_header,
-            b'Digest username="spam", realm="me@dragons", ' +
-            b'nonce="b7f36bc385a662ed615f27bd9e94eecd", ' +
-            b'uri="/spam/eggs", ' +
-            b'response="45420a4786287998bcb99dfde563c3a198109b31", ' +
-            b'algorithm="SHA"'
+            'Digest username="spam", realm="me@dragons", ' +
+            'nonce="b7f36bc385a662ed615f27bd9e94eecd", ' +
+            'uri="/spam/eggs", ' +
+            'response="45420a4786287998bcb99dfde563c3a198109b31", ' +
+            'algorithm="SHA"'
         )
 
     def test_build_authentication_header_sha512_cache(self):
         # Emulate 1st request
         self._auth.build_authentication_header(
             b'/spam/eggs', b'GET', False,
-            b'b7f36bc385a662ed615f27bd9e94eecd',
-            b'me@dragons', qop='auth',
-            algorithm=b'SHA-512'
+            'b7f36bc385a662ed615f27bd9e94eecd',
+            'me@dragons', qop='auth',
+            algorithm='SHA-512'
         )
         # Get header after cached request
         auth_header = self._auth.build_authentication_header(
             b'/spam/eggs', b'GET', True,
-            b'b7f36bc385a662ed615f27bd9e94eecd',
-            b'me@dragons', qop='auth',
-            algorithm=b'SHA-512'
+            'b7f36bc385a662ed615f27bd9e94eecd',
+            'me@dragons', qop='auth',
+            algorithm='SHA-512'
         )
 
         # Make sure metadata was cached
@@ -247,10 +248,10 @@ class HttpDigestAuthTests(SynchronousTestCase):
 
         self.assertRegex(
             auth_header,
-            b'Digest username="spam", realm="me@dragons", ' +
-            b'nonce="b7f36bc385a662ed615f27bd9e94eecd", ' +
-            b'uri="/spam/eggs", ' +
-            b'response="([0-9a-f]{128})", ' +
-            b'algorithm="SHA-512", qop="auth", ' +
-            b'nc=00000002, cnonce="([0-9a-f]+?)"',
+            'Digest username="spam", realm="me@dragons", ' +
+            'nonce="b7f36bc385a662ed615f27bd9e94eecd", ' +
+            'uri="/spam/eggs", ' +
+            'response="([0-9a-f]{128})", ' +
+            'algorithm="SHA-512", qop="auth", ' +
+            'nc=00000002, cnonce="([0-9a-f]+?)"',
         )

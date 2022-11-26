@@ -243,7 +243,7 @@ class HttpDigestAuthTests(SynchronousTestCase):
         )
 
         # Make sure metadata was cached
-        self.assertTrue(self._auth.cached_metadata_for(b'GET', b'/spam/eggs'))
+        self.assertTrue(self._auth._cached_metadata_for(b'GET', b'/spam/eggs'))
 
         self.assertRegex(
             auth_header,

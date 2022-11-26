@@ -5,7 +5,7 @@ from typing import Callable, List, Optional, Tuple
 import attr
 from twisted.internet.defer import Deferred
 from twisted.web.http_headers import Headers
-from twisted.web.iweb import IAgent, IBodyProducer, IResponse
+from twisted.web.iweb import IAgent, IBodyProducer
 from zope.interface import implementer
 
 
@@ -21,11 +21,11 @@ class RequestRecord:
     :ivar deferred: The :class:`Deferred` returned by :meth:`IAgent.request`
     """
 
-    method = attr.ib()  # type: bytes
-    uri = attr.ib()  # type: bytes
-    headers = attr.ib()  # type: Optional[Headers]
-    bodyProducer = attr.ib()  # type: Optional[IBodyProducer]
-    deferred = attr.ib()  # type: Deferred
+    method: bytes = attr.ib()
+    uri: bytes = attr.ib()
+    headers: Optional[Headers] = attr.ib()
+    bodyProducer: Optional[IBodyProducer] = attr.ib()
+    deferred: Deferred = attr.ib()
 
 
 @implementer(IAgent)
@@ -38,10 +38,12 @@ class _AgentSpy:
         A function called with each :class:`RequestRecord`
     """
 
-    _callback = attr.ib()  # type: Callable[Tuple[RequestRecord], None]
+    _callback: Callable[[Tuple[RequestRecord]], None] = attr.ib()
 
-    def request(self, method, uri, headers=None, bodyProducer=None):
-        # type: (bytes, bytes, Optional[Headers], Optional[IBodyProducer]) -> Deferred[IResponse]  # noqa
+    def request(self, method: bytes, uri: bytes,
+                headers: Optional[Headers] = None,
+                bodyProducer: Optional[IBodyProducer] = None
+                ):
         if not isinstance(method, bytes):
             raise TypeError(
                 "method must be bytes, not {!r} of type {}".format(method, type(method))
@@ -69,8 +71,7 @@ class _AgentSpy:
         return d
 
 
-def agent_spy():
-    # type: () -> Tuple[IAgent, List[RequestRecord]]
+def agent_spy() -> Tuple[IAgent, List[RequestRecord]]:
     """
     Record HTTP requests made with an agent
 

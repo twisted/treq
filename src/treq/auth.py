@@ -216,7 +216,7 @@ class HTTPDigestAuth(object):
         digest_res += hb
         return digest_res
 
-    def cached_metadata_for(self, method: bytes, uri: bytes) -> Optional[dict]:
+    def _cached_metadata_for(self, method: bytes, uri: bytes) -> Optional[dict]:
         return self._digest_auth_cache.get((method, uri))
 
 
@@ -382,7 +382,7 @@ class _RequestDigestAuthenticationAgent:
         :return: t.i.defer.Deferred (holding the result of the request)
         """
 
-        digest_auth_metadata = self._auth.cached_metadata_for(method, uri)
+        digest_auth_metadata = self._auth._cached_metadata_for(method, uri)
 
         if digest_auth_metadata is None:
             # Perform first request for getting the realm;

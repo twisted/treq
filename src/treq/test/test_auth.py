@@ -172,14 +172,14 @@ class HttpDigestAuthTests(SynchronousTestCase):
 
     def test_build_authentication_header_unknown_algorythm(self):
         self.assertRaises(
-            UnknownDigestAuthAlgorithm, self._auth.build_authentication_header,
+            UnknownDigestAuthAlgorithm, self._auth._build_authentication_header,
             b'/spam/eggs', b'GET', False,
             'b7f36bc385a662ed615f27bd9e94eecd',
             'me@dragons', qop=None,
             algorithm='UNKNOWN')
 
     def test_build_authentication_header_md5_no_cache_no_qop(self):
-        auth_header = self._auth.build_authentication_header(
+        auth_header = self._auth._build_authentication_header(
             b'/spam/eggs', b'GET', False,
             'b7f36bc385a662ed615f27bd9e94eecd',
             'me@dragons', qop=None,
@@ -194,7 +194,7 @@ class HttpDigestAuthTests(SynchronousTestCase):
         )
 
     def test_build_authentication_header_md5_sess_no_cache(self):
-        auth_header = self._auth.build_authentication_header(
+        auth_header = self._auth._build_authentication_header(
             b'/spam/eggs?ham=bacon', b'GET', False,
             'b7f36bc385a662ed615f27bd9e94eecd',
             'me@dragons', qop='auth',
@@ -211,7 +211,7 @@ class HttpDigestAuthTests(SynchronousTestCase):
         )
 
     def test_build_authentication_header_sha_no_cache_no_qop(self):
-        auth_header = self._auth.build_authentication_header(
+        auth_header = self._auth._build_authentication_header(
             b'/spam/eggs', b'GET', False,
             'b7f36bc385a662ed615f27bd9e94eecd',
             'me@dragons', qop=None,
@@ -229,14 +229,14 @@ class HttpDigestAuthTests(SynchronousTestCase):
 
     def test_build_authentication_header_sha512_cache(self):
         # Emulate 1st request
-        self._auth.build_authentication_header(
+        self._auth._build_authentication_header(
             b'/spam/eggs', b'GET', False,
             'b7f36bc385a662ed615f27bd9e94eecd',
             'me@dragons', qop='auth',
             algorithm='SHA-512'
         )
         # Get header after cached request
-        auth_header = self._auth.build_authentication_header(
+        auth_header = self._auth._build_authentication_header(
             b'/spam/eggs', b'GET', True,
             'b7f36bc385a662ed615f27bd9e94eecd',
             'me@dragons', qop='auth',

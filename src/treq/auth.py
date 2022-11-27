@@ -64,7 +64,7 @@ class HTTPDigestAuth(object):
         # (method,uri) --> digest auth cache
         self._digest_auth_cache = {}
 
-    def build_authentication_header(
+    def _build_authentication_header(
             self, url: bytes, method: bytes, cached: bool, nonce: str,
             realm: str, qop: Optional[str] = None, algorithm: str = 'MD5',
             opaque: Optional[str] = None
@@ -267,7 +267,7 @@ class _RequestDigestAuthenticationAgent:
             parse_dict_header(digest_header.decode("utf-8"))
 
         digest_authentication_header = \
-            self._auth.build_authentication_header(
+            self._auth._build_authentication_header(
                 uri,
                 method,
                 False,
@@ -339,7 +339,7 @@ class _RequestDigestAuthenticationAgent:
             digest_params_from_cache = digest_auth_metadata['p']
             digest_params_from_cache['cached'] = True
             digest_authentication_header = \
-                self._auth.build_authentication_header(
+                self._auth._build_authentication_header(
                     digest_params_from_cache['path'],
                     digest_params_from_cache['method'],
                     digest_params_from_cache['cached'],

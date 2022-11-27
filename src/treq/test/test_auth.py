@@ -6,7 +6,7 @@ from twisted.web.iweb import IAgent
 
 from treq._agentspy import agent_spy
 from treq.auth import _RequestHeaderSetterAgent, add_auth, \
-    UnknownAuthConfig, HTTPDigestAuth, UnknownDigestAuthAlgorithm
+    UnknownAuthConfig, HTTPDigestAuth, _DIGEST_ALGO
 
 
 class RequestHeaderSetterAgentTests(SynchronousTestCase):
@@ -170,20 +170,17 @@ class HttpDigestAuthTests(SynchronousTestCase):
         self.maxDiff = None
         self._auth = HTTPDigestAuth('spam', 'eggs')
 
-    def test_build_authentication_header_unknown_algorythm(self):
-        self.assertRaises(
-            UnknownDigestAuthAlgorithm, self._auth._build_authentication_header,
-            b'/spam/eggs', b'GET', False,
-            'b7f36bc385a662ed615f27bd9e94eecd',
-            'me@dragons', qop=None,
-            algorithm='UNKNOWN')
+    def test_digest_unknown_algorithm(self):
+        with self.assertRaises(ValueError) as e:
+            _DIGEST_ALGO('UNKNOWN')
+        self.assertIn("'UNKNOWN' is not a valid _DIGEST_ALGO", str(e.exception))
 
     def test_build_authentication_header_md5_no_cache_no_qop(self):
         auth_header = self._auth._build_authentication_header(
             b'/spam/eggs', b'GET', False,
             'b7f36bc385a662ed615f27bd9e94eecd',
             'me@dragons', qop=None,
-            algorithm='MD5'
+            algorithm=_DIGEST_ALGO('MD5')
         )
         self.assertEquals(
             auth_header,
@@ -198,7 +195,7 @@ class HttpDigestAuthTests(SynchronousTestCase):
             b'/spam/eggs?ham=bacon', b'GET', False,
             'b7f36bc385a662ed615f27bd9e94eecd',
             'me@dragons', qop='auth',
-            algorithm='MD5-SESS'
+            algorithm=_DIGEST_ALGO('MD5-SESS')
         )
         self.assertRegex(
             auth_header,
@@ -215,7 +212,7 @@ class HttpDigestAuthTests(SynchronousTestCase):
             b'/spam/eggs', b'GET', False,
             'b7f36bc385a662ed615f27bd9e94eecd',
             'me@dragons', qop=None,
-            algorithm='SHA'
+            algorithm=_DIGEST_ALGO('SHA')
         )
 
         self.assertEquals(
@@ -233,14 +230,14 @@ class HttpDigestAuthTests(SynchronousTestCase):
             b'/spam/eggs', b'GET', False,
             'b7f36bc385a662ed615f27bd9e94eecd',
             'me@dragons', qop='auth',
-            algorithm='SHA-512'
+            algorithm=_DIGEST_ALGO('SHA-512')
         )
         # Get header after cached request
         auth_header = self._auth._build_authentication_header(
             b'/spam/eggs', b'GET', True,
             'b7f36bc385a662ed615f27bd9e94eecd',
             'me@dragons', qop='auth',
-            algorithm='SHA-512'
+            algorithm=_DIGEST_ALGO('SHA-512')
         )
 
         # Make sure metadata was cached

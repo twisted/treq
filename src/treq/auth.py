@@ -6,6 +6,7 @@ import time
 import hashlib
 
 import binascii
+from enum import Enum
 from typing import Union, Optional
 from urllib.parse import urlparse
 
@@ -17,6 +18,14 @@ from requests.utils import parse_dict_header
 
 
 _DIGEST_HEADER_PREFIX_REGEXP = re.compile(b'digest ', flags=re.IGNORECASE)
+
+
+class _DIGEST_ALGO(str, Enum):
+    MD5 = 'MD5'
+    MD5_SESS = 'MD5-SESS'
+    SHA = 'SHA'
+    SHA_256 = 'SHA-256'
+    SHA_512 = 'SHA-512'
 
 
 def _generate_client_nonce(server_side_nonce: str) -> str:
@@ -66,7 +75,8 @@ class HTTPDigestAuth(object):
 
     def _build_authentication_header(
             self, url: bytes, method: bytes, cached: bool, nonce: str,
-            realm: str, qop: Optional[str] = None, algorithm: str = 'MD5',
+            realm: str, qop: Optional[str] = None,
+            algorithm: _DIGEST_ALGO = _DIGEST_ALGO.MD5,
             opaque: Optional[str] = None
             ) -> str:
         """
@@ -104,16 +114,17 @@ class HTTPDigestAuth(object):
         A1 = f"{self._username}:{realm}:{self._password}"
         A2 = f"{method.decode('utf-8')}:{path}"
 
-        if algo == 'MD5' or algo == 'MD5-SESS':
+        if algo == _DIGEST_ALGO.MD5 or algo == _DIGEST_ALGO.MD5_SESS:
             digest_hash_func = _md5_utf_digest
-        elif algo == 'SHA':
+        elif algo == _DIGEST_ALGO.SHA:
             digest_hash_func = _sha1_utf_digest
-        elif algo == 'SHA-256':
+        elif algo == _DIGEST_ALGO.SHA_256:
             digest_hash_func = _sha256_utf_digest
-        elif algo == 'SHA-512':
+        elif algo == _DIGEST_ALGO.SHA_512:
             digest_hash_func = _sha512_utf_digest
         else:
-            raise UnknownDigestAuthAlgorithm(algo)
+            raise ValueError(f"Unsupported Digest Auth algorithm identifier "
+                             f"passed: {algo.name}")
 
         KD = lambda s, d: digest_hash_func(f"{s}:{d}")  # noqa:E731
 
@@ -129,7 +140,7 @@ class HTTPDigestAuth(object):
         ncvalue = '%08x' % nonce_count
 
         cnonce = _generate_client_nonce(nonce)
-        if algo == 'MD5-SESS':
+        if algo == _DIGEST_ALGO.MD5_SESS:
             HA1 = digest_hash_func(f"{HA1}:{nonce}:{cnonce}")
 
         if not qop:
@@ -189,15 +200,6 @@ class UnknownQopForDigestAuth(Exception):
             'Unsupported Quality Of Protection value passed: {qop}'.format(
                 qop=qop
             )
-        )
-
-
-class UnknownDigestAuthAlgorithm(Exception):
-
-    def __init__(self, algorithm: Optional[str]):
-        super(Exception, self).__init__(
-            'Unsupported Digest Auth algorithm identifier passed: {algorithm}'
-            .format(algorithm=algorithm)
         )
 
 
@@ -274,8 +276,8 @@ class _RequestDigestAuthenticationAgent:
                 digest_authentication_params['nonce'],
                 digest_authentication_params['realm'],
                 qop=digest_authentication_params.get('qop', None),
-                algorithm=digest_authentication_params.get('algorithm',
-                                                           'MD5'),
+                algorithm=_DIGEST_ALGO(digest_authentication_params.get(
+                    'algorithm', 'MD5')),
                 opaque=digest_authentication_params.get('opaque', None)
             )
         return self._perform_request(

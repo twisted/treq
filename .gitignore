@@ -8,7 +8,8 @@ dist
 /docs/html
 /.eggs
 MANIFEST
-.coverage
+/.coverage
+/.coverage.*
 coverage
 htmlcov
 _trial_temp*

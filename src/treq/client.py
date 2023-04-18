@@ -4,7 +4,7 @@ import uuid
 from collections import abc
 from http.cookiejar import Cookie, CookieJar
 from json import dumps as json_dumps
-from typing import Any, Callable, Iterable, Iterator, Mapping, Optional, Union
+from typing import Any, Callable, Iterable, Iterator, List, Mapping, Optional, Tuple, Union
 from urllib.parse import quote_plus
 from urllib.parse import urlencode as _urlencode
 
@@ -208,7 +208,7 @@ class HTTPClient:
         data: Optional[_DataType] = None,
         files: Optional[_FilesType] = None,
         json: Union[_JSONType, _Nothing] = _NOTHING,
-        auth: Optional[tuple[Union[str, bytes], Union[str, bytes]]] = None,
+        auth: Optional[Tuple[Union[str, bytes], Union[str, bytes]]] = None,
         cookies: Optional[_CookiesType] = None,
         allow_redirects: bool = True,
         browser_like_redirects: bool = False,
@@ -328,7 +328,7 @@ class HTTPClient:
         files: Optional[_FilesType],
         json: Union[_JSONType, _Nothing],
         stacklevel: int,
-    ) -> tuple[Optional[IBodyProducer], Optional[bytes]]:
+    ) -> Tuple[Optional[IBodyProducer], Optional[bytes]]:
         """
         Here we choose a right producer based on the parameters passed in.
 
@@ -374,7 +374,7 @@ class HTTPClient:
             # If the files keyword is present we will issue a
             # multipart/form-data request as it suits better for cases
             # with files and/or large objects.
-            fields: list[tuple[str, _FileValue]] = []
+            fields: List[Tuple[str, _FileValue]] = []
             if data:
                 for field in _convert_params(data):
                     fields.append(field)
@@ -407,7 +407,7 @@ class HTTPClient:
         return None, None
 
 
-def _convert_params(params: _DataType) -> Iterable[tuple[str, str]]:
+def _convert_params(params: _DataType) -> Iterable[Tuple[str, str]]:
     items_method = getattr(params, "items", None)
     if items_method:
         return list(sorted(items_method()))
@@ -486,7 +486,7 @@ def _query_quote(v: Any) -> str:
     return q
 
 
-def _coerced_query_params(params: _ParamsType) -> Iterator[tuple[str, str]]:
+def _coerced_query_params(params: _ParamsType) -> Iterator[Tuple[str, str]]:
     """
     Carefully coerce *params* in the same way as `urllib.parse.urlencode()`
 
@@ -503,7 +503,7 @@ def _coerced_query_params(params: _ParamsType) -> Iterator[tuple[str, str]]:
         A generator that yields two-tuples containing percent-encoded text
         strings.
     """
-    items: Iterable[tuple[str, Union[str, tuple[str, ...], list[str]]]]
+    items: Iterable[Tuple[str, Union[str, Tuple[str, ...], List[str]]]]
     if isinstance(params, abc.Mapping):
         items = params.items()
     else:

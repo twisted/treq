@@ -3,7 +3,7 @@
 
 from contextlib import closing
 from io import BytesIO
-from typing import Any, Iterable, Literal, Mapping, Optional, Union, cast
+from typing import Any, Iterable, List, Literal, Mapping, Optional, Tuple, Union, cast
 from uuid import uuid4
 
 from twisted.internet import task
@@ -22,8 +22,8 @@ CRLF = b"\r\n"
 _Consumer: TypeAlias = "Union[IConsumer, _LengthConsumer]"
 _UnknownLength = Literal["'twisted.web.iweb.UNKNOWN_LENGTH'"]
 _Length: TypeAlias = Union[int, _UnknownLength]
-_FieldValue = Union[bytes, tuple[str, str, IBodyProducer]]
-_Field: TypeAlias = tuple[str, _FieldValue]
+_FieldValue = Union[bytes, Tuple[str, str, IBodyProducer]]
+_Field: TypeAlias = Tuple[str, _FieldValue]
 
 
 @implementer(IBodyProducer)
@@ -284,7 +284,7 @@ def _converted(fields: _FilesType) -> Iterable[_Field]:
     Convert any of the multitude of formats we accept for the *fields*
     parameter into the form we work with internally.
     """
-    fields_: Iterable[tuple[str, _FileValue]]
+    fields_: Iterable[Tuple[str, _FileValue]]
     if hasattr(fields, "items"):
         assert isinstance(fields, Mapping)
         fields_ = fields.items()
@@ -364,7 +364,7 @@ class _Header:
         self,
         name: bytes,
         value: _S,
-        params: Optional[list[tuple[_S, _S]]] = None,
+        params: Optional[List[Tuple[_S, _S]]] = None,
     ):
         self.name = name
         self.value = value
@@ -386,7 +386,7 @@ class _Header:
             return h.read()
 
 
-def _sorted_by_type(fields: Iterable[_Field]) -> list[_Field]:
+def _sorted_by_type(fields: Iterable[_Field]) -> List[_Field]:
     """Sorts params so that strings are placed before files.
 
     That makes a request more readable, as generally files are bigger.

@@ -91,6 +91,6 @@ def agent_spy() -> Tuple[IAgent, List[RequestRecord]]:
          - A list of calls made to the agent's
            :meth:`~twisted.web.iweb.IAgent.request()` method
     """
-    records: list[RequestRecord] = []
+    records: List[RequestRecord] = []
     agent = _AgentSpy(records.append)
     return agent, records

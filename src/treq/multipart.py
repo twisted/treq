@@ -286,7 +286,7 @@ def _converted(fields: _FilesType) -> Iterable[_Field]:
         assert isinstance(fields, Mapping)
         fields_ = fields.items()
     else:
-        fields_ = cast(Iterable[tuple[str, _FileValue]], fields)
+        fields_ = fields
 
     for name, value in fields_:
         name = _enforce_unicode(name)

@@ -333,17 +333,26 @@ Content-Disposition: form-data; name="afield"
         self.assertEqual(producer.length, len(expected))
         self.assertEqual(expected, output)
 
-    def test_failOnByteStrings(self) -> None:
+    def test_bytesPassThrough(self) -> None:
         """
-        If byte string is passed as a param and we don't know
-        the encoding, fail early to prevent corrupted form posts
+        If byte string is passed as a param it is passed through
+        unchanged.
         """
-        self.assertRaises(
-            ValueError,
-            MultiPartProducer, {
-                "afield": u"это моя строчечка".encode("utf-32"),
-            },
-            cooperator=self.cooperator, boundary=b"heyDavid")
+        output, producer = self.getOutput(
+            MultiPartProducer({
+                "bfield": b'\x00\x01\x02\x03',
+            }, cooperator=self.cooperator, boundary=b"heyDavid"),
+            with_producer=True)
+
+        expected = (
+            b"--heyDavid\r\n"
+            b'Content-Disposition: form-data; name="bfield"\r\n'
+            b'\r\n'
+            b'\x00\x01\x02\x03\r\n'
+            b'--heyDavid--\r\n'
+        )
+        self.assertEqual(producer.length, len(expected))
+        self.assertEqual(expected, output)
 
     def test_failOnUnknownParams(self) -> None:
         """

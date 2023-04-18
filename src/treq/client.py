@@ -4,7 +4,8 @@ import uuid
 from collections import abc
 from http.cookiejar import Cookie, CookieJar
 from json import dumps as json_dumps
-from typing import Any, Callable, Iterable, Iterator, List, Mapping, Optional, Tuple, Union
+from typing import (Any, Callable, Iterable, Iterator, List, Mapping,
+                    Optional, Tuple, Union)
 from urllib.parse import quote_plus
 from urllib.parse import urlencode as _urlencode
 

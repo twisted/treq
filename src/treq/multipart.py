@@ -224,7 +224,9 @@ class MultiPartProducer:
         consumer.write(bytes(cdisp) + CRLF)
         consumer.write(bytes(_Header(b"Content-Type", content_type)) + CRLF)
         if producer.length != UNKNOWN_LENGTH:
-            consumer.write(bytes(_Header(b"Content-Length", producer.length)) + CRLF)
+            consumer.write(
+                bytes(_Header(b"Content-Length", str(producer.length))) + CRLF
+            )
         consumer.write(CRLF)
 
         if isinstance(consumer, _LengthConsumer):
@@ -279,7 +281,8 @@ def _enforce_unicode(value: Any) -> str:
 
 def _converted(fields: _FilesType) -> Iterable[_Field]:
     """
-    Convert
+    Convert any of the multitude of formats we accept for the *fields*
+    parameter into the form we work with internally.
     """
     fields_: Iterable[tuple[str, _FileValue]]
     if hasattr(fields, "items"):
@@ -289,6 +292,8 @@ def _converted(fields: _FilesType) -> Iterable[_Field]:
         fields_ = fields
 
     for name, value in fields_:
+        # NOTE: While `name` is typed as `str` we still support UTF-8 `bytes` here
+        # for backward compatibility, thus this call to decode.
         name = _enforce_unicode(name)
 
         if isinstance(value, (tuple, list)):
@@ -328,7 +333,7 @@ class _LengthConsumer:
     def __init__(self) -> None:
         self.length = 0
 
-    def write(self, value: bytes) -> None:
+    def write(self, value: Union[bytes, _Length]) -> None:
         # this means that we have encountered
         # unknown length producer
         # so we need to stop attempts calculating
@@ -338,6 +343,8 @@ class _LengthConsumer:
 
         if value == UNKNOWN_LENGTH:
             self.length = cast(_UnknownLength, UNKNOWN_LENGTH)
+        elif isinstance(value, int):
+            self.length += value
         else:
             assert isinstance(value, bytes)
             self.length += len(value)

@@ -46,8 +46,9 @@ class _RequestHeaderSetterAgent:
             method, uri, headers=requestHeaders, bodyProducer=bodyProducer)
 
 
-def add_basic_auth(agent, username, password):
-    # type: (IAgent, Union[str, bytes], Union[str, bytes]) -> IAgent
+def add_basic_auth(
+    agent: IAgent, username: Union[str, bytes], password: Union[str, bytes]
+) -> IAgent:
     """
     Wrap an agent to add HTTP basic authentication
 

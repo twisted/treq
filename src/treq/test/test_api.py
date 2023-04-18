@@ -96,11 +96,8 @@ class TreqAPITests(TestCase):
 
     def test_request_invalid_param(self) -> None:
         """
-        `treq.request()` warns that it ignores unknown keyword arguments, but
-        this is deprecated.
-
-        This test verifies that stacklevel is set appropriately when issuing
-        the warning.
+        `treq.request()` raises `TypeError` when it receives unknown keyword
+        arguments.
         """
         with self.assertRaises(TypeError) as c:
             treq.request(
@@ -114,28 +111,20 @@ class TreqAPITests(TestCase):
 
     def test_post_json_with_data(self) -> None:
         """
-        `treq.post()` warns that mixing *data* and *json* is deprecated.
-
-        This test verifies that stacklevel is set appropriately when issuing
-        the warning.
+        `treq.post()` raises TypeError when the *data* and *json* arguments
+        are mixed.
         """
-        self.failureResultOf(
+        with self.assertRaises(TypeError) as c:
             treq.post(
                 "https://test.example/",
                 data={"hello": "world"},
                 json={"goodnight": "moon"},
                 pool=SyntacticAbominationHTTPConnectionPool(),
             )
-        )
 
-        [w] = self.flushWarnings([self.test_post_json_with_data])
-        self.assertEqual(DeprecationWarning, w["category"])
         self.assertEqual(
-            (
-                "Argument 'json' will be ignored because 'data' was also passed."
-                " This will raise TypeError in the next treq release."
-            ),
-            w["message"],
+            "Argument 'json' cannot be combined with 'data'.",
+            str(c.exception),
         )
 
 

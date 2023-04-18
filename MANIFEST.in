@@ -9,7 +9,6 @@ prune docs/_build
 prune docs/html
 
 exclude tox.ini
-exclude mypy.ini
 exclude .github
 exclude .readthedocs.yml
 

@@ -63,7 +63,7 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-          python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", "pypy-3.7", "pypy-3.8"]
+          python-version: ["3.7", "3.8", "3.9", "3.10", "pypy-3.7", "pypy-3.8"]
           twisted-version: ["lowest", "latest"]
           experimental: [false]
 
@@ -97,7 +97,6 @@ jobs:
       shell: python
       run: |
         table = {
-          "3.6": "py36",
           "3.7": "py37",
           "3.8": "py38",
           "3.9": "py39",

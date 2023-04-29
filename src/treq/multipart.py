@@ -3,7 +3,7 @@
 
 from contextlib import closing
 from io import BytesIO
-from typing import Any, Iterable, List, Literal, Mapping, Optional, Tuple, Union, cast
+from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union, cast
 from uuid import uuid4
 
 from twisted.internet import task
@@ -11,7 +11,7 @@ from twisted.internet.defer import Deferred
 from twisted.internet.interfaces import IConsumer
 from twisted.python.failure import Failure
 from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, Literal
 from zope.interface import implementer
 
 from treq._types import _S, _FilesType, _FileValue

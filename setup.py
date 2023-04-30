@@ -31,7 +31,7 @@ if __name__ == "__main__":
             "incremental",
             "requests >= 2.1.0",
             "hyperlink >= 21.0.0",
-            "Twisted[tls] >= 18.7.0",
+            "Twisted[tls] >= 22.10.0",  # For #11635
             "attrs",
             "typing_extensions >= 3.10.0",
         ],

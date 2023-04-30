@@ -151,7 +151,7 @@ class HTTPClient:
         self._cookiejar = cookiejar
         self._data_to_body_producer = data_to_body_producer
 
-    def get(self, url: _URLType, **kwargs: Any) -> Deferred[_Response]:
+    def get(self, url: _URLType, **kwargs: Any) -> "Deferred[_Response]":
         """
         See :func:`treq.get()`.
         """
@@ -160,7 +160,7 @@ class HTTPClient:
 
     def put(
         self, url: _URLType, data: Optional[_DataType] = None, **kwargs: Any
-    ) -> Deferred[_Response]:
+    ) -> "Deferred[_Response]":
         """
         See :func:`treq.put()`.
         """
@@ -169,7 +169,7 @@ class HTTPClient:
 
     def patch(
         self, url: _URLType, data: Optional[_DataType] = None, **kwargs: Any
-    ) -> Deferred[_Response]:
+    ) -> "Deferred[_Response]":
         """
         See :func:`treq.patch()`.
         """
@@ -178,21 +178,21 @@ class HTTPClient:
 
     def post(
         self, url: _URLType, data: Optional[_DataType] = None, **kwargs: Any
-    ) -> Deferred[_Response]:
+    ) -> "Deferred[_Response]":
         """
         See :func:`treq.post()`.
         """
         kwargs.setdefault("_stacklevel", 3)
         return self.request("POST", url, data=data, **kwargs)
 
-    def head(self, url: _URLType, **kwargs: Any) -> Deferred[_Response]:
+    def head(self, url: _URLType, **kwargs: Any) -> "Deferred[_Response]":
         """
         See :func:`treq.head()`.
         """
         kwargs.setdefault("_stacklevel", 3)
         return self.request("HEAD", url, **kwargs)
 
-    def delete(self, url: _URLType, **kwargs: Any) -> Deferred[_Response]:
+    def delete(self, url: _URLType, **kwargs: Any) -> "Deferred[_Response]":
         """
         See :func:`treq.delete()`.
         """
@@ -217,7 +217,7 @@ class HTTPClient:
         reactor: Optional[_ITreqReactor] = None,
         timeout: Optional[float] = None,
         _stacklevel: int = 2,
-    ) -> Deferred[_Response]:
+    ) -> "Deferred[_Response]":
         """
         See :func:`treq.request()`.
         """

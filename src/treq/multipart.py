@@ -83,7 +83,7 @@ class MultiPartProducer:
 
         self.length = self._calculateLength()
 
-    def startProducing(self, consumer: IConsumer) -> Deferred[None]:
+    def startProducing(self, consumer: IConsumer) -> "Deferred[None]":
         """
         Start a cooperative task which will read bytes from the input file and
         write them to `consumer`.  Return a `Deferred` which fires after all
@@ -94,13 +94,13 @@ class MultiPartProducer:
         self._task = self._cooperate(self._writeLoop(consumer))  # type: ignore
         # whenDone returns the iterator that was passed to cooperate, so who
         # cares what type it has? It's an edge signal; we ignore its value.
-        d: Deferred[Any] = self._task.whenDone()
+        d: "Deferred[Any]" = self._task.whenDone()
 
-        def maybeStopped(reason: Failure) -> Deferred:
+        def maybeStopped(reason: Failure) -> "Deferred[None]":
             reason.trap(task.TaskStopped)
             return Deferred()
 
-        d = cast(Deferred[None], d.addCallbacks(lambda ignored: None, maybeStopped))
+        d = cast("Deferred[None]", d.addCallbacks(lambda ignored: None, maybeStopped))
         return d
 
     def stopProducing(self) -> None:
@@ -215,7 +215,7 @@ class MultiPartProducer:
         content_type: str,
         producer: IBodyProducer,
         consumer: _Consumer,
-    ) -> Optional[Deferred[None]]:
+    ) -> "Optional[Deferred[None]]":
         cdisp = _Header(b"Content-Disposition", b"form-data")
         cdisp.add_param(b"name", name)
         if filename:
@@ -240,7 +240,7 @@ class MultiPartProducer:
                 return val
 
             d = producer.startProducing(consumer)
-            return cast(Deferred[None], d.addCallback(unset))
+            return cast("Deferred[None]", d.addCallback(unset))
 
 
 def _escape(value: Union[str, bytes]) -> str:

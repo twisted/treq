@@ -25,7 +25,7 @@ class RequestRecord:
     uri: bytes = attr.field()
     headers: Optional[Headers] = attr.field()
     bodyProducer: Optional[IBodyProducer] = attr.field()
-    deferred: Deferred[IResponse] = attr.field()
+    deferred: "Deferred[IResponse]" = attr.field()
 
 
 @implementer(IAgent)
@@ -46,7 +46,7 @@ class _AgentSpy:
         uri: bytes,
         headers: Optional[Headers] = None,
         bodyProducer: Optional[IBodyProducer] = None,
-    ) -> Deferred[IResponse]:
+    ) -> "Deferred[IResponse]":
         if not isinstance(method, bytes):
             raise TypeError(
                 "method must be bytes, not {!r} of type {}".format(method, type(method))
@@ -68,7 +68,7 @@ class _AgentSpy:
                     " Is the implementation marked with @implementer(IBodyProducer)?"
                 ).format(bodyProducer)
             )
-        d: Deferred[IResponse] = Deferred()
+        d: "Deferred[IResponse]" = Deferred()
         record = RequestRecord(method, uri, headers, bodyProducer, d)
         self._callback(record)
         return d

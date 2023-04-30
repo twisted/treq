@@ -7,7 +7,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Framework :: Twisted",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -27,13 +26,14 @@ if __name__ == "__main__":
         package_dir={"": "src"},
         setup_requires=["incremental"],
         use_incremental=True,
-        python_requires=">=3.6",
+        python_requires=">=3.7",
         install_requires=[
             "incremental",
             "requests >= 2.1.0",
             "hyperlink >= 21.0.0",
             "Twisted[tls] >= 18.7.0",
             "attrs",
+            "typing_extensions >= 3.10.0",
         ],
         extras_require={
             "dev": [

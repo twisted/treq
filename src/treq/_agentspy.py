@@ -1,11 +1,11 @@
 # Copyright (c) The treq Authors.
 # See LICENSE for details.
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple  # noqa
 
 import attr
 from twisted.internet.defer import Deferred
 from twisted.web.http_headers import Headers
-from twisted.web.iweb import IAgent, IBodyProducer, IResponse
+from twisted.web.iweb import IAgent, IBodyProducer, IResponse  # noqa
 from zope.interface import implementer
 
 

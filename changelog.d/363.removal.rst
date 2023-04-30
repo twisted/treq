@@ -1,0 +1,1 @@
+Support for Python 3.6, which has reached end of support, has been dropped.

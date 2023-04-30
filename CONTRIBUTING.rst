@@ -1,7 +1,7 @@
 Developing
 ==========
 
-This project uses `Tox <https://tox.readthedocs.io/en/latest/config.html>`_ to manage virtual environments.
+This project uses `Tox 3 <https://tox.readthedocs.io/en/latest/config.html>`_ to manage virtual environments.
 
 To run the tests::
 

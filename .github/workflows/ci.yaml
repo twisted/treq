@@ -63,7 +63,7 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-          python-version: ["3.7", "3.8", "3.9", "3.10", "pypy-3.7", "pypy-3.8"]
+          python-version: ["3.7", "3.8", "3.9", "3.10", "pypy-3.8", "pypy-3.9"]
           twisted-version: ["lowest", "latest"]
           experimental: [false]
 
@@ -101,8 +101,8 @@ jobs:
           "3.8": "py38",
           "3.9": "py39",
           "3.10": "py310",
-          "pypy-3.7": "pypy3",
           "pypy-3.8": "pypy3",
+          "pypy-3.9": "pypy3",
         }
         factor = table["${{ matrix.python-version }}"]
         print("::set-output name=value::" + factor)

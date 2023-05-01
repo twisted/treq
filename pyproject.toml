@@ -43,10 +43,15 @@ strict_equality = false
 
 [[tool.mypy.overrides]]
 module = [
+    "treq.content",
+]
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = [
     "treq.api",
     "treq.auth",
     "treq.client",
-    "treq.content",
     "treq.multipart",
     "treq.response",
     "treq.testing",

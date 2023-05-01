@@ -3,7 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
-from typing import Union  # noqa
+from typing import Union
 
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IAgent

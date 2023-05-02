@@ -43,7 +43,7 @@ if __name__ == "__main__":
                 "werkzeug==2.0.3",
             ],
             "docs": [
-                "sphinx>=1.4.8",
+                "sphinx<7.0.0",  # Removal of 'style' key breaks RTD.
             ],
         },
         package_data={"treq": ["_version"]},

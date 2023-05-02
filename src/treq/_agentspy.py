@@ -1,6 +1,6 @@
 # Copyright (c) The treq Authors.
 # See LICENSE for details.
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple  # noqa
 
 import attr
 from twisted.internet.defer import Deferred

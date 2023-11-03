@@ -7,11 +7,11 @@ classifiers = [
     "Operating System :: OS Independent",
     "Framework :: Twisted",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
@@ -32,7 +32,7 @@ if __name__ == "__main__":
             "incremental",
             "requests >= 2.1.0",
             "hyperlink >= 21.0.0",
-            "Twisted[tls] >= 18.7.0",
+            "Twisted[tls] >= 22.10.0",
             "attrs",
         ],
         extras_require={

@@ -140,3 +140,28 @@ jobs:
         COVERALLS_REPO_TOKEN: 4nctuKHTnVtbdmty2FgdO3iiWm1nb7xc4
         COVERALLS_FLAG_NAME: python_${{ matrix.python-version }}-twisted_${{ matrix.twisted-version }}
         COVERALLS_PARALLEL: true
+
+  # Helper so that on GitHub repo settings we can configure to single job.
+  # Then required jobs can be updated directly form the code,
+  # without having to go the GitHub repo setting -> Protected branch
+  # and all the clicking.
+  treq-required:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: always()
+    # Add here the jobs that should block the merge of a PR.
+    needs:
+      - lint
+      - docs
+      - test
+    steps:
+      - name: Require all successes
+        shell: python3 {0}
+        env:
+          RESULTS: ${{ toJSON(needs.*.result) }}
+        run: |
+          import json
+          import os
+          import sys
+          results = json.loads(os.environ["RESULTS"])
+          sys.exit(0 if all(result == "success" for result in results) else 1)

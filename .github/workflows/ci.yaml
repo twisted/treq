@@ -148,7 +148,7 @@ jobs:
   treq-required:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: always()
+    if: ${{ !cancelled() }}
     # Add here the jobs that should block the merge of a PR.
     needs:
       - lint

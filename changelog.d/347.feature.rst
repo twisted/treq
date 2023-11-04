@@ -1,1 +1,0 @@
-When the collector passed to ``treq.collect(response, collector)`` throws an exception, that error will now be returned to the caller of ``collect()`` via the result ``Deferred``, and the underlying HTTP transport will be closed.

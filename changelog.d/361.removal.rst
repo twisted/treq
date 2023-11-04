@@ -1,1 +1,0 @@
-Support for Python 3.7, which reaches end of support 2023-06-27, is deprecated. This is the last release with support for Python 3.7.

@@ -1,0 +1,1 @@
+treq now ships type annotations.

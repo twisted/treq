@@ -1,13 +1,14 @@
 from __future__ import absolute_import, division
 
-from twisted.web.iweb import IAgent
-from twisted.web.client import HTTPConnectionPool
-from twisted.trial.unittest import TestCase
 from twisted.internet import defer
+from twisted.trial.unittest import TestCase
+from twisted.web.client import HTTPConnectionPool
+from twisted.web.iweb import IAgent
 from zope.interface import implementer
 
 import treq
-from treq.api import default_reactor, default_pool, set_global_pool, get_global_pool
+from treq.api import (default_pool, default_reactor, get_global_pool,
+                      set_global_pool)
 
 try:
     from twisted.internet.testing import MemoryReactorClock
@@ -32,7 +33,7 @@ class SyntacticAbominationHTTPConnectionPool:
 
 
 class TreqAPITests(TestCase):
-    def test_default_pool(self):
+    def test_default_pool(self) -> None:
         """
         The module-level API uses the global connection pool by default.
         """
@@ -44,7 +45,7 @@ class TreqAPITests(TestCase):
         self.assertEqual(pool.requests, 1)
         self.failureResultOf(d, TabError)
 
-    def test_cached_pool(self):
+    def test_cached_pool(self) -> None:
         """
         The first use of the module-level API populates the global connection
         pool, which is used for all subsequent requests.
@@ -61,7 +62,7 @@ class TreqAPITests(TestCase):
 
         self.assertEqual(pool.requests, 6)
 
-    def test_custom_pool(self):
+    def test_custom_pool(self) -> None:
         """
         `treq.post()` accepts a *pool* argument to use for the request. The
         global pool is unaffected.
@@ -74,7 +75,7 @@ class TreqAPITests(TestCase):
         self.failureResultOf(d, TabError)
         self.assertIsNot(pool, get_global_pool())
 
-    def test_custom_agent(self):
+    def test_custom_agent(self) -> None:
         """
         A custom Agent is used if specified.
         """
@@ -93,13 +94,10 @@ class TreqAPITests(TestCase):
         self.assertNoResult(d)
         self.assertEqual(1, custom_agent.requests)
 
-    def test_request_invalid_param(self):
+    def test_request_invalid_param(self) -> None:
         """
-        `treq.request()` warns that it ignores unknown keyword arguments, but
-        this is deprecated.
-
-        This test verifies that stacklevel is set appropriately when issuing
-        the warning.
+        `treq.request()` raises `TypeError` when it receives unknown keyword
+        arguments.
         """
         with self.assertRaises(TypeError) as c:
             treq.request(
@@ -111,30 +109,22 @@ class TreqAPITests(TestCase):
 
         self.assertIn("invalid", str(c.exception))
 
-    def test_post_json_with_data(self):
+    def test_post_json_with_data(self) -> None:
         """
-        `treq.post()` warns that mixing *data* and *json* is deprecated.
-
-        This test verifies that stacklevel is set appropriately when issuing
-        the warning.
+        `treq.post()` raises TypeError when the *data* and *json* arguments
+        are mixed.
         """
-        self.failureResultOf(
+        with self.assertRaises(TypeError) as c:
             treq.post(
                 "https://test.example/",
                 data={"hello": "world"},
                 json={"goodnight": "moon"},
                 pool=SyntacticAbominationHTTPConnectionPool(),
             )
-        )
 
-        [w] = self.flushWarnings([self.test_post_json_with_data])
-        self.assertEqual(DeprecationWarning, w["category"])
         self.assertEqual(
-            (
-                "Argument 'json' will be ignored because 'data' was also passed."
-                " This will raise TypeError in the next treq release."
-            ),
-            w["message"],
+            "Argument 'json' cannot be combined with 'data'.",
+            str(c.exception),
         )
 
 
@@ -143,7 +133,7 @@ class DefaultReactorTests(TestCase):
     Test `treq.api.default_reactor()`
     """
 
-    def test_passes_reactor(self):
+    def test_passes_reactor(self) -> None:
         """
         `default_reactor()` returns any reactor passed.
         """
@@ -151,7 +141,7 @@ class DefaultReactorTests(TestCase):
 
         self.assertIs(default_reactor(reactor), reactor)
 
-    def test_uses_default_reactor(self):
+    def test_uses_default_reactor(self) -> None:
         """
         `default_reactor()` returns the global reactor when passed ``None``.
         """
@@ -165,11 +155,11 @@ class DefaultPoolTests(TestCase):
     Test `treq.api.default_pool`.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         set_global_pool(None)
         self.reactor = MemoryReactorClock()
 
-    def test_persistent_false(self):
+    def test_persistent_false(self) -> None:
         """
         When *persistent=False* is passed a non-persistent pool is created.
         """
@@ -178,7 +168,7 @@ class DefaultPoolTests(TestCase):
         self.assertTrue(isinstance(pool, HTTPConnectionPool))
         self.assertFalse(pool.persistent)
 
-    def test_persistent_false_not_stored(self):
+    def test_persistent_false_not_stored(self) -> None:
         """
         When *persistent=False* is passed the resulting pool is not stored as
         the global pool.
@@ -187,7 +177,7 @@ class DefaultPoolTests(TestCase):
 
         self.assertIsNot(pool, get_global_pool())
 
-    def test_persistent_false_new(self):
+    def test_persistent_false_new(self) -> None:
         """
         When *persistent=False* is passed a new pool is returned each time.
         """
@@ -196,7 +186,7 @@ class DefaultPoolTests(TestCase):
 
         self.assertIsNot(pool1, pool2)
 
-    def test_pool_none_persistent_none(self):
+    def test_pool_none_persistent_none(self) -> None:
         """
         When *persistent=None* is passed a _persistent_ pool is created for
         backwards compatibility.
@@ -205,7 +195,7 @@ class DefaultPoolTests(TestCase):
 
         self.assertTrue(pool.persistent)
 
-    def test_pool_none_persistent_true(self):
+    def test_pool_none_persistent_true(self) -> None:
         """
         When *persistent=True* is passed a persistent pool is created and
         stored as the global pool.
@@ -215,7 +205,7 @@ class DefaultPoolTests(TestCase):
         self.assertTrue(isinstance(pool, HTTPConnectionPool))
         self.assertTrue(pool.persistent)
 
-    def test_cached_global_pool(self):
+    def test_cached_global_pool(self) -> None:
         """
         When *persistent=True* or *persistent=None* is passed the pool created
         is cached as the global pool.
@@ -225,7 +215,7 @@ class DefaultPoolTests(TestCase):
 
         self.assertEqual(pool1, pool2)
 
-    def test_specified_pool(self):
+    def test_specified_pool(self) -> None:
         """
         When the user passes a pool it is returned directly. The *persistent*
         argument is ignored. It is not cached as the global pool.

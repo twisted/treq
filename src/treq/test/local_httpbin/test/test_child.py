@@ -37,7 +37,7 @@ class CertificatesForAuthorityAndServerTests(SynchronousTestCase):
     """
 
     def setUp(self):
-        self.hostname = u".example.org"
+        self.hostname = ".example.org"
         (
             self.ca_cert,
             self.server_private_key,
@@ -54,7 +54,7 @@ class CertificatesForAuthorityAndServerTests(SynchronousTestCase):
         server_private_key = self.server_private_key.to_cryptography_key()
         server_x509_cert = self.server_x509_cert.to_cryptography()
 
-        plaintext = b'plaintext'
+        plaintext = b"plaintext"
         ciphertext = server_x509_cert.public_key().encrypt(
             plaintext,
             padding.PKCS1v15(),
@@ -81,7 +81,7 @@ class CertificatesForAuthorityAndServerTests(SynchronousTestCase):
             server_x509_cert.signature,
             server_x509_cert.tbs_certificate_bytes,
             padding.PKCS1v15(),
-            server_x509_cert.signature_hash_algorithm
+            server_x509_cert.signature_hash_algorithm,
         )
 
     def test_x509_matches_hostname(self):
@@ -99,6 +99,7 @@ class FakeThreadPoolState(object):
     """
     State for :py:class:`FakeThreadPool`.
     """
+
     init_call_count = attr.ib(default=0)
     start_call_count = attr.ib(default=0)
 
@@ -108,6 +109,7 @@ class FakeThreadPool(object):
     """
     A fake :py:class:`twisted.python.threadpool.ThreadPool`
     """
+
     _state = attr.ib()
 
     def init(self):
@@ -149,8 +151,8 @@ class MakeHTTPBinSiteTests(SynchronousTestCase):
         self.assertEqual(self.fake_threadpool_state.init_call_count, 1)
         self.assertEqual(self.fake_threadpool_state.start_call_count, 1)
 
-        self.assertEqual(len(self.reactor.triggers['before']['shutdown']), 1)
-        [(stop, _, _)] = self.reactor.triggers['before']['shutdown']
+        self.assertEqual(len(self.reactor.triggers["before"]["shutdown"]), 1)
+        [(stop, _, _)] = self.reactor.triggers["before"]["shutdown"]
 
         self.assertEqual(stop, self.fake_threadpool.stop)
 
@@ -170,7 +172,7 @@ class ServeTLSTests(SynchronousTestCase):
         and the host, port, and CA certificate are returned in its
         description.
         """
-        expected_host = 'host'
+        expected_host = "host"
         expected_port = 123
 
         description_deferred = child._serve_tls(
@@ -182,9 +184,7 @@ class ServeTLSTests(SynchronousTestCase):
 
         self.assertEqual(len(self.reactor.sslServers), 1)
 
-        [
-            (actual_port, actual_site, _, _, actual_host)
-        ] = self.reactor.sslServers
+        [(actual_port, actual_site, _, _, actual_host)] = self.reactor.sslServers
 
         self.assertEqual(actual_host, expected_host)
         self.assertEqual(actual_port, expected_port)
@@ -211,7 +211,7 @@ class ServeTCPTests(SynchronousTestCase):
         A TCP listeneris established on the request host and port, and
         the host and port are returned in its description.
         """
-        expected_host = 'host'
+        expected_host = "host"
         expected_port = 123
 
         description_deferred = child._serve_tcp(
@@ -223,9 +223,7 @@ class ServeTCPTests(SynchronousTestCase):
 
         self.assertEqual(len(self.reactor.tcpServers), 1)
 
-        [
-            (actual_port, actual_site, _, actual_host)
-        ] = self.reactor.tcpServers
+        [(actual_port, actual_site, _, actual_host)] = self.reactor.tcpServers
 
         self.assertEqual(actual_host, expected_host)
         self.assertEqual(actual_port, expected_port)
@@ -243,6 +241,7 @@ class FlushableBytesIOState(object):
     """
     State for :py:class:`FlushableBytesIO`
     """
+
     bio = attr.ib(default=attr.Factory(io.BytesIO))
     flush_count = attr.ib(default=0)
 
@@ -252,6 +251,7 @@ class FlushableBytesIO(object):
     """
     A :py:class:`io.BytesIO` wrapper that records flushes.
     """
+
     _state = attr.ib()
 
     def write(self, data):
@@ -267,6 +267,7 @@ class BufferedStandardOut(object):
     A standard out that whose ``buffer`` is a
     :py:class:`FlushableBytesIO` instance.
     """
+
     buffer = attr.ib()
 
 
@@ -284,9 +285,7 @@ class OutputProcessDescriptionTests(SynchronousTestCase):
         An :py:class:`shared._HTTPBinDescription` is written to
         standard out and the line flushed.
         """
-        description = shared._HTTPBinDescription(host="host",
-                                                 port=123,
-                                                 cacert="cacert")
+        description = shared._HTTPBinDescription(host="host", port=123, cacert="cacert")
 
         child._output_process_description(description, self.stdout)
 
@@ -294,7 +293,7 @@ class OutputProcessDescriptionTests(SynchronousTestCase):
 
         self.assertEqual(
             written,
-            b'{"cacert": "cacert", "host": "host", "port": 123}' + b'\n',
+            b'{"cacert": "cacert", "host": "host", "port": 123}' + b"\n",
         )
 
         self.assertEqual(self.stdout_state.flush_count, 1)
@@ -354,17 +353,14 @@ class ForeverHTTPBinTests(SynchronousTestCase):
         self.output_process_description_calls.append(description)
         return self.output_process_description_returns
 
-    def assertDescriptionAndDeferred(self,
-                                     description_deferred,
-                                     forever_deferred):
+    def assertDescriptionAndDeferred(self, description_deferred, forever_deferred):
         """
         Assert that firing ``description_deferred`` outputs the
         description but that ``forever_deferred`` never fires.
         """
         description_deferred.callback("description")
 
-        self.assertEqual(self.output_process_description_calls,
-                         ["description"])
+        self.assertEqual(self.output_process_description_calls, ["description"])
 
         self.assertNoResult(forever_deferred)
 
@@ -378,9 +374,7 @@ class ForeverHTTPBinTests(SynchronousTestCase):
 
         self.assertEqual(
             self.serve_tcp_calls,
-            [
-                (self.reactor, 'localhost', 0, self.make_httpbin_site_returns)
-            ]
+            [(self.reactor, "localhost", 0, self.make_httpbin_site_returns)],
         )
 
         self.assertDescriptionAndDeferred(
@@ -393,13 +387,11 @@ class ForeverHTTPBinTests(SynchronousTestCase):
         The ``--https`` command line argument serves ``httpbin`` over
         HTTPS, returning a :py:class:`Deferred` that never fires.
         """
-        deferred = self.forever_httpbin(self.reactor, ['--https'])
+        deferred = self.forever_httpbin(self.reactor, ["--https"])
 
         self.assertEqual(
             self.serve_tls_calls,
-            [
-                (self.reactor, 'localhost', 0, self.make_httpbin_site_returns)
-            ]
+            [(self.reactor, "localhost", 0, self.make_httpbin_site_returns)],
         )
 
         self.assertDescriptionAndDeferred(
@@ -413,19 +405,18 @@ class ForeverHTTPBinTests(SynchronousTestCase):
         provided host, returning a :py:class:`Deferred` that never
         fires.
         """
-        deferred = self.forever_httpbin(self.reactor,
-                                        ['--host', 'example.org'])
+        deferred = self.forever_httpbin(self.reactor, ["--host", "example.org"])
 
         self.assertEqual(
             self.serve_tcp_calls,
             [
                 (
                     self.reactor,
-                    'example.org',
+                    "example.org",
                     0,
                     self.make_httpbin_site_returns,
                 )
-            ]
+            ],
         )
 
         self.assertDescriptionAndDeferred(
@@ -439,13 +430,11 @@ class ForeverHTTPBinTests(SynchronousTestCase):
         the provided port, returning a :py:class:`Deferred` that never
         fires.
         """
-        deferred = self.forever_httpbin(self.reactor, ['--port', '91'])
+        deferred = self.forever_httpbin(self.reactor, ["--port", "91"])
 
         self.assertEqual(
             self.serve_tcp_calls,
-            [
-                (self.reactor, 'localhost', 91, self.make_httpbin_site_returns)
-            ]
+            [(self.reactor, "localhost", 91, self.make_httpbin_site_returns)],
         )
 
         self.assertDescriptionAndDeferred(

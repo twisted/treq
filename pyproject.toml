@@ -13,3 +13,70 @@ filename = "CHANGELOG.rst"
 directory = "changelog.d"
 title_format = "{version} ({project_date})"
 issue_format = "`#{issue} <https://github.com/twisted/treq/issues/{issue}>`__"
+
+[tool.mypy]
+namespace_packages = true
+plugins = "mypy_zope:plugin"
+
+check_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+show_column_numbers = true
+show_error_codes = true
+strict_optional = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_ignores = true
+
+disallow_any_decorated = false
+disallow_any_explicit = false
+disallow_any_expr = false
+disallow_any_generics = false
+disallow_any_unimported = false
+disallow_subclassing_any = false
+disallow_untyped_calls = false
+disallow_untyped_decorators = false
+strict_equality = false
+
+[[tool.mypy.overrides]]
+module = [
+    "treq.content",
+]
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = [
+    "treq.api",
+    "treq.auth",
+    "treq.client",
+    "treq.multipart",
+    "treq.response",
+    "treq.testing",
+    "treq.test.test_api",
+    "treq.test.test_auth",
+    "treq.test.test_client",
+    "treq.test.test_content",
+    "treq.test.test_multipart",
+    "treq.test.test_response",
+    "treq.test.test_testing",
+    "treq.test.test_treq_integration",
+    "treq.test.util",
+]
+disallow_untyped_defs = false
+check_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = [
+    "treq.test.local_httpbin.child",
+    "treq.test.local_httpbin.parent",
+    "treq.test.local_httpbin.shared",
+    "treq.test.local_httpbin.test.test_child",
+    "treq.test.local_httpbin.test.test_parent",
+    "treq.test.local_httpbin.test.test_shared",
+]
+disallow_untyped_defs = false
+check_untyped_defs = false
+ignore_missing_imports = true

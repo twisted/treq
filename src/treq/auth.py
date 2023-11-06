@@ -3,7 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
-from typing import Union  # noqa
+from typing import Union
 
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IAgent
@@ -46,8 +46,9 @@ class _RequestHeaderSetterAgent:
             method, uri, headers=requestHeaders, bodyProducer=bodyProducer)
 
 
-def add_basic_auth(agent, username, password):
-    # type: (IAgent, Union[str, bytes], Union[str, bytes]) -> IAgent
+def add_basic_auth(
+    agent: IAgent, username: Union[str, bytes], password: Union[str, bytes]
+) -> IAgent:
     """
     Wrap an agent to add HTTP basic authentication
 

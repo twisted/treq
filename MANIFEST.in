@@ -3,6 +3,7 @@ include *.rst
 include *.md
 include LICENSE
 include .coveragerc
+include src/treq/py.typed
 recursive-include docs *
 prune docs/_build
 prune docs/html

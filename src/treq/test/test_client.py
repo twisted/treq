@@ -541,46 +541,28 @@ class HTTPClientTests(TestCase):
     def test_request_json_with_data(self):
         """
         Passing `HTTPClient.request()` both *data* and *json* parameters is
-        invalid because *json* is ignored. This behavior is deprecated.
+        invalid because they conflict, producing `TypeError`.
         """
-        self.client.request(
-            "POST",
-            "http://example.com/",
-            data=BytesIO(b"..."),
-            json=None,  # NB: None is a valid value. It encodes to b'null'.
-        )
-
-        [w] = self.flushWarnings([self.test_request_json_with_data])
-        self.assertEqual(DeprecationWarning, w["category"])
-        self.assertEqual(
-            (
-                "Argument 'json' will be ignored because 'data' was also passed."
-                " This will raise TypeError in the next treq release."
-            ),
-            w['message'],
-        )
+        with self.assertRaises(TypeError):
+            self.client.request(
+                "POST",
+                "http://example.com/",
+                data=BytesIO(b"..."),
+                json=None,  # NB: None is a valid value. It encodes to b'null'.
+            )
 
     def test_request_json_with_files(self):
         """
         Passing `HTTPClient.request()` both *files* and *json* parameters is
-        invalid because *json* is ignored. This behavior is deprecated.
+        invalid because they confict, producing `TypeError`.
         """
-        self.client.request(
-            "POST",
-            "http://example.com/",
-            files={"f1": ("foo.txt", "text/plain", BytesIO(b"...\n"))},
-            json=["this is ignored"],
-        )
-
-        [w] = self.flushWarnings([self.test_request_json_with_files])
-        self.assertEqual(DeprecationWarning, w["category"])
-        self.assertEqual(
-            (
-                "Argument 'json' will be ignored because 'files' was also passed."
-                " This will raise TypeError in the next treq release."
-            ),
-            w['message'],
-        )
+        with self.assertRaises(TypeError):
+            self.client.request(
+                "POST",
+                "http://example.com/",
+                files={"f1": ("foo.txt", "text/plain", BytesIO(b"...\n"))},
+                json=["this is ignored"],
+            )
 
     def test_request_dict_headers(self):
         self.client.request('GET', 'http://example.com/', headers={
@@ -621,37 +603,20 @@ class HTTPClientTests(TestCase):
         `HTTPClient.request()` warns that headers of an unexpected type are
         invalid and that this behavior is deprecated.
         """
-        self.client.request('GET', 'http://example.com', headers=[])
-
-        [w] = self.flushWarnings([self.test_request_headers_invalid_type])
-        self.assertEqual(DeprecationWarning, w['category'])
-        self.assertIn(
-            "headers must be a dict, twisted.web.http_headers.Headers, or None,",
-            w['message'],
-        )
+        with self.assertRaises(TypeError):
+            self.client.request('GET', 'http://example.com', headers=[])
 
     def test_request_dict_headers_invalid_values(self):
         """
         `HTTPClient.request()` warns that non-string header values are dropped
         and that this behavior is deprecated.
         """
-        self.client.request('GET', 'http://example.com', headers=OrderedDict([
-            ('none', None),
-            ('one', 1),
-            ('ok', 'string'),
-        ]))
-
-        [w1, w2] = self.flushWarnings([self.test_request_dict_headers_invalid_values])
-        self.assertEqual(DeprecationWarning, w1['category'])
-        self.assertEqual(DeprecationWarning, w2['category'])
-        self.assertIn(
-            "The value of headers key 'none' has non-string type",
-            w1['message'],
-        )
-        self.assertIn(
-            "The value of headers key 'one' has non-string type",
-            w2['message'],
-        )
+        with self.assertRaises(TypeError):
+            self.client.request('GET', 'http://example.com', headers=OrderedDict([
+                ('none', None),
+                ('one', 1),
+                ('ok', 'string'),
+            ]))
 
     def test_request_invalid_param(self):
         """

@@ -206,6 +206,15 @@ class _SynchronousProducer:
         consumer.write(self.body)
         return succeed(None)
 
+    def stopProducing(self):
+        raise NotImplementedError()
+
+    def pauseProducing(self):
+        raise NotImplementedError()
+
+    def resumeProducing(self):
+        raise NotImplementedError()
+
 
 def _reject_files(f):
     """

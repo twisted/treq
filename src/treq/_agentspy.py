@@ -1,11 +1,11 @@
 # Copyright (c) The treq Authors.
 # See LICENSE for details.
-from typing import Callable, List, Optional, Tuple  # noqa
+from typing import Callable, List, Optional, Tuple
 
 import attr
 from twisted.internet.defer import Deferred
 from twisted.web.http_headers import Headers
-from twisted.web.iweb import IAgent, IBodyProducer, IResponse  # noqa
+from twisted.web.iweb import IAgent, IBodyProducer, IResponse
 from zope.interface import implementer
 
 
@@ -21,11 +21,11 @@ class RequestRecord:
     :ivar deferred: The :class:`Deferred` returned by :meth:`IAgent.request`
     """
 
-    method = attr.ib()  # type: bytes
-    uri = attr.ib()  # type: bytes
-    headers = attr.ib()  # type: Optional[Headers]
-    bodyProducer = attr.ib()  # type: Optional[IBodyProducer]
-    deferred = attr.ib()  # type: Deferred
+    method: bytes = attr.field()
+    uri: bytes = attr.field()
+    headers: Optional[Headers] = attr.field()
+    bodyProducer: Optional[IBodyProducer] = attr.field()
+    deferred: "Deferred[IResponse]" = attr.field()
 
 
 @implementer(IAgent)
@@ -38,10 +38,15 @@ class _AgentSpy:
         A function called with each :class:`RequestRecord`
     """
 
-    _callback = attr.ib()  # type: Callable[Tuple[RequestRecord], None]
+    _callback: Callable[[RequestRecord], None] = attr.ib()
 
-    def request(self, method, uri, headers=None, bodyProducer=None):
-        # type: (bytes, bytes, Optional[Headers], Optional[IBodyProducer]) -> Deferred[IResponse]  # noqa
+    def request(
+        self,
+        method: bytes,
+        uri: bytes,
+        headers: Optional[Headers] = None,
+        bodyProducer: Optional[IBodyProducer] = None,
+    ) -> "Deferred[IResponse]":
         if not isinstance(method, bytes):
             raise TypeError(
                 "method must be bytes, not {!r} of type {}".format(method, type(method))
@@ -63,14 +68,13 @@ class _AgentSpy:
                     " Is the implementation marked with @implementer(IBodyProducer)?"
                 ).format(bodyProducer)
             )
-        d = Deferred()
+        d: "Deferred[IResponse]" = Deferred()
         record = RequestRecord(method, uri, headers, bodyProducer, d)
         self._callback(record)
         return d
 
 
-def agent_spy():
-    # type: () -> Tuple[IAgent, List[RequestRecord]]
+def agent_spy() -> Tuple[IAgent, List[RequestRecord]]:
     """
     Record HTTP requests made with an agent
 
@@ -87,6 +91,6 @@ def agent_spy():
          - A list of calls made to the agent's
            :meth:`~twisted.web.iweb.IAgent.request()` method
     """
-    records = []
+    records: List[RequestRecord] = []
     agent = _AgentSpy(records.append)
     return agent, records

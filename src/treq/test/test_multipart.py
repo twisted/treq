@@ -3,6 +3,7 @@
 
 import cgi
 import sys
+from typing import cast, AnyStr
 
 from io import BytesIO
 
@@ -10,6 +11,7 @@ from twisted.trial import unittest
 from zope.interface.verify import verifyObject
 
 from twisted.internet import task
+from twisted.internet.testing import StringTransport
 from twisted.web.client import FileBodyProducer
 from twisted.web.iweb import UNKNOWN_LENGTH, IBodyProducer
 
@@ -57,7 +59,7 @@ class MultiPartProducerTestCase(unittest.TestCase):
         else:
             return output.getvalue()
 
-    def newLines(self, value):
+    def newLines(self, value: AnyStr) -> AnyStr:
 
         if isinstance(value, str):
             return value.replace(u"\n", u"\r\n")
@@ -72,7 +74,7 @@ class MultiPartProducerTestCase(unittest.TestCase):
             verifyObject(
                 IBodyProducer, MultiPartProducer({})))
 
-    def test_unknownLength(self):
+    def test_unknownLength(self) -> None:
         """
         If the L{MultiPartProducer} is constructed with a file-like object
         passed as a parameter without either a C{seek} or C{tell} method,
@@ -93,14 +95,14 @@ class MultiPartProducerTestCase(unittest.TestCase):
                 """
 
         producer = MultiPartProducer(
-            {"f": ("name", None, FileBodyProducer(CantTell()))})
+            {"f": ("name", "application/octet-stream", FileBodyProducer(CantTell()))})
         self.assertEqual(UNKNOWN_LENGTH, producer.length)
 
         producer = MultiPartProducer(
-            {"f": ("name", None, FileBodyProducer(CantSeek()))})
+            {"f": ("name", "application/octet-stream", FileBodyProducer(CantSeek()))})
         self.assertEqual(UNKNOWN_LENGTH, producer.length)
 
-    def test_knownLengthOnFile(self):
+    def test_knownLengthOnFile(self) -> None:
         """
         If the L{MultiPartProducer} is constructed with a file-like object with
         both C{seek} and C{tell} methods, its C{length} attribute is set to the
@@ -110,7 +112,7 @@ class MultiPartProducerTestCase(unittest.TestCase):
         inputFile = BytesIO(inputBytes)
         inputFile.seek(5)
         producer = MultiPartProducer({
-            "field": ('file name', None, FileBodyProducer(
+            "field": ('file name', "application/octet-stream", FileBodyProducer(
                       inputFile, cooperator=self.cooperator))})
 
         # Make sure we are generous enough not to alter seek position:
@@ -119,33 +121,39 @@ class MultiPartProducerTestCase(unittest.TestCase):
         # Total length is hard to calculate manually
         # as it contains a lot of headers parameters, newlines and boundaries
         # let's assert for now that it's no less than the input parameter
-        self.assertTrue(producer.length > len(inputBytes))
+        self.assertNotEqual(producer.length, UNKNOWN_LENGTH)
+        self.assertTrue(cast(int, producer.length) > len(inputBytes))
 
         # Calculating length should not touch producers
         self.assertTrue(producer._currentProducer is None)
 
-    def test_defaultCooperator(self):
+    def test_defaultCooperator(self) -> None:
         """
         If no L{Cooperator} instance is passed to L{MultiPartProducer}, the
         global cooperator is used.
         """
         producer = MultiPartProducer({
-            "field": ('file name', None, FileBodyProducer(
+            "field": ("file name", "application/octet-stream", FileBodyProducer(
                       BytesIO(b"yo"),
                       cooperator=self.cooperator))
         })
         self.assertEqual(task.cooperate, producer._cooperate)
 
-    def test_startProducing(self):
+    def test_startProducing(self) -> None:
         """
         L{MultiPartProducer.startProducing} starts writing bytes from the input
         file to the given L{IConsumer} and returns a L{Deferred} which fires
         when they have all been written.
         """
-        consumer = output = BytesIO()
+        consumer = output = StringTransport()
+
+        # We historically accepted bytes for field names and continue to allow
+        # it for compatibility, but the types don't permit it because it makes
+        # them even more complicated and awful. So here we verify that that works.
+        field = cast(str, b"field")
 
         producer = MultiPartProducer({
-            b"field": ('file name', "text/hello-world", FileBodyProducer(
+            field: ("file name", "text/hello-world", FileBodyProducer(
                 BytesIO(b"Hello, World"),
                 cooperator=self.cooperator))
         }, cooperator=self.cooperator, boundary=b"heyDavid")
@@ -165,16 +173,16 @@ Content-Length: 12
 
 Hello, World
 --heyDavid--
-"""), output.getvalue())
+"""), output.value())
         self.assertEqual(None, self.successResultOf(complete))
 
-    def test_inputClosedAtEOF(self):
+    def test_inputClosedAtEOF(self) -> None:
         """
         When L{MultiPartProducer} reaches end-of-file on the input
         file given to it, the input file is closed.
         """
         inputFile = BytesIO(b"hello, world!")
-        consumer = BytesIO()
+        consumer = StringTransport()
 
         producer = MultiPartProducer({
             "field": (
@@ -192,7 +200,7 @@ Hello, World
 
         self.assertTrue(inputFile.closed)
 
-    def test_failedReadWhileProducing(self):
+    def test_failedReadWhileProducing(self) -> None:
         """
         If a read from the input file fails while producing bytes to the
         consumer, the L{Deferred} returned by
@@ -212,7 +220,7 @@ Hello, World
                     cooperator=self.cooperator))
         }, cooperator=self.cooperator, boundary=b"heyDavid")
 
-        complete = producer.startProducing(BytesIO())
+        complete = producer.startProducing(StringTransport())
 
         while self._scheduled:
             self._scheduled.pop(0)()
@@ -244,13 +252,13 @@ Hello, World
         self._scheduled.pop(0)()
         self.assertNoResult(complete)
 
-    def test_pauseProducing(self):
+    def test_pauseProducing(self) -> None:
         """
         L{MultiPartProducer.pauseProducing} temporarily suspends writing bytes
         from the input file to the given L{IConsumer}.
         """
         inputFile = BytesIO(b"hello, world!")
-        consumer = output = BytesIO()
+        consumer = output = StringTransport()
 
         producer = MultiPartProducer({
             "field": (
@@ -263,7 +271,7 @@ Hello, World
         complete = producer.startProducing(consumer)
         self._scheduled.pop(0)()
 
-        currentValue = output.getvalue()
+        currentValue = output.value()
         self.assertTrue(currentValue)
         producer.pauseProducing()
 
@@ -274,17 +282,17 @@ Hello, World
         self._scheduled.pop(0)()
 
         # Since the producer is paused, no new data should be here.
-        self.assertEqual(output.getvalue(), currentValue)
+        self.assertEqual(output.value(), currentValue)
         self.assertNoResult(complete)
 
-    def test_resumeProducing(self):
+    def test_resumeProducing(self) -> None:
         """
         L{MultoPartProducer.resumeProducing} re-commences writing bytes
         from the input file to the given L{IConsumer} after it was previously
         paused with L{MultiPartProducer.pauseProducing}.
         """
         inputFile = BytesIO(b"hello, world!")
-        consumer = output = BytesIO()
+        consumer = output = StringTransport()
 
         producer = MultiPartProducer({
             "field": (
@@ -297,15 +305,15 @@ Hello, World
 
         producer.startProducing(consumer)
         self._scheduled.pop(0)()
-        currentValue = output.getvalue()
+        currentValue = output.value()
         self.assertTrue(currentValue)
         producer.pauseProducing()
         producer.resumeProducing()
         self._scheduled.pop(0)()
         # make sure we started producing new data after resume
-        self.assertTrue(len(currentValue) < len(output.getvalue()))
+        self.assertTrue(len(currentValue) < len(output.value()))
 
-    def test_unicodeString(self):
+    def test_unicodeString(self) -> None:
         """
         Make sure unicode string is passed properly
         """
@@ -325,19 +333,28 @@ Content-Disposition: form-data; name="afield"
         self.assertEqual(producer.length, len(expected))
         self.assertEqual(expected, output)
 
-    def test_failOnByteStrings(self):
+    def test_bytesPassThrough(self) -> None:
         """
-        If byte string is passed as a param and we don't know
-        the encoding, fail early to prevent corrupted form posts
+        If byte string is passed as a param it is passed through
+        unchanged.
         """
-        self.assertRaises(
-            ValueError,
-            MultiPartProducer, {
-                "afield": u"это моя строчечка".encode("utf-32"),
-            },
-            cooperator=self.cooperator, boundary=b"heyDavid")
+        output, producer = self.getOutput(
+            MultiPartProducer({
+                "bfield": b'\x00\x01\x02\x03',
+            }, cooperator=self.cooperator, boundary=b"heyDavid"),
+            with_producer=True)
 
-    def test_failOnUnknownParams(self):
+        expected = (
+            b"--heyDavid\r\n"
+            b'Content-Disposition: form-data; name="bfield"\r\n'
+            b'\r\n'
+            b'\x00\x01\x02\x03\r\n'
+            b'--heyDavid--\r\n'
+        )
+        self.assertEqual(producer.length, len(expected))
+        self.assertEqual(expected, output)
+
+    def test_failOnUnknownParams(self) -> None:
         """
         If byte string is passed as a param and we don't know
         the encoding, fail early to prevent corrupted form posts
@@ -366,7 +383,7 @@ Content-Disposition: form-data; name="afield"
             },
             cooperator=self.cooperator, boundary=b"heyDavid")
 
-    def test_twoFields(self):
+    def test_twoFields(self) -> None:
         """
         Make sure multiple fields are rendered properly.
         """

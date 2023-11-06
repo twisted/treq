@@ -27,13 +27,14 @@ if __name__ == "__main__":
         package_dir={"": "src"},
         setup_requires=["incremental"],
         use_incremental=True,
-        python_requires=">=3.6",
+        python_requires=">=3.7",
         install_requires=[
             "incremental",
             "requests >= 2.1.0",
             "hyperlink >= 21.0.0",
-            "Twisted[tls] >= 22.10.0",
+            "Twisted[tls] >= 22.10.0",  # For #11635
             "attrs",
+            "typing_extensions >= 3.10.0",
         ],
         extras_require={
             "dev": [
@@ -46,7 +47,7 @@ if __name__ == "__main__":
                 "sphinx<7.0.0",  # Removal of 'style' key breaks RTD.
             ],
         },
-        package_data={"treq": ["_version"]},
+        package_data={"treq": ["py.typed"]},
         author="David Reid",
         author_email="dreid@dreid.org",
         maintainer="Tom Most",

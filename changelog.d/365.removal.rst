@@ -1,1 +1,0 @@
-Support for PyPy 3.7, which has reached end of support, has been removed.

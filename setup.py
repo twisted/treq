@@ -42,6 +42,7 @@ if __name__ == "__main__":
                 "pyflakes",
                 "httpbin==0.7.0",
                 "werkzeug==2.0.3",
+                "multipart",
             ],
             "docs": [
                 "sphinx<7.0.0",  # Removal of 'style' key breaks RTD.

@@ -1,6 +1,5 @@
-import cgi
 import json
-from typing import Any, Callable, List, Optional, cast
+from typing import Any, Callable, Final, List, Optional, cast
 
 from twisted.internet.defer import Deferred, succeed
 from twisted.internet.protocol import Protocol, connectionDone
@@ -10,6 +9,19 @@ from twisted.web.http import PotentialDataLoss
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IResponse
 
+from treq import _cgi
+
+
+"""Characters that are valid in a charset name per RFC 2978.
+
+See https://www.rfc-editor.org/errata/eid5433
+"""
+_MIME_CHARSET_CHARS: Final[str] = (
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"  # ALPHA
+    "0123456789"  # DIGIT
+    "!#$%&+-^_`~"  # symbols
+)
+
 
 def _encoding_from_headers(headers: Headers) -> Optional[str]:
     content_types = headers.getRawHeaders("content-type")
@@ -18,14 +30,17 @@ def _encoding_from_headers(headers: Headers) -> Optional[str]:
 
     # This seems to be the choice browsers make when encountering multiple
     # content-type headers.
-    content_type, params = cgi.parse_header(content_types[-1])
+    media_type, params = _cgi.parse_header(content_types[-1])
 
     charset = params.get("charset")
     if charset:
-        return charset.strip("'\"")
+        charset = charset.strip("'\"").lower()
+        if any(c not in _MIME_CHARSET_CHARS for c in charset):
+            return None
+        return charset
 
-    if content_type == "application/json":
-        return "UTF-8"
+    if media_type == "application/json":
+        return "utf-8"
 
     return None
 

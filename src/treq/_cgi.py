@@ -61,8 +61,10 @@
 # [1]: https://github.com/python/cpython/blob/60edc70a9374f1cc6ecff5974e438d58fec29985/Lib/cgi.py
 # [2]: https://github.com/python/cpython/blob/60edc70a9374f1cc6ecff5974e438d58fec29985/LICENSE#L73
 
+from typing import Dict, Iterator, Tuple
 
-def _parseparam(s):
+
+def _parseparam(s: str) -> Iterator[str]:
     while s[:1] == ';':
         s = s[1:]
         end = s.find(';')
@@ -75,7 +77,7 @@ def _parseparam(s):
         s = s[end:]
 
 
-def parse_header(line):
+def parse_header(line: str) -> Tuple[str, Dict[str, str]]:
     """Parse a Content-type like header.
 
     Return the main content-type and a dictionary of options.

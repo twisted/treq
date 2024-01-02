@@ -1,5 +1,6 @@
 import unittest
 from unittest import mock
+from typing import Optional
 
 from twisted.python.failure import Failure
 
@@ -273,7 +274,7 @@ class MoreRealisticContentTests(TestCase):
 
 
 class EncodingFromHeadersTests(unittest.TestCase):
-    def _encodingFromContentType(self, content_type: str) -> str | None:
+    def _encodingFromContentType(self, content_type: str) -> Optional[str]:
         """
         Invoke `_encoding_from_headers()` for a header value.
 

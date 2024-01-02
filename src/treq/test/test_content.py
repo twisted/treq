@@ -317,6 +317,11 @@ class EncodingFromHeadersTests(unittest.TestCase):
 
     def test_noCharset(self):
         """None is returned when no valid charset parameter is found."""
-        self.assertIsNone(self._encodingFromContentType("application/octet-stream"))
-        self.assertIsNone(self._encodingFromContentType("text/plain;charset="))
-        self.assertIsNone(self._encodingFromContentType("text/plain;charset=🙃"))
+        for example in [
+            "application/octet-stream",
+            "text/plain;charset=",
+            "text/plain;charset=''",
+            "text/plain;charset=\"'\"",
+            "text/plain;charset=🙃",
+        ]:
+            self.assertIsNone(self._encodingFromContentType(example))

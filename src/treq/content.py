@@ -1,5 +1,7 @@
 import json
-from typing import Any, Callable, Final, List, Optional, cast
+from typing import (
+    Any, Callable, Final, FrozenSet, List, Optional, cast
+)
 
 from twisted.internet.defer import Deferred, succeed
 from twisted.internet.protocol import Protocol, connectionDone
@@ -16,7 +18,7 @@ from treq import _cgi
 
 See https://www.rfc-editor.org/errata/eid5433
 """
-_MIME_CHARSET_CHARS: Final[str] = (
+_MIME_CHARSET_CHARS: Final[FrozenSet[str]] = frozenset(
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"  # ALPHA
     "0123456789"  # DIGIT
     "!#$%&+-^_`~"  # symbols
@@ -35,7 +37,9 @@ def _encoding_from_headers(headers: Headers) -> Optional[str]:
     charset = params.get("charset")
     if charset:
         charset = charset.strip("'\"").lower()
-        if any(c not in _MIME_CHARSET_CHARS for c in charset):
+        if not charset:
+            return None
+        if not set(charset).issubset(_MIME_CHARSET_CHARS):
             return None
         return charset
 

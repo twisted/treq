@@ -71,14 +71,6 @@ jobs:
           experimental: [false]
 
           include:
-          # Pythons too old for latest
-          - python-version: "3.8"
-            twisted-version: "lowest"
-            experimental: false
-
-          - python-version: "pypy-3.8"
-            twisted-version: "lowest"
-            experimental: false
 
           # Pythons too new for lowest
           - python-version: "3.11"

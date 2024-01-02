@@ -1,7 +1,5 @@
 import json
-from typing import (
-    Any, Callable, Final, FrozenSet, List, Optional, cast
-)
+from typing import Any, Callable, FrozenSet, List, Optional, cast
 
 from twisted.internet.defer import Deferred, succeed
 from twisted.internet.protocol import Protocol, connectionDone
@@ -18,7 +16,7 @@ from treq import _cgi
 
 See https://www.rfc-editor.org/errata/eid5433
 """
-_MIME_CHARSET_CHARS: Final[FrozenSet[str]] = frozenset(
+_MIME_CHARSET_CHARS: FrozenSet[str] = frozenset(
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"  # ALPHA
     "0123456789"  # DIGIT
     "!#$%&+-^_`~"  # symbols

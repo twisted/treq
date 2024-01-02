@@ -72,7 +72,7 @@ jobs:
 
           include:
           # Pythons too old for latest
-          - python-version: "3.7"
+          - python-version: "3.8"
             twisted-version: "lowest"
             experimental: false
 
@@ -119,7 +119,6 @@ jobs:
       shell: python
       run: |
         table = {
-          "3.7": "py37",
           "3.8": "py38",
           "3.9": "py39",
           "3.10": "py310",

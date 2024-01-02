@@ -35,6 +35,7 @@ if __name__ == "__main__":
             "Twisted[tls] >= 22.10.0",  # For #11635
             "attrs",
             "typing_extensions >= 3.10.0",
+            "multipart",
         ],
         extras_require={
             "dev": [
@@ -42,7 +43,6 @@ if __name__ == "__main__":
                 "pyflakes",
                 "httpbin==0.7.0",
                 "werkzeug==2.0.3",
-                "multipart",
             ],
             "docs": [
                 "sphinx<7.0.0",  # Removal of 'style' key breaks RTD.

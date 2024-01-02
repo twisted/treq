@@ -1,6 +1,7 @@
 import json
 from typing import Any, Callable, FrozenSet, List, Optional, cast
 
+import multipart  # type: ignore
 from twisted.internet.defer import Deferred, succeed
 from twisted.internet.protocol import Protocol, connectionDone
 from twisted.python.failure import Failure
@@ -8,8 +9,6 @@ from twisted.web.client import ResponseDone
 from twisted.web.http import PotentialDataLoss
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IResponse
-
-from treq import _cgi
 
 
 """Characters that are valid in a charset name per RFC 2978.
@@ -30,10 +29,11 @@ def _encoding_from_headers(headers: Headers) -> Optional[str]:
 
     # This seems to be the choice browsers make when encountering multiple
     # content-type headers.
-    media_type, params = _cgi.parse_header(content_types[-1])
+    media_type, params = multipart.parse_options_header(content_types[-1])
 
     charset = params.get("charset")
     if charset:
+        assert isinstance(charset, str)  # for MyPy
         charset = charset.strip("'\"").lower()
         if not charset:
             return None

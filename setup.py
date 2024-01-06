@@ -35,6 +35,7 @@ if __name__ == "__main__":
             "Twisted[tls] >= 22.10.0",  # For #11635
             "attrs",
             "typing_extensions >= 3.10.0",
+            "multipart",
         ],
         extras_require={
             "dev": [

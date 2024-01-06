@@ -1,7 +1,7 @@
-import cgi
 import json
-from typing import Any, Callable, List, Optional, cast
+from typing import Any, Callable, FrozenSet, List, Optional, cast
 
+import multipart  # type: ignore
 from twisted.internet.defer import Deferred, succeed
 from twisted.internet.protocol import Protocol, connectionDone
 from twisted.python.failure import Failure
@@ -11,6 +11,17 @@ from twisted.web.http_headers import Headers
 from twisted.web.iweb import IResponse
 
 
+"""Characters that are valid in a charset name per RFC 2978.
+
+See https://www.rfc-editor.org/errata/eid5433
+"""
+_MIME_CHARSET_CHARS: FrozenSet[str] = frozenset(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"  # ALPHA
+    "0123456789"  # DIGIT
+    "!#$%&+-^_`~"  # symbols
+)
+
+
 def _encoding_from_headers(headers: Headers) -> Optional[str]:
     content_types = headers.getRawHeaders("content-type")
     if content_types is None:
@@ -18,14 +29,20 @@ def _encoding_from_headers(headers: Headers) -> Optional[str]:
 
     # This seems to be the choice browsers make when encountering multiple
     # content-type headers.
-    content_type, params = cgi.parse_header(content_types[-1])
+    media_type, params = multipart.parse_options_header(content_types[-1])
 
     charset = params.get("charset")
     if charset:
-        return charset.strip("'\"")
+        assert isinstance(charset, str)  # for MyPy
+        charset = charset.strip("'\"").lower()
+        if not charset:
+            return None
+        if not set(charset).issubset(_MIME_CHARSET_CHARS):
+            return None
+        return charset
 
-    if content_type == "application/json":
-        return "UTF-8"
+    if media_type == "application/json":
+        return "utf-8"
 
     return None
 

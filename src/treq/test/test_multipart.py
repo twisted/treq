@@ -1,12 +1,11 @@
 # Copyright (c) Twisted Matrix Laboratories.
 # See LICENSE for details.
 
-import cgi
-import sys
 from typing import cast, AnyStr
 
 from io import BytesIO
 
+from multipart import MultipartParser  # type: ignore
 from twisted.trial import unittest
 from zope.interface.verify import verifyObject
 
@@ -588,9 +587,10 @@ my lovely bytes
 --heyDavid--
 """.encode("utf-8")), output)
 
-    def test_worksWithCgi(self):
+    def test_worksWithMultipart(self):
         """
-        Make sure the stuff we generated actually parsed by python cgi
+        Make sure the stuff we generated can actually be parsed by the
+        `multipart` module.
         """
         output = self.getOutput(
             MultiPartProducer([
@@ -612,23 +612,20 @@ my lovely bytes
             )
         )
 
-        form = cgi.parse_multipart(BytesIO(output), {
-            "boundary": b"heyDavid",
-            "CONTENT-LENGTH": str(len(output)),
-        })
+        form = MultipartParser(
+            stream=BytesIO(output),
+            boundary=b"heyDavid",
+            content_length=len(output),
+        )
 
-        # Since Python 3.7, the value for a non-file field is now a list
-        # of strings, not bytes.
-        if sys.version_info >= (3, 7):
-            self.assertEqual(set(['just a string\r\n', 'another string']),
-                             set(form['cfield']))
-        else:
-            self.assertEqual(set([b'just a string\r\n', b'another string']),
-                             set(form['cfield']))
+        self.assertEqual(
+            [b'just a string\r\n', b'another string'],
+            [f.raw for f in form.get_all('cfield')],
+        )
 
-        self.assertEqual(set([b'my lovely bytes2']), set(form['efield']))
-        self.assertEqual(set([b'my lovely bytes219']), set(form['xfield']))
-        self.assertEqual(set([b'my lovely bytes22']), set(form['afield']))
+        self.assertEqual(b'my lovely bytes2', form.get('efield').raw)
+        self.assertEqual(b'my lovely bytes219', form.get('xfield').raw)
+        self.assertEqual(b'my lovely bytes22', form.get('afield').raw)
 
 
 class LengthConsumerTestCase(unittest.TestCase):

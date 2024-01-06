@@ -1,4 +1,6 @@
+import unittest
 from unittest import mock
+from typing import Optional
 
 from twisted.python.failure import Failure
 
@@ -11,6 +13,7 @@ from twisted.web.resource import Resource
 from twisted.web.server import NOT_DONE_YET
 
 from treq import collect, content, json_content, text_content
+from treq.content import _encoding_from_headers
 from treq.client import _BufferedResponse
 from treq.testing import StubTreq
 
@@ -267,6 +270,59 @@ class MoreRealisticContentTests(TestCase):
         # being closed.
         stub.flush()
         self.assertEqual(len(resource.request_finishes), 1)
-        self.assertIsInstance(
-            resource.request_finishes[0].value, ConnectionDone
+        self.assertIsInstance(resource.request_finishes[0].value, ConnectionDone)
+
+
+class EncodingFromHeadersTests(unittest.TestCase):
+    def _encodingFromContentType(self, content_type: str) -> Optional[str]:
+        """
+        Invoke `_encoding_from_headers()` for a header value.
+
+        :param content_type: A Content-Type header value.
+        :returns: The result of `_encoding_from_headers()`
+        """
+        h = Headers({"Content-Type": [content_type]})
+        return _encoding_from_headers(h)
+
+    def test_rfcExamples(self):
+        """
+        The examples from RFC 9110 § 8.3.1 are normalized to
+        canonical (lowercase) form.
+        """
+        for example in [
+            "text/html;charset=utf-8",
+            'Text/HTML;Charset="utf-8"',
+            'text/html; charset="utf-8"',
+            "text/html;charset=UTF-8",
+        ]:
+            self.assertEqual("utf-8", self._encodingFromContentType(example))
+
+    def test_multipleParams(self):
+        """The charset parameter is extracted even if mixed with other params."""
+        for example in [
+            "a/b;c=d;charSet=ascii",
+            "a/b;c=d;charset=ascii; e=f",
+            "a/b;c=d; charsEt=ascii;e=f",
+            "a/b;c=d;   charset=ascii;  e=f",
+        ]:
+            self.assertEqual("ascii", self._encodingFromContentType(example))
+
+    def test_quotedString(self):
+        """Any quotes that surround the value of the charset param are removed."""
+        self.assertEqual(
+            "ascii", self._encodingFromContentType("foo/bar; charset='ASCII'")
         )
+        self.assertEqual(
+            "shift_jis", self._encodingFromContentType('a/b; charset="Shift_JIS"')
+        )
+
+    def test_noCharset(self):
+        """None is returned when no valid charset parameter is found."""
+        for example in [
+            "application/octet-stream",
+            "text/plain;charset=",
+            "text/plain;charset=''",
+            "text/plain;charset=\"'\"",
+            "text/plain;charset=🙃",
+        ]:
+            self.assertIsNone(self._encodingFromContentType(example))

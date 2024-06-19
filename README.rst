@@ -66,4 +66,3 @@ Copyright and License
 ``treq`` is made available under the MIT license.
 See `LICENSE <./LICENSE>`_ for legal details and copyright notices.
 
-

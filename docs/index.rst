@@ -71,7 +71,7 @@ Here is a list of `requests`_ features and their status in treq.
 +----------------------------------+----------+----------+
 | Basic Authentication             | yes      | yes      |
 +----------------------------------+----------+----------+
-| Digest Authentication            | yes      | yes      |
+| Digest Authentication            | yes      | no       |
 +----------------------------------+----------+----------+
 | Elegant Key/Value Cookies        | yes      | yes      |
 +----------------------------------+----------+----------+

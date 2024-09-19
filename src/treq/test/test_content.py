@@ -207,14 +207,16 @@ class ContentTests(TestCase):
 
     def test_text_content_unicode_headers(self):
         """
-        Header parsing is robust against unicode header names and values.
+        Parsing of the Content-Type header is robust in the face of
+        Unicode gunk in the header value, which is ignored.
         """
-        self.response.headers = Headers({
-            b'Content-Type': [
-                u'text/plain; charset="UTF-16BE"; u=ᛃ'.encode('utf-8')],
-            u'Coördination'.encode('iso-8859-1'): [
-                u'koʊˌɔrdɪˈneɪʃən'.encode('utf-8')],
-        })
+        self.response.headers = Headers(
+            {
+                b"Content-Type": [
+                    'text/plain; charset="UTF-16BE"; u=ᛃ'.encode("utf-8")
+                ],
+            }
+        )
 
         d = text_content(self.response)
 

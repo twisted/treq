@@ -1,1 +1,0 @@
-Support for Python 3.7 and PyPy 3.8, which have reached end of support, has been dropped.

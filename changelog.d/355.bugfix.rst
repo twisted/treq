@@ -1,1 +1,0 @@
-:mod:`treq.content.text_content()` no longer generates deprecation warnings due to use of the ``cgi`` module.

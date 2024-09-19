@@ -8,7 +8,7 @@ on:
 
 jobs:
   lint:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
@@ -16,7 +16,7 @@ jobs:
 
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: "3.12"
 
     - uses: actions/cache@v4
       with:
@@ -34,7 +34,7 @@ jobs:
         TOX_PARALLEL_NO_SPINNER: 1
 
   docs:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
@@ -60,7 +60,7 @@ jobs:
 
   test:
     name: "Test ${{ matrix.python-version }} with ${{ matrix.twisted-version }} Twisted"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 10
     continue-on-error: ${{ matrix.experimental }}
     strategy:
@@ -80,6 +80,10 @@ jobs:
           - python-version: "3.12"
             twisted-version: "latest"
             experimental: false
+
+          - python-version: "3.13-dev"
+            twisted-version: "latest"
+            experimental: true
 
           - python-version: "pypy-3.10"
             twisted-version: "latest"
@@ -116,6 +120,7 @@ jobs:
           "3.10": "py310",
           "3.11": "py311",
           "3.12": "py312",
+          "3.13-dev": "py313",
           "pypy-3.8": "pypy3",
           "pypy-3.9": "pypy3",
           "pypy-3.10": "pypy3",

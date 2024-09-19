@@ -31,7 +31,6 @@ if __name__ == "__main__":
         python_requires=">=3.7",
         install_requires=[
             "incremental",
-            "requests >= 2.1.0",
             "hyperlink >= 21.0.0",
             "Twisted[tls] >= 22.10.0",  # For #11635
             "attrs",

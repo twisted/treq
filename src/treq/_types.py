@@ -1,6 +1,7 @@
 # Copyright (c) The treq Authors.
 # See LICENSE for details.
 import io
+from .cookies import TreqieJar
 from http.cookiejar import CookieJar
 from typing import Any, Dict, Iterable, List, Mapping, Tuple, Union
 
@@ -48,6 +49,7 @@ _HeadersType = Union[
 ]
 
 _CookiesType = Union[
+    TreqieJar,
     CookieJar,
     Mapping[str, str],
 ]

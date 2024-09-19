@@ -1,3 +1,4 @@
+# -*- test-case-name: treq.test.test_integration -*-
 """
 Convenience helpers for :mod:`http.cookiejar`
 """
@@ -6,6 +7,14 @@ from typing import Union, Iterable, Optional
 from http.cookiejar import Cookie, CookieJar
 
 from hyperlink import EncodedURL
+
+
+class TreqieJar(CookieJar):
+    def __getitem__(self, name: str) -> str:
+        for cookie in self:
+            if cookie.name == name and cookie.value is not None:
+                return cookie.value
+        raise KeyError(name)
 
 
 def scoped_cookie(origin: Union[str, EncodedURL], name: str, value: str) -> Cookie:

@@ -1,18 +1,19 @@
-from http.cookiejar import CookieJar, Cookie
+from http.cookiejar import Cookie, CookieJar
 
 import attrs
-from twisted.internet.testing import StringTransport
+from treq._agentspy import RequestRecord, agent_spy
+from treq.client import HTTPClient
+from treq.cookies import scoped_cookie, search
 from twisted.internet.interfaces import IProtocol
-from twisted.trial.unittest import SynchronousTestCase
+from twisted.internet.testing import StringTransport
 from twisted.python.failure import Failure
+from twisted.trial.unittest import SynchronousTestCase
 from twisted.web.client import ResponseDone
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IClientRequest, IResponse
 from zope.interface import implementer
 
-from treq._agentspy import agent_spy, RequestRecord
-from treq.client import HTTPClient
-from treq.cookies import scoped_cookie, search
+from ..cookies import TreqieJar
 
 
 @implementer(IClientRequest)
@@ -135,7 +136,7 @@ class HTTPClientCookieTests(SynchronousTestCase):
 
     def setUp(self) -> None:
         self.agent, self.requests = agent_spy()
-        self.cookiejar = CookieJar()
+        self.cookiejar = TreqieJar()
         self.client = HTTPClient(self.agent, self.cookiejar)
 
     def test_cookies_in_jars(self) -> None:

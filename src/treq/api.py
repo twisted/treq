@@ -1,8 +1,22 @@
 from __future__ import absolute_import, division, print_function
 
+from typing import Callable, Concatenate, ParamSpec, TypeVar
+
 from twisted.web.client import Agent, HTTPConnectionPool
 
+from treq._types import _URLType
 from treq.client import HTTPClient
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def _like(
+    method: Callable[Concatenate[HTTPClient, _URLType, P], R]
+) -> Callable[
+    [Callable[Concatenate[_URLType, P], R]], Callable[Concatenate[_URLType, P], R]
+]:
+    return lambda x: x
 
 
 def head(url, **kwargs):
@@ -14,6 +28,7 @@ def head(url, **kwargs):
     return _client(kwargs).head(url, _stacklevel=4, **kwargs)
 
 
+@_like(HTTPClient.get)
 def get(url, headers=None, **kwargs):
     """
     Make a ``GET`` request.

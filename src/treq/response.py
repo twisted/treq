@@ -1,5 +1,4 @@
 from typing import Any, Callable, List
-from requests.cookies import cookiejar_from_dict
 from http.cookiejar import CookieJar
 from twisted.internet.defer import Deferred
 from twisted.python import reflect
@@ -16,7 +15,7 @@ class _Response(proxyForInterface(IResponse)):  # type: ignore
     """
 
     original: IResponse
-    _cookiejar: CookieJar
+    _cookiejar: TreqieJar
 
     def __init__(self, original: IResponse, cookiejar: CookieJar):
         self.original = original
@@ -107,11 +106,7 @@ class _Response(proxyForInterface(IResponse)):  # type: ignore
         """
         Get a copy of this response's cookies.
         """
-        # NB: This actually returns a RequestsCookieJar, but we type it as a
-        # regular CookieJar because we want to ditch requests as a dependency.
-        # Full deprecation deprecation will require a subclass or wrapper that
-        # warns about the RequestCookieJar extensions.
-        jar: CookieJar = cookiejar_from_dict({})
+        jar = CookieJar()
 
         for cookie in self._cookiejar:
             jar.set_cookie(cookie)

@@ -18,7 +18,7 @@ def make_a_request(treq):
     else:
         message = yield response.text()
         raise Exception("Got an error from the server: {}".format(message))
-    defer.returnValue(result)
+    return result
 
 
 class MakeARequestTests(SynchronousTestCase):

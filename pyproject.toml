@@ -2,20 +2,7 @@
 requires = [
   "setuptools >= 35.0.2",
   "wheel >= 0.29.0",
-
-  # What follows is an exact copy of the runtime dependencies, because (A)
-  # incremental needs to be able to import `treq` to be able to import
-  # `treq.__version__` (see `tools.setuptools.dynamic` below), and (B) the
-  # `treq` module is set up such that everything is eagerly imported into the
-  # top-level namespace and thus sucks in every other dependency that we
-  # require.
-  "incremental >= 21.3.0",
-  "requests >= 2.1.0",
-  "hyperlink >= 21.0.0",
-  "Twisted[tls] >= 22.10.0",  # For #11635
-  "attrs",
-  "typing_extensions >= 3.10.0",
-  "multipart",
+  "incremental>=24.7.2",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -53,7 +40,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-  "incremental >= 21.3.0",
+  "incremental >= 24.7.0",
   "requests >= 2.1.0",
   "hyperlink >= 21.0.0",
   "Twisted[tls] >= 22.10.0",  # For #11635
@@ -159,3 +146,9 @@ module = [
 disallow_untyped_defs = false
 check_untyped_defs = false
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+  module = [
+    "treq._multipart",
+  ]
+  disallow_untyped_defs = false

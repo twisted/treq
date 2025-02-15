@@ -8,6 +8,17 @@ Changelog
 
 .. towncrier release notes start
 
+24.9.1 (2024-09-19)
+===================
+
+Bugfixes
+--------
+
+- treq has vendored its dependency on the ``multipart`` library to avoid import
+  conflicts with ``python-multipart``; it should now be installable alongside
+  that library. (`#399 <https://github.com/twisted/treq/issues/399>`__)
+
+
 24.9.0 (2024-09-17)
 ===================
 

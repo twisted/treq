@@ -3,6 +3,7 @@ version: 2
 
 sphinx:
   fail_on_warning: false
+  configuration: docs/conf.py
 
 formats:
   - pdf

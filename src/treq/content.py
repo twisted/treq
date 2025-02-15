@@ -1,7 +1,11 @@
+"""
+Utilities related to retrieving the contents of the response-body.
+"""
+
 import json
 from typing import Any, Callable, FrozenSet, List, Optional, cast
 
-import multipart  # type: ignore
+from ._multipart import parse_options_header
 from twisted.internet.defer import Deferred, succeed
 from twisted.internet.protocol import Protocol, connectionDone
 from twisted.python.failure import Failure
@@ -29,7 +33,7 @@ def _encoding_from_headers(headers: Headers) -> Optional[str]:
 
     # This seems to be the choice browsers make when encountering multiple
     # content-type headers.
-    media_type, params = multipart.parse_options_header(content_types[-1])
+    media_type, params = parse_options_header(content_types[-1])
 
     charset = params.get("charset")
     if charset:

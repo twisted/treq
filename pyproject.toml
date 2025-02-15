@@ -52,13 +52,17 @@ dev = [
     "httpbin==0.7.0",
     "werkzeug==2.0.3",
 ]
-
 docs = [
-    "sphinx<7.0.0",  # Removal of 'style' key breaks RTD.
+    "sphinx",
 ]
 
 [project.urls]
+Changelog = "https://github.com/twisted/treq/blob/HEAD/CHANGELOG.rst"
+Documentation = "https://treq.readthedocs.io/"
+Issues = "https://github.com/twisted/treq/issues"
 Source = "https://github.com/twisted/treq"
+Funding-PSF = "https://psfmember.org/civicrm/contribute/transact/?reset=1&id=44"
+Funding-GitHub = "https://github.com/sponsors/twisted"
 
 [tool.hatch.version]
 source = "incremental"

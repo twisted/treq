@@ -1,27 +1,23 @@
 [build-system]
 requires = [
-  "setuptools >= 35.0.2",
-  "wheel >= 0.29.0",
-  "incremental>=24.7.2",
+    "hatchling",
+    "incremental >= 24.7.2",
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "hatchling.build"
 
 [project]
-name = "Treq"
-dynamic = [
-    "version",
-]
-
+name = "treq"
+dynamic = ["version"]
 description = "High-level Twisted HTTP Client API"
 readme = "README.rst"
 license = { text = "MIT License" }
 # When updating this value, make sure our CI matrix includes a matching minimum version.
 requires-python = ">=3.8.0"
 authors = [
-  { name = "David Reid", email = "dreid@dreid.org" },
+    { name = "David Reid", email = "dreid@dreid.org" },
 ]
 maintainers = [
-  { name = "Tom Most", email = "twm@freecog.net" },
+    { name = "Tom Most", email = "twm@freecog.net" },
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -40,13 +36,13 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-  "incremental >= 24.7.0",
-  "requests >= 2.1.0",
-  "hyperlink >= 21.0.0",
-  "Twisted[tls] >= 22.10.0",  # For #11635
-  "attrs",
-  "typing_extensions >= 3.10.0",
-  "multipart",
+    "incremental >= 24.7.2",
+    "requests >= 2.1.0",
+    "hyperlink >= 21.0.0",
+    "Twisted[tls] >= 22.10.0",  # For #11635
+    "attrs",
+    "typing_extensions >= 3.10.0",
+    "multipart",
 ]
 
 [project.optional-dependencies]
@@ -64,10 +60,8 @@ docs = [
 [project.urls]
 Source = "https://github.com/twisted/treq"
 
-[tool.setuptools.packages.find]
-where = ["src"]
-[tool.setuptools.dynamic]
-version = {attr = "treq.__version__"}
+[tool.hatch.version]
+source = "incremental"
 
 [tool.towncrier]
 package = "treq"
@@ -148,7 +142,7 @@ check_untyped_defs = false
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-  module = [
+module = [
     "treq._multipart",
-  ]
-  disallow_untyped_defs = false
+]
+disallow_untyped_defs = false

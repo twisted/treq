@@ -1,13 +1,15 @@
-from twisted.internet.task import react
 from _utils import print_response
+from twisted.internet.task import react
 
 import treq
 
 
-def main(reactor):
-    d = treq.post("https://httpbin.org/post",
-                  data={"form": "data"})
-    d.addCallback(print_response)
-    return d
+def basic_post(reactor):
+    resp = await treq.post(
+        "https://httpbin.org/post",
+        data={"form": "data"},
+    )
+    await print_response(resp)
 
-react(main, [])
+
+react(basic_post)

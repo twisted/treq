@@ -29,7 +29,7 @@ GET
 +++
 
 .. literalinclude:: examples/basic_get.py
-    :pyobject: main
+    :pyobject: basic_get
 
 Full example: :download:`basic_get.py <examples/basic_get.py>`
 
@@ -37,7 +37,7 @@ POST
 ++++
 
 .. literalinclude:: examples/basic_post.py
-    :pyobject: main
+    :pyobject: basic_post
 
 Full example: :download:`basic_post.py <examples/basic_post.py>`
 

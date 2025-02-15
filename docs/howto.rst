@@ -119,7 +119,7 @@ the :meth:`~treq.response._Response.history()` method on the response.
 
 .. literalinclude:: examples/response_history.py
     :linenos:
-    :lines: 7-15
+    :pyobject: main
 
 Full example: :download:`response_history.py <examples/response_history.py>`
 

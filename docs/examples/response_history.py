@@ -1,18 +1,15 @@
-from twisted.internet.task import react
 from _utils import print_response
+from twisted.internet.task import react
 
 import treq
 
 
-def main(reactor, *args):
-    d = treq.get('https://httpbin.org/redirect/1')
+async def main(reactor):
+    response = await treq.get("https://httpbin.org/redirect/1")
 
-    def cb(response):
-        print('Response history:')
-        print(response.history())
-        return print_response(response)
+    print("Response history:")
+    print(response.history())
+    await print_response(response)
 
-    d.addCallback(cb)
-    return d
 
-react(main, [])
+react(main)

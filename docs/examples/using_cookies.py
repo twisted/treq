@@ -1,5 +1,5 @@
-from twisted.internet.task import react
 from _utils import print_response
+from twisted.internet.task import react
 
 import treq
 

@@ -136,7 +136,7 @@ access as `requests cookies <https://requests.readthedocs.io/en/latest/user/quic
 
 .. literalinclude:: examples/using_cookies.py
     :linenos:
-    :lines: 7-20
+    :pyobject: main
 
 Full example: :download:`using_cookies.py <examples/using_cookies.py>`
 

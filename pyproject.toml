@@ -10,7 +10,7 @@ name = "treq"
 dynamic = ["version"]
 description = "High-level Twisted HTTP Client API"
 readme = "README.rst"
-license = { text = "MIT License" }
+license = "MIT"
 # When updating this value, make sure our CI matrix includes a matching minimum version.
 requires-python = ">=3.8.0"
 authors = [

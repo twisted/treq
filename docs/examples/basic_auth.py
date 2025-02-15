@@ -4,12 +4,12 @@ from twisted.internet.task import react
 import treq
 
 
-async def main(reactor):
-    response = await treq.get(
+async def basic_auth(reactor):
+    resp = await treq.get(
         "https://httpbin.org/basic-auth/treq/treq",
         auth=("treq", "treq"),
     )
-    await print_response(response)
+    await print_response(resp)
 
 
-react(main)
+react(basic_auth)

@@ -4,9 +4,9 @@ from twisted.internet.task import react
 import treq
 
 
-async def main(reactor):
-    response = await treq.get("https://httpbin.org/redirect/1")
-    await print_response(response)
+async def redirects(reactor):
+    resp = await treq.get("https://httpbin.org/redirect/1")
+    await print_response(resp)
 
 
-react(main)
+react(redirects)

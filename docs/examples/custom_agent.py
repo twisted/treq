@@ -5,9 +5,9 @@ from twisted.web.client import Agent
 from treq.client import HTTPClient
 
 
-async def main(reactor):
-    custom_agent = Agent(reactor, connectTimeout=42)
-    http_client = HTTPClient(custom_agent)
+async def custom_agent(reactor):
+    my_agent = Agent(reactor, connectTimeout=42)
+    http_client = HTTPClient(my_agent)
     resp = await http_client.get(
         "https://secure.example.net/area51",
         auth=("admin", "you'll never guess!"),
@@ -15,4 +15,4 @@ async def main(reactor):
     await print_response(resp)
 
 
-react(main)
+react(custom_agent)

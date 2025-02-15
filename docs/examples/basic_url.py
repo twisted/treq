@@ -5,7 +5,7 @@ from twisted.internet.task import react
 import treq
 
 
-async def main(reactor):
+async def basic_url(reactor):
     url = (
         DecodedURL.from_text("https://httpbin.org")
         .child("get")  # add path /get
@@ -15,4 +15,4 @@ async def main(reactor):
     await print_response(await treq.get(url))
 
 
-react(main)
+react(basic_url)

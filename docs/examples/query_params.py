@@ -3,7 +3,7 @@ from twisted.internet.task import react
 import treq
 
 
-async def main(reactor):
+async def query_params(reactor):
     print("List of tuples")
     resp = await treq.get(
         "https://httpbin.org/get", params=[("foo", "bar"), ("baz", "bax")]
@@ -39,4 +39,4 @@ async def main(reactor):
     print(content)
 
 
-react(main)
+react(query_params)

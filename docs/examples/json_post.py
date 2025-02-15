@@ -5,7 +5,7 @@ from twisted.internet.task import react
 import treq
 
 
-async def main(reactor):
+async def json_post(reactor):
     response = await treq.post(
         "https://httpbin.org/post",
         json={"msg": "Hello!"},
@@ -14,4 +14,4 @@ async def main(reactor):
     pprint(data)
 
 
-react(main)
+react(json_post)

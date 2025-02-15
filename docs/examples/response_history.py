@@ -4,11 +4,11 @@ from twisted.internet.task import react
 import treq
 
 
-async def main(reactor):
-    response = await treq.get("https://httpbin.org/redirect/1")
+async def response_history(reactor):
+    resp = await treq.get("https://httpbin.org/redirect/1")
     print("Response history:")
-    print(response.history())
-    await print_response(response)
+    print(resp.history())
+    await print_response(resp)
 
 
-react(main)
+react(response_history)

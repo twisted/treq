@@ -4,7 +4,7 @@ from twisted.internet.task import react
 import treq
 
 
-async def main(reactor):
+async def using_cookies(reactor):
     resp = await treq.get("https://httpbin.org/cookies/set?hello=world")
 
     jar = resp.cookies()
@@ -16,4 +16,4 @@ async def main(reactor):
     )
 
 
-react(main)
+react(using_cookies)

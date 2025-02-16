@@ -26,7 +26,7 @@ Features
 --------
 
 - treq now ships type annotations. (`#366 <https://github.com/twisted/treq/issues/366>`__)
-- The new :mod:`treq.cookies` module provides helper functions for working with `http.cookiejar.Cookie` and `CookieJar` objects. (`#384 <https://github.com/twisted/treq/issues/384>`__)
+- The new :mod:`treq.cookies` module provides helper functions for working with `http.cookiejar.Cookie` and :class:`~http.cookiejar.CookieJar` objects. (`#384 <https://github.com/twisted/treq/issues/384>`__)
 - Python 3.13 is now supported. (`#391 <https://github.com/twisted/treq/issues/391>`__)
 
 
@@ -40,7 +40,7 @@ Deprecations and Removals
 -------------------------
 
 - Mixing the *json* argument with *files* or *data* now raises `TypeError`. (`#297 <https://github.com/twisted/treq/issues/297>`__)
-- Passing non-string (`str` or `bytes`) values as part of a dict to the *headers* argument now results in a `TypeError`, as does passing any collection other than a `dict` or `Headers` instance. (`#302 <https://github.com/twisted/treq/issues/302>`__)
+- Passing non-string (`str` or `bytes`) values as part of a dict to the *headers* argument now results in a `TypeError`, as does passing any collection other than a `dict` or :class:`~twisted.web.http.http_headers.Headers` instance. (`#302 <https://github.com/twisted/treq/issues/302>`__)
 - Support for Python 3.7 and PyPy 3.8, which have reached end of support, has been dropped. (`#378 <https://github.com/twisted/treq/issues/378>`__)
 
 

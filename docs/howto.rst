@@ -126,7 +126,7 @@ Full example: :download:`response_history.py <examples/response_history.py>`
 Cookies
 -------
 
-Cookies can be set by passing a ``dict`` or ``cookielib.CookieJar`` instance via the ``cookies`` keyword argument.
+Cookies can be set by passing a `dict` or :py:class:`http.cookiejar.CookieJar` instance via the *cookies* keyword argument.
 Any cookies set by the server can be retrieved using the :py:meth:`~treq.response._Response.cookies()` response method, which returns a :py:class:`~http.cookiejar.CookieJar`.
 
 Use :py:func:`treq.cookies.search()` to extract cookies from the jar:

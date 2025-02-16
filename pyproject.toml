@@ -1,10 +1,71 @@
 [build-system]
 requires = [
-    "setuptools >= 35.0.2",
-    "wheel >= 0.29.0",
-    "incremental >= 21.3.0",
+    "hatchling",
+    "incremental >= 24.7.2",
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "hatchling.build"
+
+[project]
+name = "treq"
+dynamic = ["version"]
+description = "High-level Twisted HTTP Client API"
+readme = "README.rst"
+license = "MIT"
+# When updating this value, make sure our CI matrix includes a matching minimum version.
+requires-python = ">=3.8.0"
+authors = [
+    { name = "David Reid", email = "dreid@dreid.org" },
+]
+maintainers = [
+    { name = "Tom Most", email = "twm@freecog.net" },
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Framework :: Twisted",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+    "incremental >= 24.7.2",
+    "requests >= 2.1.0",
+    "hyperlink >= 21.0.0",
+    "Twisted[tls] >= 22.10.0",  # For #11635
+    "attrs",
+    "typing_extensions >= 3.10.0",
+    "multipart",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pep8",
+    "pyflakes",
+    "httpbin==0.7.0",
+    "werkzeug==2.0.3",
+]
+docs = [
+    "sphinx",
+]
+
+[project.urls]
+Changelog = "https://github.com/twisted/treq/blob/HEAD/CHANGELOG.rst"
+Documentation = "https://treq.readthedocs.io/"
+Issues = "https://github.com/twisted/treq/issues"
+Source = "https://github.com/twisted/treq"
+Funding-PSF = "https://psfmember.org/civicrm/contribute/transact/?reset=1&id=44"
+Funding-GitHub = "https://github.com/sponsors/twisted"
+
+[tool.hatch.version]
+source = "incremental"
 
 [tool.towncrier]
 package = "treq"
@@ -85,7 +146,7 @@ check_untyped_defs = false
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-  module = [
+module = [
     "treq._multipart",
-  ]
-  disallow_untyped_defs = false
+]
+disallow_untyped_defs = false

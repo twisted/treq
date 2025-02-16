@@ -1,0 +1,1 @@
+treq is packaged with Hatchling, and consequently no longer directly depends on setuptools.

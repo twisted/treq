@@ -22,7 +22,7 @@ jobs:
       with:
         path: ~/.cache/pip
         key:
-          ${{ runner.os }}-pip-lint-${{ hashFiles('pyproject.toml', 'setup.py', 'tox.ini') }}
+          ${{ runner.os }}-pip-lint-${{ hashFiles('pyproject.toml', 'tox.ini') }}
         restore-keys: |
           ${{ runner.os }}-pip-lint-
           ${{ runner.os }}-pip-
@@ -48,7 +48,7 @@ jobs:
       with:
         path: ~/.cache/pip
         key:
-          ${{ runner.os }}-pip-docs-${{ hashFiles('pyproject.toml', 'setup.py', 'tox.ini') }}
+          ${{ runner.os }}-pip-docs-${{ hashFiles('pyproject.toml', 'tox.ini') }}
         restore-keys: |
           ${{ runner.os }}-pip-docs-
           ${{ runner.os }}-pip-
@@ -105,7 +105,7 @@ jobs:
       with:
         path: ~/.cache/pip
         key:
-          ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml', 'setup.py', 'tox.ini') }}
+          ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml', 'tox.ini') }}
         restore-keys: |
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-

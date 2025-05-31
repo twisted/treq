@@ -54,6 +54,7 @@ dev = [
 ]
 docs = [
     "sphinx",
+    "sphinx_rtd_theme",
 ]
 
 [project.urls]

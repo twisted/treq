@@ -429,16 +429,6 @@ class RequestSequence:
     :class:`~twisted.trial.unittest.SynchronousTestCase`) will translate into
     a test failure.
 
-    .. note::
-
-        Some versions of
-        :class:`twisted.trial.unittest.SynchronousTestCase` report
-        logged errors on the wrong test: see `Twisted #9267
-        <https://twistedmatrix.com/trac/ticket/9267>`_.
-
-    ..  TODO Update the above note to say what version of
-        SynchronousTestCase is fixed once Twisted >17.5.0 is released.
-
     When not subclassing Trial's classes you must pass `async_failure_reporter`
     and implement equivalent behavior or errors will pass silently. For
     example::

@@ -1,15 +1,15 @@
-from twisted.internet.task import react
 from _utils import print_response
+from twisted.internet.task import react
 
 import treq
 
 
-def main(reactor, *args):
-    d = treq.get(
-        'https://httpbin.org/basic-auth/treq/treq',
-        auth=('treq', 'treq')
+async def basic_auth(reactor):
+    resp = await treq.get(
+        "https://httpbin.org/basic-auth/treq/treq",
+        auth=("treq", "treq"),
     )
-    d.addCallback(print_response)
-    return d
+    await print_response(resp)
 
-react(main, [])
+
+react(basic_auth)

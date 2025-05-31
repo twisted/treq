@@ -1,18 +1,17 @@
 from pprint import pprint
 
-from twisted.internet import defer
 from twisted.internet.task import react
 
 import treq
 
 
-@defer.inlineCallbacks
-def main(reactor):
-    response = yield treq.post(
-        'https://httpbin.org/post',
+async def json_post(reactor):
+    response = await treq.post(
+        "https://httpbin.org/post",
         json={"msg": "Hello!"},
     )
-    data = yield response.json()
+    data = await response.json()
     pprint(data)
 
-react(main, [])
+
+react(json_post)

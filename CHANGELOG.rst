@@ -8,6 +8,27 @@ Changelog
 
 .. towncrier release notes start
 
+25.5.0 (2025-05-31)
+===================
+
+Features
+--------
+
+- treq is packaged with Hatchling, and consequently no longer directly depends on setuptools. (`#388 <https://github.com/twisted/treq/issues/388>`__)
+
+
+Improved Documentation
+----------------------
+
+- Update documentation to use `async`/`await` syntax (`#409 <https://github.com/twisted/treq/issues/409>`__)
+
+
+Deprecations and Removals
+-------------------------
+
+- Support for Python 3.8, which has reached end of support, is deprecated. This is the last release with support for Python 3.8. (`#407 <https://github.com/twisted/treq/issues/407>`__)
+
+
 24.9.1 (2024-09-19)
 ===================
 

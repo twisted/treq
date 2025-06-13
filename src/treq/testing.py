@@ -197,7 +197,7 @@ class _SynchronousProducer:
         assert isinstance(body, (bytes, str)), msg
         if isinstance(body, str):
             self.body = body.encode('utf-8')
-        self.length = len(body)
+        self.length = len(self.body)
 
     def startProducing(self, consumer):
         """

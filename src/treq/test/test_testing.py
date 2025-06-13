@@ -19,7 +19,8 @@ from treq.testing import (
     HasHeaders,
     RequestSequence,
     StringStubbingResource,
-    StubTreq
+    StubTreq,
+    _SynchronousProducer
 )
 
 
@@ -623,3 +624,17 @@ class RequestSequenceTests(TestCase):
 
         [failure] = self.flushLoggedErrors()
         self.assertIsInstance(failure.value, AssertionError)
+
+    def test_synchronous_producer_length_matches_body_length(self):
+       # bytes input
+       p = _SynchronousProducer(b"abc")
+       self.assertEqual(p.length, 3)
+
+        # str input (should be encoded to utf-8)
+       p2 = _SynchronousProducer("abc")
+       self.assertEqual(p2.length, 3)
+
+        # str with non-ascii
+       p3 = _SynchronousProducer("ü")
+       self.assertEqual(p3.length, len("ü".encode("utf-8")))
+

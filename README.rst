@@ -9,17 +9,12 @@ treq: High-level Twisted HTTP Client API
     :alt: calver: YY.MM.MICRO
     :target: https://calver.org/
 
-.. |coverage| image:: https://coveralls.io/repos/github/twisted/treq/badge.svg
-    :alt: Coverage
-    :target: https://coveralls.io/github/twisted/treq
-
 .. |documentation| image:: https://readthedocs.org/projects/treq/badge/
     :alt: Documentation
     :target: https://treq.readthedocs.org
 
 |pypi|
 |calver|
-|coverage|
 |documentation|
 
 ``treq`` is an HTTP library inspired by

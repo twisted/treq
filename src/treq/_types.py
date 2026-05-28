@@ -1,8 +1,9 @@
 # Copyright (c) The treq Authors.
 # See LICENSE for details.
 import io
+from collections.abc import Iterable, Mapping
 from http.cookiejar import CookieJar
-from typing import Any, Dict, Iterable, List, Mapping, Tuple, Union
+from typing import Any, Union
 
 from hyperlink import DecodedURL, EncodedURL
 from twisted.internet.interfaces import (IReactorPluggableNameResolver,
@@ -37,14 +38,14 @@ _URLType = Union[
 ]
 
 _ParamsType = Union[
-    Mapping[str, Union[str, Tuple[str, ...], List[str]]],
-    List[Tuple[str, str]],
+    Mapping[str, Union[str, tuple[str, ...], list[str]]],
+    list[tuple[str, str]],
 ]
 
 _HeadersType = Union[
     Headers,
-    Dict[_S, _S],
-    Dict[_S, List[_S]],
+    dict[_S, _S],
+    dict[_S, list[_S]],
 ]
 
 _CookiesType = Union[
@@ -66,8 +67,8 @@ Types that define the entire HTTP request body, including those coercible to
 # Concrete types are used here because the handling of the *data* parameter
 # does lots of isinstance checks.
 _BodyFields = Union[
-    Dict[str, str],
-    List[Tuple[str, str]],
+    dict[str, str],
+    list[tuple[str, str]],
 ]
 """
 Types that will be URL- or multipart-encoded before being sent as part of the
@@ -85,7 +86,7 @@ Note that this is a simplification. Only `_BodyFields` may be supplied if the
 _FileValue = Union[
     str,
     bytes,
-    Tuple[str, str, IBodyProducer],
+    tuple[str, str, IBodyProducer],
 ]
 """
 Either a scalar string, or a file to upload as (filename, content type,
@@ -94,7 +95,7 @@ IBodyProducer)
 
 _FilesType = Union[
     Mapping[str, _FileValue],
-    Iterable[Tuple[str, _FileValue]],
+    Iterable[tuple[str, _FileValue]],
 ]
 """
 Values accepted for the *files* parameter.

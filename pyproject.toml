@@ -49,8 +49,8 @@ dependencies = [
 dev = [
     "pep8",
     "pyflakes",
-    "httpbin==0.7.0",
-    "werkzeug==2.0.3",
+    "httpbin==0.10.2",
+    "werkzeug==3.1.8",
 ]
 docs = [
     "sphinx",

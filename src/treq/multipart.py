@@ -92,7 +92,7 @@ class MultiPartProducer:
 
         :param consumer: Any `IConsumer` provider
         """
-        self._task = self._cooperate(self._writeLoop(consumer))  # type: ignore
+        self._task = self._cooperate(self._writeLoop(consumer))
         # whenDone returns the iterator that was passed to cooperate, so who
         # cares what type it has? It's an edge signal; we ignore its value.
         d: "Deferred[Any]" = self._task.whenDone()

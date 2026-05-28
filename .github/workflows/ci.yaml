@@ -66,7 +66,7 @@ jobs:
     strategy:
       matrix:
           # Python versions common to lowest and latest
-          python-version: ["3.8", "3.9", "3.10", "pypy-3.9"]
+          python-version: ["3.9", "3.10", "pypy-3.9"]
           twisted-version: ["lowest", "latest"]
           experimental: [false]
 
@@ -115,13 +115,11 @@ jobs:
       shell: python
       run: |
         table = {
-          "3.8": "py38",
           "3.9": "py39",
           "3.10": "py310",
           "3.11": "py311",
           "3.12": "py312",
           "3.13": "py313",
-          "pypy-3.8": "pypy3",
           "pypy-3.9": "pypy3",
           "pypy-3.10": "pypy3",
         }

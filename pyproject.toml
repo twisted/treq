@@ -12,7 +12,7 @@ description = "High-level Twisted HTTP Client API"
 readme = "README.rst"
 license = "MIT"
 # When updating this value, make sure our CI matrix includes a matching minimum version.
-requires-python = ">=3.8.0"
+requires-python = ">=3.9.0"
 authors = [
     { name = "David Reid", email = "dreid@dreid.org" },
 ]
@@ -26,7 +26,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Framework :: Twisted",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",

@@ -23,7 +23,7 @@ CRLF = b"\r\n"
 _Consumer: TypeAlias = "Union[IConsumer, _LengthConsumer]"
 _UnknownLength = Literal["'twisted.web.iweb.UNKNOWN_LENGTH'"]
 _Length: TypeAlias = Union[int, _UnknownLength]
-_FieldValue = Union[bytes, tuple[str, str, IBodyProducer]]
+_FieldValue = Union[bytes, tuple[Optional[str], str, IBodyProducer]]
 _Field: TypeAlias = tuple[str, _FieldValue]
 
 
@@ -212,7 +212,7 @@ class MultiPartProducer:
     def _writeFile(
         self,
         name: str,
-        filename: str,
+        filename: Optional[str],
         content_type: str,
         producer: IBodyProducer,
         consumer: _Consumer,

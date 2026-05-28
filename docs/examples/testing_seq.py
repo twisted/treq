@@ -17,7 +17,7 @@ def make_a_request(treq):
         result = yield response.json()
     else:
         message = yield response.text()
-        raise Exception("Got an error from the server: {}".format(message))
+        raise Exception(f"Got an error from the server: {message}")
     return result
 
 
@@ -52,5 +52,5 @@ class MakeARequestTests(SynchronousTestCase):
         with req_seq.consume(self.fail):
             failure = self.failureResultOf(make_a_request(treq))
 
-        self.assertEqual(u"Got an error from the server: I'm a teapot!",
+        self.assertEqual("Got an error from the server: I'm a teapot!",
                          failure.getErrorMessage())

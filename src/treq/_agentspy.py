@@ -1,6 +1,6 @@
 # Copyright (c) The treq Authors.
 # See LICENSE for details.
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, Optional
 
 import attr
 from twisted.internet.defer import Deferred
@@ -49,11 +49,11 @@ class _AgentSpy:
     ) -> "Deferred[IResponse]":
         if not isinstance(method, bytes):
             raise TypeError(
-                "method must be bytes, not {!r} of type {}".format(method, type(method))
+                f"method must be bytes, not {method!r} of type {type(method)}"
             )
         if not isinstance(uri, bytes):
             raise TypeError(
-                "uri must be bytes, not {!r} of type {}".format(uri, type(uri))
+                f"uri must be bytes, not {uri!r} of type {type(uri)}"
             )
         if headers is not None and not isinstance(headers, Headers):
             raise TypeError(
@@ -74,7 +74,7 @@ class _AgentSpy:
         return d
 
 
-def agent_spy() -> Tuple[IAgent, List[RequestRecord]]:
+def agent_spy() -> tuple[IAgent, list[RequestRecord]]:
     """
     Record HTTP requests made with an agent
 
@@ -91,6 +91,6 @@ def agent_spy() -> Tuple[IAgent, List[RequestRecord]]:
          - A list of calls made to the agent's
            :meth:`~twisted.web.iweb.IAgent.request()` method
     """
-    records: List[RequestRecord] = []
+    records: list[RequestRecord] = []
     agent = _AgentSpy(records.append)
     return agent, records

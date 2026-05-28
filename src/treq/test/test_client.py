@@ -41,7 +41,7 @@ class HTTPClientTests(TestCase):
             Headers({b'accept-encoding': [b'gzip']}), None)
 
     def test_request_uri_idn(self):
-        self.client.request('GET', u'http://č.net')
+        self.client.request('GET', 'http://č.net')
         self.agent.request.assert_called_once_with(
             b'GET', b'http://xn--bea.net',
             Headers({b'accept-encoding': [b'gzip']}), None)
@@ -51,7 +51,7 @@ class HTTPClientTests(TestCase):
         A URL may be passed as a `hyperlink.DecodedURL` object. It is converted
         to bytes when passed to the underlying agent.
         """
-        url = DecodedURL.from_text(u"https://example.org/foo")
+        url = DecodedURL.from_text("https://example.org/foo")
         self.client.request("GET", url)
         self.agent.request.assert_called_once_with(
             b"GET", b"https://example.org/foo",
@@ -64,7 +64,7 @@ class HTTPClientTests(TestCase):
         A URL may be passed as a `hyperlink.EncodedURL` object. It is converted
         to bytes when passed to the underlying agent.
         """
-        url = EncodedURL.from_text(u"https://example.org/foo")
+        url = EncodedURL.from_text("https://example.org/foo")
         self.client.request("GET", url)
         self.agent.request.assert_called_once_with(
             b"GET", b"https://example.org/foo",
@@ -123,7 +123,7 @@ class HTTPClientTests(TestCase):
 
         This reproduces treq #264.
         """
-        self.client.request('GET', u'http://č.net', params={'foo': 'bar'})
+        self.client.request('GET', 'http://č.net', params={'foo': 'bar'})
         self.agent.request.assert_called_once_with(
             b'GET', b'http://xn--bea.net/?foo=bar',
             Headers({b'accept-encoding': [b'gzip']}), None)
@@ -135,7 +135,7 @@ class HTTPClientTests(TestCase):
         """
         self.client.request(
             method="GET",
-            url=DecodedURL.from_text(u"http://č.net"),
+            url=DecodedURL.from_text("http://č.net"),
             params={"foo": "bar"},
         )
         self.agent.request.assert_called_once_with(
@@ -172,8 +172,8 @@ class HTTPClientTests(TestCase):
         `urllib.urlencode()`
         """
         self.client.request('GET', 'http://example.com/', params=[
-            ('text', u'A\u03a9'),
-            ('text-seq', [u'A\u03a9']),
+            ('text', 'A\u03a9'),
+            ('text-seq', ['A\u03a9']),
             ('bytes', [b'ascii']),
             ('bytes-seq', [b'ascii']),
             ('native', ['native']),
@@ -208,7 +208,7 @@ class HTTPClientTests(TestCase):
         raw_bytes = b"\x00\xff\xfb"
 
         self.client.request('GET', 'http://example.com/', params=[
-            (u'text', u'A\u03a9'),
+            ('text', 'A\u03a9'),
             (b'bytes', ['ascii', raw_bytes]),
             ('native', 'native'),
             (1, 'int'),

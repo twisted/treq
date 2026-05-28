@@ -104,7 +104,7 @@ class AddAuthTests(SynchronousTestCase):
         https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#Character_encoding_of_HTTP_authentication
         """
         agent, requests = agent_spy()
-        auth = (u'\u16d7', u'\u16b9')
+        auth = ('\u16d7', '\u16b9')
         authAgent = add_auth(agent, auth)
 
         authAgent.request(b'method', b'uri')

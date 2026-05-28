@@ -95,7 +95,7 @@ class CertificatesForAuthorityAndServerTests(SynchronousTestCase):
 
 
 @attr.s
-class FakeThreadPoolState(object):
+class FakeThreadPoolState:
     """
     State for :py:class:`FakeThreadPool`.
     """
@@ -105,7 +105,7 @@ class FakeThreadPoolState(object):
 
 
 @attr.s
-class FakeThreadPool(object):
+class FakeThreadPool:
     """
     A fake :py:class:`twisted.python.threadpool.ThreadPool`
     """
@@ -237,7 +237,7 @@ class ServeTCPTests(SynchronousTestCase):
 
 
 @attr.s
-class FlushableBytesIOState(object):
+class FlushableBytesIOState:
     """
     State for :py:class:`FlushableBytesIO`
     """
@@ -247,7 +247,7 @@ class FlushableBytesIOState(object):
 
 
 @attr.s
-class FlushableBytesIO(object):
+class FlushableBytesIO:
     """
     A :py:class:`io.BytesIO` wrapper that records flushes.
     """
@@ -262,7 +262,7 @@ class FlushableBytesIO(object):
 
 
 @attr.s
-class BufferedStandardOut(object):
+class BufferedStandardOut:
     """
     A standard out that whose ``buffer`` is a
     :py:class:`FlushableBytesIO` instance.

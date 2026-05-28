@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # treq documentation build configuration file, created by
 # sphinx-quickstart on Mon Dec 10 22:32:11 2012.
 #

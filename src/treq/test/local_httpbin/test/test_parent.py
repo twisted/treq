@@ -35,7 +35,7 @@ skip = skip_on_windows_because_of_199()
 
 
 @attr.s
-class FakeProcessTransportState(object):
+class FakeProcessTransportState:
     """
     State for :py:class:`FakeProcessTransport`.
     """
@@ -47,7 +47,7 @@ class FakeProcessTransportState(object):
 
 @implementer(IProcessTransport)
 @attr.s
-class FakeProcessTransport(StringTransport, object):
+class FakeProcessTransport(StringTransport):
     """
     A fake process transport.
     """
@@ -227,7 +227,7 @@ class HTTPServerProcessProtocolTests(SynchronousTestCase):
 
 
 @attr.s
-class SpawnedProcess(object):
+class SpawnedProcess:
     """
     A call to :py:class:`MemoryProcessReactor.spawnProcess`.
     """

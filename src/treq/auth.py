@@ -1,6 +1,5 @@
 # Copyright 2012-2020 The treq Authors.
 # See LICENSE for details.
-from __future__ import absolute_import, division, print_function
 
 import binascii
 from typing import Union
@@ -15,8 +14,7 @@ class UnknownAuthConfig(Exception):
     The authentication config provided couldn't be interpreted.
     """
     def __init__(self, config):
-        super(Exception, self).__init__(
-            '{0!r} not of a known type.'.format(config))
+        super(Exception, self).__init__(f'{config!r} not of a known type.')
 
 
 @implementer(IAgent)

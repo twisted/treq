@@ -39,7 +39,7 @@ class _HTTPBinServerProcessProtocol(basic.LineOnlyReceiver):
 
     def lineReceived(self, line):
         if self._received:
-            raise RuntimeError("Unexpected line: {!r}".format(line))
+            raise RuntimeError(f"Unexpected line: {line!r}")
         description = _HTTPBinDescription.from_json_bytes(line)
 
         self._received = True

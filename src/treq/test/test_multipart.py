@@ -61,7 +61,7 @@ class MultiPartProducerTestCase(unittest.TestCase):
     def newLines(self, value: AnyStr) -> AnyStr:
 
         if isinstance(value, str):
-            return value.replace(u"\n", u"\r\n")
+            return value.replace("\n", "\r\n")
         else:
             return value.replace(b"\n", b"\r\n")
 
@@ -208,7 +208,7 @@ Hello, World
         """
         class BrokenFile:
             def read(self, count):
-                raise IOError("Simulated bad thing")
+                raise OSError("Simulated bad thing")
 
         producer = MultiPartProducer({
             "field": (
@@ -318,17 +318,17 @@ Hello, World
         """
         output, producer = self.getOutput(
             MultiPartProducer({
-                "afield": u"Это моя строчечка\r\n",
+                "afield": "Это моя строчечка\r\n",
             }, cooperator=self.cooperator, boundary=b"heyDavid"),
             with_producer=True)
 
-        expected = self.newLines(u"""--heyDavid
+        expected = self.newLines("""--heyDavid
 Content-Disposition: form-data; name="afield"
 
 Это моя строчечка
 
 --heyDavid--
-""".encode("utf-8"))
+""".encode())
         self.assertEqual(producer.length, len(expected))
         self.assertEqual(expected, output)
 
@@ -509,7 +509,7 @@ my lovely bytes219
         output, producer = self.getOutput(
             MultiPartProducer({
                 "field": (
-                    u'Так себе имя.jpg',
+                    'Так себе имя.jpg',
                     "image/jpeg",
                     FileBodyProducer(
                         inputFile=BytesIO(b"my lovely bytes"),
@@ -519,14 +519,14 @@ my lovely bytes219
             }, cooperator=self.cooperator, boundary=b"heyDavid"),
             with_producer=True)
 
-        expected = self.newLines(u"""--heyDavid
+        expected = self.newLines("""--heyDavid
 Content-Disposition: form-data; name="field"; filename="Так себе имя.jpg"
 Content-Type: image/jpeg
 Content-Length: 15
 
 my lovely bytes
 --heyDavid--
-""".encode("utf-8"))
+""".encode())
         self.assertEqual(len(expected), producer.length)
         self.assertEqual(expected, output)
 
@@ -566,7 +566,7 @@ my lovely bytes
         output = self.getOutput(
             MultiPartProducer({
                 "field": (
-                    u'\r\noops.j\npg',
+                    '\r\noops.j\npg',
                     "image/jp\reg\n",
                     FileBodyProducer(
                         inputFile=BytesIO(b"my lovely bytes"),
@@ -578,14 +578,14 @@ my lovely bytes
             )
         )
 
-        self.assertEqual(self.newLines(u"""--heyDavid
+        self.assertEqual(self.newLines(b"""--heyDavid
 Content-Disposition: form-data; name="field"; filename="oops.jpg"
 Content-Type: image/jpeg
 Content-Length: 15
 
 my lovely bytes
 --heyDavid--
-""".encode("utf-8")), output)
+"""), output)
 
     def test_worksWithMultipart(self):
         """

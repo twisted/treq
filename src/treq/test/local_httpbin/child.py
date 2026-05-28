@@ -21,7 +21,6 @@ from twisted.internet.endpoints import SSL4ServerEndpoint, TCP4ServerEndpoint
 from twisted.internet.ssl import Certificate, CertificateOptions
 from twisted.internet.task import react
 from twisted.logger import (
-    FileLogObserver,
     Logger,
     globalLogBeginner,
     textFileLogObserver,

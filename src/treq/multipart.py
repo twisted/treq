@@ -343,7 +343,7 @@ class _LengthConsumer:
         assert isinstance(self.length, int)
 
         if value == UNKNOWN_LENGTH:
-            self.length = cast(_UnknownLength, UNKNOWN_LENGTH)
+            self.length = UNKNOWN_LENGTH
         elif isinstance(value, int):
             self.length += value
         else:

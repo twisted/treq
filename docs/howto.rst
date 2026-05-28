@@ -51,7 +51,7 @@ The ``params`` argument may be either a ``dict`` or a ``list`` of
 ``(key, value)`` tuples.
 
 If it is a ``dict`` then the values in the dict may either be scalar values or a ``list`` or ``tuple`` thereof.
-Scalar values means `str`, `bytes`, or anything else — even ``None`` — which will be coerced to `str`.
+Scalar values means ``str``, ``bytes``, or anything else — even ``None`` — which will be coerced to ``str``.
 Strings are UTF-8 encoded.
 
 .. literalinclude:: examples/query_params.py
@@ -104,7 +104,7 @@ The following will print a 200 OK response.
 
 Full example: :download:`redirects.py <examples/redirects.py>`
 
-You can easily disable redirects by simply passing `allow_redirects=False` to
+You can easily disable redirects by simply passing ``allow_redirects=False`` to
 any of the request methods.
 
 .. literalinclude:: examples/disable_redirects.py
@@ -126,7 +126,7 @@ Full example: :download:`response_history.py <examples/response_history.py>`
 Cookies
 -------
 
-Cookies can be set by passing a `dict` or :py:class:`http.cookiejar.CookieJar` instance via the *cookies* keyword argument.
+Cookies can be set by passing a ``dict`` or :py:class:`http.cookiejar.CookieJar` instance via the *cookies* keyword argument.
 Any cookies set by the server can be retrieved using the :py:meth:`~treq.response._Response.cookies()` response method, which returns a :py:class:`~http.cookiejar.CookieJar`.
 
 Use :py:func:`treq.cookies.search()` to extract cookies from the jar:

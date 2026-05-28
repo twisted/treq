@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division
-
 from twisted.internet import defer
 from twisted.trial.unittest import TestCase
 from twisted.web.client import HTTPConnectionPool

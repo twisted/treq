@@ -1,9 +1,10 @@
 # Copyright (c) Twisted Matrix Laboratories.
 # See LICENSE for details.
 
+from collections.abc import Iterable, Mapping
 from contextlib import closing
 from io import BytesIO
-from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union, cast
+from typing import Any, Optional, Union, cast
 from uuid import uuid4
 
 from twisted.internet import task
@@ -22,8 +23,8 @@ CRLF = b"\r\n"
 _Consumer: TypeAlias = "Union[IConsumer, _LengthConsumer]"
 _UnknownLength = Literal["'twisted.web.iweb.UNKNOWN_LENGTH'"]
 _Length: TypeAlias = Union[int, _UnknownLength]
-_FieldValue = Union[bytes, Tuple[str, str, IBodyProducer]]
-_Field: TypeAlias = Tuple[str, _FieldValue]
+_FieldValue = Union[bytes, tuple[Optional[str], str, IBodyProducer]]
+_Field: TypeAlias = tuple[str, _FieldValue]
 
 
 @implementer(IBodyProducer)
@@ -91,7 +92,7 @@ class MultiPartProducer:
 
         :param consumer: Any `IConsumer` provider
         """
-        self._task = self._cooperate(self._writeLoop(consumer))  # type: ignore
+        self._task = self._cooperate(self._writeLoop(consumer))
         # whenDone returns the iterator that was passed to cooperate, so who
         # cares what type it has? It's an edge signal; we ignore its value.
         d: "Deferred[Any]" = self._task.whenDone()
@@ -211,7 +212,7 @@ class MultiPartProducer:
     def _writeFile(
         self,
         name: str,
-        filename: str,
+        filename: Optional[str],
         content_type: str,
         producer: IBodyProducer,
         consumer: _Consumer,
@@ -284,7 +285,7 @@ def _converted(fields: _FilesType) -> Iterable[_Field]:
     Convert any of the multitude of formats we accept for the *fields*
     parameter into the form we work with internally.
     """
-    fields_: Iterable[Tuple[str, _FileValue]]
+    fields_: Iterable[tuple[str, _FileValue]]
     if hasattr(fields, "items"):
         assert isinstance(fields, Mapping)
         fields_ = fields.items()
@@ -342,7 +343,7 @@ class _LengthConsumer:
         assert isinstance(self.length, int)
 
         if value == UNKNOWN_LENGTH:
-            self.length = cast(_UnknownLength, UNKNOWN_LENGTH)
+            self.length = UNKNOWN_LENGTH
         elif isinstance(value, int):
             self.length += value
         else:
@@ -364,7 +365,7 @@ class _Header:
         self,
         name: bytes,
         value: _S,
-        params: Optional[List[Tuple[_S, _S]]] = None,
+        params: Optional[list[tuple[_S, _S]]] = None,
     ):
         self.name = name
         self.value = value
@@ -386,7 +387,7 @@ class _Header:
             return h.read()
 
 
-def _sorted_by_type(fields: Iterable[_Field]) -> List[_Field]:
+def _sorted_by_type(fields: Iterable[_Field]) -> list[_Field]:
     """Sorts params so that strings are placed before files.
 
     That makes a request more readable, as generally files are bigger.

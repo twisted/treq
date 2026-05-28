@@ -141,7 +141,7 @@ class StubbingTests(TestCase):
         for name, obj in api_things:
             self.assertTrue(
                 isfunction(getattr(stub, name, None)),
-                "StubTreq.{0} should be a function.".format(name),
+                f"StubTreq.{name} should be a function.",
             )
 
         for name, obj in content_things:
@@ -690,4 +690,4 @@ class RequestSequenceTests(TestCase):
 
         # str with non-ascii
         p3 = _SynchronousProducer("ü")
-        self.assertEqual(p3.length, len("ü".encode("utf-8")))
+        self.assertEqual(p3.length, len("ü".encode()))

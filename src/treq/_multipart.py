@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Parser for multipart/form-data
 ==============================
@@ -190,7 +188,7 @@ class MultipartError(ValueError):
     pass
 
 
-class MultipartParser(object):
+class MultipartParser:
     def __init__(
         self,
         stream,
@@ -367,7 +365,7 @@ class MultipartParser(object):
             raise MultipartError("Unexpected end of multipart stream.")
 
 
-class MultipartPart(object):
+class MultipartPart:
     file: IO[bytes]
 
     def __init__(self, buffer_size=2**16, memfile_limit=2**18, charset="latin1"):
@@ -459,7 +457,7 @@ class MultipartPart(object):
 
         try:
             val = self.file.read()
-        except IOError:
+        except OSError:
             raise
         finally:
             self.file.seek(pos)

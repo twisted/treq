@@ -9,7 +9,7 @@ async def using_cookies(reactor):
 
     jar = resp.cookies()
     [cookie] = treq.cookies.search(jar, domain="httpbin.org", name="hello")
-    print("The server set our hello cookie to: {}".format(cookie.value))
+    print(f"The server set our hello cookie to: {cookie.value}")
 
     await treq.get("https://httpbin.org/cookies", cookies=jar).addCallback(
         print_response

@@ -30,7 +30,7 @@ class _Response(proxyForInterface(IResponse)):  # type: ignore
         if self.original.length == UNKNOWN_LENGTH:
             size = "unknown size"
         else:
-            size = "{:,d} bytes".format(self.original.length)
+            size = f"{self.original.length:,d} bytes"
         # Display non-ascii bits of the content-type header as backslash
         # escapes.
         content_type_bytes = b", ".join(

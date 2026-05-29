@@ -5,7 +5,7 @@ from typing import cast, AnyStr
 
 from io import BytesIO
 
-from .._multipart import MultipartParser
+from multipart import MultipartParser
 from twisted.trial import unittest
 from zope.interface.verify import verifyObject
 

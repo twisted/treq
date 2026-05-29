@@ -5,7 +5,7 @@ Utilities related to retrieving the contents of the response-body.
 import json
 from typing import Any, Callable, Optional, cast
 
-from ._multipart import parse_options_header
+from multipart import parse_options_header
 from twisted.internet.defer import Deferred, succeed
 from twisted.internet.protocol import Protocol, connectionDone
 from twisted.python.failure import Failure

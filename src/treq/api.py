@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Concatenate, ParamSpec, Protocol, TypeVar
+from typing import ParamSpec, TypeVar
 
 from hyperlink import DecodedURL, EncodedURL
 from twisted.internet.defer import Deferred
@@ -9,7 +9,7 @@ from twisted.web.client import Agent, HTTPConnectionPool
 from twisted.web.iweb import IAgent
 
 from treq._types import (_NOTHING, _CookiesType, _FilesType, _ITreqReactor,
-                         _JSONType, _Nothing, _ParamsType, _URLType)
+                         _JSONType, _Nothing, _ParamsType)
 from treq.client import HTTPClient
 from treq.response import _Response
 

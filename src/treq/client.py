@@ -4,11 +4,25 @@ from __future__ import annotations
 import io
 import mimetypes
 import uuid
+import sys
+
 from collections import abc
 from http.cookiejar import CookieJar
 from json import dumps as json_dumps
-from typing import (Any, Callable, Concatenate, Mapping, Optional, ParamSpec,
-                    TypeVar, Union)
+from typing import (
+    Any,
+    Callable,
+    Mapping,
+    Optional,
+    TypeVar,
+    Union,
+)
+
+if sys.version_info < (3, 10):
+    from typing_extensions import ParamSpec, Concatenate
+else:
+    from typing import ParamSpec, Concatenate
+
 from urllib.parse import quote_plus
 from urllib.parse import urlencode as _urlencode
 
@@ -17,16 +31,32 @@ from twisted.internet.defer import Deferred
 from twisted.internet.interfaces import IProtocol
 from twisted.python.components import proxyForInterface, registerAdapter
 from twisted.python.filepath import FilePath
-from twisted.web.client import (BrowserLikeRedirectAgent, ContentDecoderAgent,
-                                CookieAgent, FileBodyProducer, GzipDecoder,
-                                IAgent, RedirectAgent)
+from twisted.web.client import (
+    BrowserLikeRedirectAgent,
+    ContentDecoderAgent,
+    CookieAgent,
+    FileBodyProducer,
+    GzipDecoder,
+    IAgent,
+    RedirectAgent,
+)
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer, IResponse
 
 from treq import multipart
-from treq._types import (_NOTHING, _CookiesType, _DataType, _FilesType,
-                         _FileValue, _HeadersType, _ITreqReactor, _JSONType,
-                         _Nothing, _ParamsType, _URLType)
+from treq._types import (
+    _NOTHING,
+    _CookiesType,
+    _DataType,
+    _FilesType,
+    _FileValue,
+    _HeadersType,
+    _ITreqReactor,
+    _JSONType,
+    _Nothing,
+    _ParamsType,
+    _URLType,
+)
 from treq.auth import add_auth
 from treq.cookies import scoped_cookie
 from treq.response import _Response
@@ -35,8 +65,6 @@ from .cookies import TreqieJar
 
 P = ParamSpec("P")
 R = TypeVar("R")
-
-
 
 
 def urlencode(query: _ParamsType, doseq: bool) -> bytes:
@@ -480,9 +508,7 @@ def _query_quote(v: Any) -> str:
     return q
 
 
-def _coerced_query_params(params: _ParamsType) -> abc.Iterator[
-    tuple[str, str]
-]:
+def _coerced_query_params(params: _ParamsType) -> abc.Iterator[tuple[str, str]]:
     """
     Carefully coerce *params* in the same way as `urllib.parse.urlencode()`
 

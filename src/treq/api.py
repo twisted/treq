@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import ParamSpec, TypeVar
+from typing import TypeVar, Union
 
 from hyperlink import DecodedURL, EncodedURL
 from twisted.internet.defer import Deferred
@@ -8,17 +8,23 @@ from twisted.internet.interfaces import IReactorTCP
 from twisted.web.client import Agent, HTTPConnectionPool
 from twisted.web.iweb import IAgent
 
-from treq._types import (_NOTHING, _CookiesType, _FilesType, _ITreqReactor,
-                         _JSONType, _Nothing, _ParamsType)
+from treq._types import (
+    _NOTHING,
+    _CookiesType,
+    _FilesType,
+    _ITreqReactor,
+    _JSONType,
+    _Nothing,
+    _ParamsType,
+)
 from treq.client import HTTPClient
 from treq.response import _Response
 
 from ._types import _DataType, _HeadersType
 
-P = ParamSpec("P")
 R = TypeVar("R")
 
-SomeURL = DecodedURL | EncodedURL | str | bytes
+SomeURL = Union[DecodedURL, EncodedURL, str, bytes]
 
 
 def head(
@@ -66,12 +72,12 @@ def head(
 
 def get(
     url: SomeURL,
+    headers: _HeadersType | None = None,
     *,
     agent: IAgent | None = None,
     pool: HTTPConnectionPool | None = None,
     persistent: bool | None = None,
     params: _ParamsType | None = None,
-    headers: _HeadersType | None = None,
     data: _DataType | None = None,
     files: _FilesType | None = None,
     json: _JSONType | _Nothing = _NOTHING,
@@ -386,7 +392,7 @@ def request(method, url, **kwargs):
         The *url* param now accepts :class:`hyperlink.DecodedURL` and
         :class:`hyperlink.EncodedURL` objects.
     """
-    return _client(kwargs).request(method, url, _stacklevel=3, **kwargs)
+    return _client(**kwargs).request(method, url, _stacklevel=3, **kwargs)
 
 
 #
@@ -435,10 +441,10 @@ def default_pool(reactor, pool, persistent):
 
 
 def _client(
-    agent: IAgent | None,
-    pool: HTTPConnectionPool | None,
-    persistent: bool | None,
-    reactor: IReactorTCP | None,
+    agent: IAgent | None = None,
+    pool: HTTPConnectionPool | None = None,
+    persistent: bool | None = None,
+    reactor: IReactorTCP | None = None,
 ) -> HTTPClient:
     if agent is None:
         # "reactor" isn't removed from kwargs because it must also be passed

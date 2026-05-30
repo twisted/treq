@@ -1,6 +1,12 @@
 from __future__ import annotations
 from io import BytesIO
-from typing import Callable, Concatenate, ParamSpec, TypeVar
+import sys
+from typing import Callable, TypeVar
+
+if sys.version_info < (3, 10):
+    from typing_extensions import Concatenate, ParamSpec
+else:
+    from typing import Concatenate, ParamSpec
 
 import treq
 from treq.test.util import DEBUG, skip_on_windows_because_of_199
@@ -41,7 +47,7 @@ R = TypeVar("R")
 
 
 def with_baseurl(
-    method: Callable[Concatenate[str, P], R]
+    method: Callable[Concatenate[str, P], R],
 ) -> Callable[Concatenate[TreqIntegrationTests, str, P], R]:
     def _request(
         self: TreqIntegrationTests, url: str, *args: P.args, **kwargs: P.kwargs
@@ -51,6 +57,7 @@ def with_baseurl(
         )
 
     return _request
+
 
 class TreqIntegrationTests(TestCase):
     get = with_baseurl(treq.get)

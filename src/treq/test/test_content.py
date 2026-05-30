@@ -78,7 +78,7 @@ class ContentTests(TestCase):
 
         d = collect(
             self.response,
-            lambda d: self.fail("Unexpectedly called with: {0}".format(d)))
+            lambda d: self.fail(f"Unexpectedly called with: {d}"))
 
         self.assertEqual(self.successResultOf(d), None)
 
@@ -142,10 +142,10 @@ class ContentTests(TestCase):
         self.response.headers = Headers()
         d = json_content(self.response)
 
-        self.protocol.dataReceived(u'{"msg":"hëlló!"}'.encode('utf-8'))
+        self.protocol.dataReceived('{"msg":"hëlló!"}'.encode())
         self.protocol.connectionLost(Failure(ResponseDone()))
 
-        self.assertEqual(self.successResultOf(d), {u'msg': u'hëlló!'})
+        self.assertEqual(self.successResultOf(d), {'msg': 'hëlló!'})
 
     def test_json_content_utf16(self):
         """
@@ -157,10 +157,10 @@ class ContentTests(TestCase):
         })
         d = json_content(self.response)
 
-        self.protocol.dataReceived(u'{"msg":"hëlló!"}'.encode('UTF-16LE'))
+        self.protocol.dataReceived('{"msg":"hëlló!"}'.encode('UTF-16LE'))
         self.protocol.connectionLost(Failure(ResponseDone()))
 
-        self.assertEqual(self.successResultOf(d), {u'msg': u'hëlló!'})
+        self.assertEqual(self.successResultOf(d), {'msg': 'hëlló!'})
 
     def test_text_content(self):
         self.response.headers = Headers(
@@ -171,7 +171,7 @@ class ContentTests(TestCase):
         self.protocol.dataReceived(b'\xe2\x98\x83')
         self.protocol.connectionLost(Failure(ResponseDone()))
 
-        self.assertEqual(self.successResultOf(d), u'\u2603')
+        self.assertEqual(self.successResultOf(d), '\u2603')
 
     def test_text_content_default_encoding_no_param(self):
         self.response.headers = Headers(
@@ -182,7 +182,7 @@ class ContentTests(TestCase):
         self.protocol.dataReceived(b'\xa1')
         self.protocol.connectionLost(Failure(ResponseDone()))
 
-        self.assertEqual(self.successResultOf(d), u'\xa1')
+        self.assertEqual(self.successResultOf(d), '\xa1')
 
     def test_text_content_default_encoding_no_header(self):
         self.response.headers = Headers()
@@ -192,7 +192,7 @@ class ContentTests(TestCase):
         self.protocol.dataReceived(b'\xa1')
         self.protocol.connectionLost(Failure(ResponseDone()))
 
-        self.assertEqual(self.successResultOf(d), u'\xa1')
+        self.assertEqual(self.successResultOf(d), '\xa1')
 
     def test_content_application_json_default_encoding(self):
         self.response.headers = Headers(
@@ -203,7 +203,7 @@ class ContentTests(TestCase):
         self.protocol.dataReceived(b'gr\xc3\xbcn')
         self.protocol.connectionLost(Failure(ResponseDone()))
 
-        self.assertEqual(self.successResultOf(d), u'grün')
+        self.assertEqual(self.successResultOf(d), 'grün')
 
     def test_text_content_unicode_headers(self):
         """
@@ -213,17 +213,17 @@ class ContentTests(TestCase):
         self.response.headers = Headers(
             {
                 b"Content-Type": [
-                    'text/plain; charset="UTF-16BE"; u=ᛃ'.encode("utf-8")
+                    'text/plain; charset="UTF-16BE"; u=ᛃ'.encode()
                 ],
             }
         )
 
         d = text_content(self.response)
 
-        self.protocol.dataReceived(u'ᚠᚡ'.encode('UTF-16BE'))
+        self.protocol.dataReceived('ᚠᚡ'.encode('UTF-16BE'))
         self.protocol.connectionLost(Failure(ResponseDone()))
 
-        self.assertEqual(self.successResultOf(d), u'ᚠᚡ')
+        self.assertEqual(self.successResultOf(d), 'ᚠᚡ')
 
 
 class UnfinishedResponse(Resource):

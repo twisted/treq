@@ -5,7 +5,7 @@ This project uses `Tox 3 <https://tox.readthedocs.io/en/latest/config.html>`_ to
 
 To run the tests::
 
-    tox -e py38-twisted_latest
+    tox -e py39-twisted_latest
 
 Lint::
 

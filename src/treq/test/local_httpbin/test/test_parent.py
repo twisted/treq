@@ -9,6 +9,9 @@ import signal
 
 import sys
 
+from collections.abc import Sequence
+from typing import Union
+
 from twisted.internet import defer
 from twisted.internet.interfaces import (IProcessTransport,
                                          IReactorCore,
@@ -35,19 +38,19 @@ skip = skip_on_windows_because_of_199()
 
 
 @attr.s
-class FakeProcessTransportState(object):
+class FakeProcessTransportState:
     """
     State for :py:class:`FakeProcessTransport`.
     """
-    standard_in_closed = attr.ib(default=False)
-    standard_out_closed = attr.ib(default=False)
-    standard_error_closed = attr.ib(default=False)
-    signals = attr.ib(default=attr.Factory(list))
+    standard_in_closed: bool = attr.ib(default=False)
+    standard_out_closed: bool = attr.ib(default=False)
+    standard_error_closed: bool = attr.ib(default=False)
+    signals: Sequence[Union[str, int]] = attr.ib(default=attr.Factory(list))
 
 
 @implementer(IProcessTransport)
 @attr.s
-class FakeProcessTransport(StringTransport, object):
+class FakeProcessTransport(StringTransport):
     """
     A fake process transport.
     """
@@ -227,7 +230,7 @@ class HTTPServerProcessProtocolTests(SynchronousTestCase):
 
 
 @attr.s
-class SpawnedProcess(object):
+class SpawnedProcess:
     """
     A call to :py:class:`MemoryProcessReactor.spawnProcess`.
     """

@@ -9,7 +9,7 @@ Writing tests for HTTP clients
 The :class:`~treq.testing.StubTreq` class implements the :mod:`treq` module interface (:func:`treq.get()`, :func:`treq.post()`, etc.) but runs all I/O via a :class:`~twisted.internet.testing.MemoryReactor`.
 It wraps a :class:`twisted.web.resource.IResource` provider which handles each request.
 
-You can wrap a pre-existing `IResource` provider, or write your own.
+You can wrap a pre-existing :class:`twisted.web.resource.IResource` provider, or write your own.
 For example, the :class:`twisted.web.resource.ErrorPage` resource can produce an arbitrary HTTP status code.
 :class:`twisted.web.static.File` can serve files or directories.
 And you can easily achieve custom responses by writing trivial resources yourself:

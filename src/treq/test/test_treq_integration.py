@@ -57,7 +57,10 @@ class TreqIntegrationTests(TestCase):
     head = with_baseurl(treq.head)
     post = with_baseurl(treq.post)
     put = with_baseurl(treq.put)
-    patch = with_baseurl(treq.patch)
+
+    # (avoid conflict with TestCase.patch)
+    patch_ = with_baseurl(treq.patch)
+
     delete = with_baseurl(treq.delete)
 
     _httpbin_process = _HTTPBinProcess(https=False)
@@ -204,7 +207,7 @@ class TreqIntegrationTests(TestCase):
 
     @inlineCallbacks
     def test_patch(self):
-        response = yield self.patch("/patch", data=b"Hello!")
+        response = yield self.patch_("/patch", data=b"Hello!")
         self.assertEqual(response.code, 200)
         yield self.assert_data(response, "Hello!")
         yield print_response(response)

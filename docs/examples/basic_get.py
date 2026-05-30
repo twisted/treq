@@ -1,12 +1,13 @@
 from twisted.internet.task import react
-from _utils import print_response
 
 import treq
 
 
-def main(reactor, *args):
-    d = treq.get('https://httpbin.org/get')
-    d.addCallback(print_response)
-    return d
+async def basic_get(reactor):
+    resp = await treq.get("https://httpbin.org/get")
+    print(resp.code, resp.phrase)
+    print(resp.headers)
+    print(await resp.text())
 
-react(main, [])
+
+react(basic_get)

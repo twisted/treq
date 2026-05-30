@@ -197,7 +197,7 @@ class _SynchronousProducer:
         assert isinstance(body, (bytes, str)), msg
         if isinstance(body, str):
             self.body = body.encode('utf-8')
-        self.length = len(body)
+        self.length = len(self.body)
 
     def startProducing(self, consumer):
         """
@@ -362,7 +362,7 @@ class HasHeaders:
         self._headers = _maybeEncodeHeaders(headers)
 
     def __repr__(self):
-        return "HasHeaders({0})".format(repr(self._headers))
+        return f"HasHeaders({repr(self._headers)})"
 
     def __eq__(self, other_headers):
         compare_to = _maybeEncodeHeaders(other_headers)
@@ -428,16 +428,6 @@ class RequestSequence:
     Trial's test case classes (:class:`twisted.trial.unittest.TestCase` and
     :class:`~twisted.trial.unittest.SynchronousTestCase`) will translate into
     a test failure.
-
-    .. note::
-
-        Some versions of
-        :class:`twisted.trial.unittest.SynchronousTestCase` report
-        logged errors on the wrong test: see `Twisted #9267
-        <https://twistedmatrix.com/trac/ticket/9267>`_.
-
-    ..  TODO Update the above note to say what version of
-        SynchronousTestCase is fixed once Twisted >17.5.0 is released.
 
     When not subclassing Trial's classes you must pass `async_failure_reporter`
     and implement equivalent behavior or errors will pass silently. For
@@ -507,7 +497,7 @@ class RequestSequence:
         if not self.consumed():
             sync_failure_reporter("\n".join(
                 ["Not all expected requests were made.  Still expecting:"] +
-                ["- {0}(url={1}, params={2}, headers={3}, data={4})".format(
+                ["- {}(url={}, params={}, headers={}, data={})".format(
                     *expected) for expected, _ in self._sequence]))
 
     def __call__(self, method, url, params, headers, data):
@@ -517,7 +507,7 @@ class RequestSequence:
         """
         if len(self._sequence) == 0:
             self._async_reporter(
-                "No more requests expected, but request {0!r} made.".format(
+                "No more requests expected, but request {!r} made.".format(
                     (method, url, params, headers, data)))
             return (500, {}, b"StubbingError")
 
@@ -534,9 +524,9 @@ class RequestSequence:
         mismatches = [param for success, param in checks if not success]
         if mismatches:
             self._async_reporter(
-                "\nExpected the next request to be: {0!r}"
-                "\nGot request                    : {1!r}\n"
-                "\nMismatches: {2!r}"
+                "\nExpected the next request to be: {!r}"
+                "\nGot request                    : {!r}\n"
+                "\nMismatches: {!r}"
                 .format(expected, (method, url, params, headers, data),
                         mismatches))
             return (500, {}, b"StubbingError")

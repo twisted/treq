@@ -12,17 +12,17 @@ jobs:
     timeout-minutes: 5
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
-        python-version: "3.12"
+        python-version: "3.14"
 
-    - uses: actions/cache@v4
+    - uses: actions/cache@v5
       with:
         path: ~/.cache/pip
         key:
-          ${{ runner.os }}-pip-lint-${{ hashFiles('pyproject.toml', 'setup.py', 'tox.ini') }}
+          ${{ runner.os }}-pip-lint-${{ hashFiles('pyproject.toml', 'tox.ini') }}
         restore-keys: |
           ${{ runner.os }}-pip-lint-
           ${{ runner.os }}-pip-
@@ -38,17 +38,17 @@ jobs:
     timeout-minutes: 5
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
-        python-version: "3.12"
+        python-version: "3.14"
 
-    - uses: actions/cache@v4
+    - uses: actions/cache@v5
       with:
         path: ~/.cache/pip
         key:
-          ${{ runner.os }}-pip-docs-${{ hashFiles('pyproject.toml', 'setup.py', 'tox.ini') }}
+          ${{ runner.os }}-pip-docs-${{ hashFiles('pyproject.toml', 'tox.ini') }}
         restore-keys: |
           ${{ runner.os }}-pip-docs-
           ${{ runner.os }}-pip-
@@ -66,7 +66,7 @@ jobs:
     strategy:
       matrix:
           # Python versions common to lowest and latest
-          python-version: ["3.8", "3.9", "3.10", "pypy-3.9"]
+          python-version: ["3.9", "3.10", "pypy-3.11"]
           twisted-version: ["lowest", "latest"]
           experimental: [false]
 
@@ -81,31 +81,35 @@ jobs:
             twisted-version: "latest"
             experimental: false
 
-          - python-version: "3.13-dev"
+          - python-version: "3.13"
             twisted-version: "latest"
             experimental: true
 
-          - python-version: "pypy-3.10"
+          - python-version: "3.14"
+            twisted-version: "latest"
+            experimental: true
+
+          - python-version: "pypy-3.11"
             twisted-version: "latest"
             experimental: false
 
           # Experimental trunk build
-          - python-version: "3.9"
+          - python-version: "3.10"
             twisted-version: "trunk"
             experimental: true
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
 
-    - uses: actions/cache@v4
+    - uses: actions/cache@v5
       with:
         path: ~/.cache/pip
         key:
-          ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml', 'setup.py', 'tox.ini') }}
+          ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml', 'tox.ini') }}
         restore-keys: |
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           ${{ runner.os }}-pip-
@@ -115,15 +119,13 @@ jobs:
       shell: python
       run: |
         table = {
-          "3.8": "py38",
           "3.9": "py39",
           "3.10": "py310",
           "3.11": "py311",
           "3.12": "py312",
-          "3.13-dev": "py313",
-          "pypy-3.8": "pypy3",
-          "pypy-3.9": "pypy3",
-          "pypy-3.10": "pypy3",
+          "3.13": "py313",
+          "3.14": "py314",
+          "pypy-3.11": "pypy3",
         }
         factor = table["${{ matrix.python-version }}"]
         print("::set-output name=value::" + factor)

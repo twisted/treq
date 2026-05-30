@@ -3,7 +3,7 @@ Utilities related to retrieving the contents of the response-body.
 """
 
 import json
-from typing import Any, Callable, FrozenSet, List, Optional, cast
+from typing import Any, Callable, Optional, cast
 
 from ._multipart import parse_options_header
 from twisted.internet.defer import Deferred, succeed
@@ -19,7 +19,7 @@ from twisted.web.iweb import IResponse
 
 See https://www.rfc-editor.org/errata/eid5433
 """
-_MIME_CHARSET_CHARS: FrozenSet[str] = frozenset(
+_MIME_CHARSET_CHARS: frozenset[str] = frozenset(
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"  # ALPHA
     "0123456789"  # DIGIT
     "!#$%&+-^_`~"  # symbols
@@ -120,7 +120,7 @@ def content(response: IResponse) -> "Deferred[bytes]":
 
     :rtype: Deferred that fires with the content as a str.
     """
-    _content: List[bytes] = []
+    _content: list[bytes] = []
     d = collect(response, _content.append)
     return cast(
         "Deferred[bytes]",

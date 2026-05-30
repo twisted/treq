@@ -39,7 +39,7 @@ class _HTTPBinServerProcessProtocol(basic.LineOnlyReceiver):
 
     def lineReceived(self, line):
         if self._received:
-            raise RuntimeError("Unexpected line: {!r}".format(line))
+            raise RuntimeError(f"Unexpected line: {line!r}")
         description = _HTTPBinDescription.from_json_bytes(line)
 
         self._received = True
@@ -72,8 +72,10 @@ class _HTTPBinProcess:
 
     _error_log_path = attr.ib(default='httpbin-server-error.log')
 
-    _all_data_received = attr.ib(init=False, default=attr.Factory(Deferred))
-    _terminated = attr.ib(init=False, default=attr.Factory(Deferred))
+    _all_data_received: Deferred = attr.ib(
+        init=False, default=attr.Factory(Deferred)
+    )
+    _terminated: Deferred = attr.ib(init=False, default=attr.Factory(Deferred))
 
     _process = attr.ib(init=False, default=None)
     _process_description = attr.ib(init=False, default=None)

@@ -3,11 +3,10 @@ from twisted.internet.task import react
 import treq
 
 
-def download_file(reactor, url, destination_filename):
-    destination = open(destination_filename, 'wb')
-    d = treq.get(url, unbuffered=True)
-    d.addCallback(treq.collect, destination.write)
-    d.addBoth(lambda _: destination.close())
-    return d
+async def download_file(reactor, url, destination_filename):
+    with open(destination_filename, "wb") as destination:
+        response = await treq.get(url, unbuffered=True)
+        await treq.collect(response, destination.write)
 
-react(download_file, ['https://httpbin.org/get', 'download.txt'])
+
+react(download_file, ["https://httpbin.org/get", "download.txt"])

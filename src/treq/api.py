@@ -1,77 +1,282 @@
-from __future__ import absolute_import, division, print_function
+from __future__ import annotations
 
-from typing import Callable, Concatenate, ParamSpec, TypeVar
+from typing import Any, Callable, Concatenate, ParamSpec, Protocol, TypeVar
 
+from hyperlink import DecodedURL, EncodedURL
+from twisted.internet.defer import Deferred
+from twisted.internet.interfaces import IReactorTCP
 from twisted.web.client import Agent, HTTPConnectionPool
+from twisted.web.iweb import IAgent
 
-from treq._types import _URLType
+from treq._types import (_NOTHING, _CookiesType, _FilesType, _ITreqReactor,
+                         _JSONType, _Nothing, _ParamsType, _URLType)
 from treq.client import HTTPClient
+from treq.response import _Response
+
+from ._types import _DataType, _HeadersType
 
 P = ParamSpec("P")
 R = TypeVar("R")
 
-
-def _like(
-    method: Callable[Concatenate[HTTPClient, _URLType, P], R]
-) -> Callable[
-    [Callable[Concatenate[_URLType, P], R]], Callable[Concatenate[_URLType, P], R]
-]:
-    return lambda x: x
+SomeURL = DecodedURL | EncodedURL | str | bytes
 
 
-def head(url, **kwargs):
+def head(
+    url: SomeURL,
+    *,
+    agent: IAgent | None = None,
+    pool: HTTPConnectionPool | None = None,
+    persistent: bool | None = None,
+    params: _ParamsType | None = None,
+    headers: _HeadersType | None = None,
+    data: _DataType | None = None,
+    files: _FilesType | None = None,
+    json: _JSONType | _Nothing = _NOTHING,
+    auth: tuple[str | bytes, str | bytes] | None = None,
+    cookies: _CookiesType | None = None,
+    allow_redirects: bool = True,
+    browser_like_redirects: bool = False,
+    unbuffered: bool = False,
+    reactor: _ITreqReactor | None = None,
+    timeout: float | None = None,
+    _stacklevel: int = 2,
+) -> Deferred[_Response]:
     """
     Make a ``HEAD`` request.
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).head(url, _stacklevel=4, **kwargs)
+    return _client(agent, pool, persistent, reactor).head(
+        url,
+        _stacklevel=4,
+        params=params,
+        headers=headers,
+        data=data,
+        files=files,
+        json=json,
+        auth=auth,
+        cookies=cookies,
+        allow_redirects=allow_redirects,
+        browser_like_redirects=browser_like_redirects,
+        unbuffered=unbuffered,
+        reactor=reactor,
+        timeout=timeout,
+    )
 
 
-@_like(HTTPClient.get)
-def get(url, headers=None, **kwargs):
+def get(
+    url: SomeURL,
+    *,
+    agent: IAgent | None = None,
+    pool: HTTPConnectionPool | None = None,
+    persistent: bool | None = None,
+    params: _ParamsType | None = None,
+    headers: _HeadersType | None = None,
+    data: _DataType | None = None,
+    files: _FilesType | None = None,
+    json: _JSONType | _Nothing = _NOTHING,
+    auth: tuple[str | bytes, str | bytes] | None = None,
+    cookies: _CookiesType | None = None,
+    allow_redirects: bool = True,
+    browser_like_redirects: bool = False,
+    unbuffered: bool = False,
+    reactor: _ITreqReactor | None = None,
+    timeout: float | None = None,
+    _stacklevel: int = 2,
+) -> Deferred[_Response]:
     """
     Make a ``GET`` request.
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).get(url, headers=headers, _stacklevel=4, **kwargs)
+    return _client(agent, pool, persistent, reactor).get(
+        url,
+        _stacklevel=4,
+        params=params,
+        headers=headers,
+        data=data,
+        files=files,
+        json=json,
+        auth=auth,
+        cookies=cookies,
+        allow_redirects=allow_redirects,
+        browser_like_redirects=browser_like_redirects,
+        unbuffered=unbuffered,
+        reactor=reactor,
+        timeout=timeout,
+    )
 
 
-def post(url, data=None, **kwargs):
+def post(
+    url: SomeURL,
+    data: _DataType | None = None,
+    *,
+    agent: IAgent | None = None,
+    pool: HTTPConnectionPool | None = None,
+    persistent: bool | None = None,
+    params: _ParamsType | None = None,
+    headers: _HeadersType | None = None,
+    files: _FilesType | None = None,
+    json: _JSONType | _Nothing = _NOTHING,
+    auth: tuple[str | bytes, str | bytes] | None = None,
+    cookies: _CookiesType | None = None,
+    allow_redirects: bool = True,
+    browser_like_redirects: bool = False,
+    unbuffered: bool = False,
+    reactor: _ITreqReactor | None = None,
+    timeout: float | None = None,
+    _stacklevel: int = 2,
+) -> Deferred[_Response]:
     """
     Make a ``POST`` request.
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).post(url, data=data, _stacklevel=4, **kwargs)
+    return _client(agent, pool, persistent, reactor).post(
+        url,
+        _stacklevel=4,
+        params=params,
+        headers=headers,
+        data=data,
+        files=files,
+        json=json,
+        auth=auth,
+        cookies=cookies,
+        allow_redirects=allow_redirects,
+        browser_like_redirects=browser_like_redirects,
+        unbuffered=unbuffered,
+        reactor=reactor,
+        timeout=timeout,
+    )
 
 
-def put(url, data=None, **kwargs):
+def put(
+    url: SomeURL,
+    data: _DataType | None = None,
+    *,
+    agent: IAgent | None = None,
+    pool: HTTPConnectionPool | None = None,
+    persistent: bool | None = None,
+    params: _ParamsType | None = None,
+    headers: _HeadersType | None = None,
+    files: _FilesType | None = None,
+    json: _JSONType | _Nothing = _NOTHING,
+    auth: tuple[str | bytes, str | bytes] | None = None,
+    cookies: _CookiesType | None = None,
+    allow_redirects: bool = True,
+    browser_like_redirects: bool = False,
+    unbuffered: bool = False,
+    reactor: _ITreqReactor | None = None,
+    timeout: float | None = None,
+    _stacklevel: int = 2,
+) -> Deferred[_Response]:
     """
     Make a ``PUT`` request.
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).put(url, data=data, _stacklevel=4, **kwargs)
+    return _client(agent, pool, persistent, reactor).put(
+        url,
+        _stacklevel=4,
+        params=params,
+        headers=headers,
+        data=data,
+        files=files,
+        json=json,
+        auth=auth,
+        cookies=cookies,
+        allow_redirects=allow_redirects,
+        browser_like_redirects=browser_like_redirects,
+        unbuffered=unbuffered,
+        reactor=reactor,
+        timeout=timeout,
+    )
 
 
-def patch(url, data=None, **kwargs):
+def patch(
+    url: SomeURL,
+    data: _DataType | None = None,
+    *,
+    agent: IAgent | None = None,
+    pool: HTTPConnectionPool | None = None,
+    persistent: bool | None = None,
+    params: _ParamsType | None = None,
+    headers: _HeadersType | None = None,
+    files: _FilesType | None = None,
+    json: _JSONType | _Nothing = _NOTHING,
+    auth: tuple[str | bytes, str | bytes] | None = None,
+    cookies: _CookiesType | None = None,
+    allow_redirects: bool = True,
+    browser_like_redirects: bool = False,
+    unbuffered: bool = False,
+    reactor: _ITreqReactor | None = None,
+    timeout: float | None = None,
+    _stacklevel: int = 2,
+) -> Deferred[_Response]:
     """
     Make a ``PATCH`` request.
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).patch(url, data=data, _stacklevel=4, **kwargs)
+    return _client(agent, pool, persistent, reactor).patch(
+        url,
+        _stacklevel=4,
+        params=params,
+        headers=headers,
+        data=data,
+        files=files,
+        json=json,
+        auth=auth,
+        cookies=cookies,
+        allow_redirects=allow_redirects,
+        browser_like_redirects=browser_like_redirects,
+        unbuffered=unbuffered,
+        reactor=reactor,
+        timeout=timeout,
+    )
 
 
-def delete(url, **kwargs):
+def delete(
+    url: SomeURL,
+    *,
+    agent: IAgent | None = None,
+    pool: HTTPConnectionPool | None = None,
+    persistent: bool | None = None,
+    params: _ParamsType | None = None,
+    headers: _HeadersType | None = None,
+    data: _DataType | None = None,
+    files: _FilesType | None = None,
+    json: _JSONType | _Nothing = _NOTHING,
+    auth: tuple[str | bytes, str | bytes] | None = None,
+    cookies: _CookiesType | None = None,
+    allow_redirects: bool = True,
+    browser_like_redirects: bool = False,
+    unbuffered: bool = False,
+    reactor: _ITreqReactor | None = None,
+    timeout: float | None = None,
+    _stacklevel: int = 2,
+) -> Deferred[_Response]:
     """
     Make a ``DELETE`` request.
 
     See :py:func:`treq.request`
     """
-    return _client(kwargs).delete(url, _stacklevel=4, **kwargs)
+    return _client(agent, pool, persistent, reactor).delete(
+        url,
+        _stacklevel=4,
+        params=params,
+        headers=headers,
+        data=data,
+        files=files,
+        json=json,
+        auth=auth,
+        cookies=cookies,
+        allow_redirects=allow_redirects,
+        browser_like_redirects=browser_like_redirects,
+        unbuffered=unbuffered,
+        reactor=reactor,
+        timeout=timeout,
+    )
 
 
 def request(method, url, **kwargs):
@@ -170,7 +375,7 @@ def request(method, url, **kwargs):
 
     :param agent: Provide your own custom agent. Use this to override things
                   like ``connectTimeout`` or ``BrowserLikePolicyForHTTPS``. By
-                  default, treq will create its own Agent with reasonable
+                  default, treq will create its own IAgent with reasonable
                   defaults.
     :type agent: twisted.web.iweb.IAgent
 
@@ -229,14 +434,16 @@ def default_pool(reactor, pool, persistent):
     return get_global_pool()
 
 
-def _client(kwargs):
-    agent = kwargs.pop("agent", None)
-    pool = kwargs.pop("pool", None)
-    persistent = kwargs.pop("persistent", None)
+def _client(
+    agent: IAgent | None,
+    pool: HTTPConnectionPool | None,
+    persistent: bool | None,
+    reactor: IReactorTCP | None,
+) -> HTTPClient:
     if agent is None:
         # "reactor" isn't removed from kwargs because it must also be passed
         # down for use in the timeout logic.
-        reactor = default_reactor(kwargs.get("reactor"))
+        reactor = default_reactor(reactor)
         pool = default_pool(reactor, pool, persistent)
         agent = Agent(reactor, pool=pool)
     return HTTPClient(agent)

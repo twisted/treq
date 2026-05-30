@@ -8,6 +8,38 @@ Changelog
 
 .. towncrier release notes start
 
+25.5.0 (2025-05-31)
+===================
+
+Features
+--------
+
+- treq is packaged with Hatchling, and consequently no longer directly depends on setuptools. (`#388 <https://github.com/twisted/treq/issues/388>`__)
+
+
+Improved Documentation
+----------------------
+
+- Update documentation to use `async`/`await` syntax (`#409 <https://github.com/twisted/treq/issues/409>`__)
+
+
+Deprecations and Removals
+-------------------------
+
+- Support for Python 3.8, which has reached end of support, is deprecated. This is the last release with support for Python 3.8. (`#407 <https://github.com/twisted/treq/issues/407>`__)
+
+
+24.9.1 (2024-09-19)
+===================
+
+Bugfixes
+--------
+
+- treq has vendored its dependency on the ``multipart`` library to avoid import
+  conflicts with ``python-multipart``; it should now be installable alongside
+  that library. (`#399 <https://github.com/twisted/treq/issues/399>`__)
+
+
 24.9.0 (2024-09-17)
 ===================
 
@@ -15,7 +47,7 @@ Features
 --------
 
 - treq now ships type annotations. (`#366 <https://github.com/twisted/treq/issues/366>`__)
-- The new :mod:`treq.cookies` module provides helper functions for working with `http.cookiejar.Cookie` and `CookieJar` objects. (`#384 <https://github.com/twisted/treq/issues/384>`__)
+- The new :mod:`treq.cookies` module provides helper functions for working with `http.cookiejar.Cookie` and :class:`~http.cookiejar.CookieJar` objects. (`#384 <https://github.com/twisted/treq/issues/384>`__)
 - Python 3.13 is now supported. (`#391 <https://github.com/twisted/treq/issues/391>`__)
 
 
@@ -29,7 +61,7 @@ Deprecations and Removals
 -------------------------
 
 - Mixing the *json* argument with *files* or *data* now raises `TypeError`. (`#297 <https://github.com/twisted/treq/issues/297>`__)
-- Passing non-string (`str` or `bytes`) values as part of a dict to the *headers* argument now results in a `TypeError`, as does passing any collection other than a `dict` or `Headers` instance. (`#302 <https://github.com/twisted/treq/issues/302>`__)
+- Passing non-string (`str` or `bytes`) values as part of a dict to the *headers* argument now results in a `TypeError`, as does passing any collection other than a `dict` or :class:`~twisted.web.http.http_headers.Headers` instance. (`#302 <https://github.com/twisted/treq/issues/302>`__)
 - Support for Python 3.7 and PyPy 3.8, which have reached end of support, has been dropped. (`#378 <https://github.com/twisted/treq/issues/378>`__)
 
 

@@ -1,11 +1,12 @@
 from typing import Any, Callable, List
-from http.cookiejar import CookieJar
+
 from twisted.internet.defer import Deferred
 from twisted.python import reflect
 from twisted.python.components import proxyForInterface
 from twisted.web.iweb import UNKNOWN_LENGTH, IResponse
 
 from treq.content import collect, content, json_content, text_content
+from .cookies import TreqieJar
 
 
 class _Response(proxyForInterface(IResponse)):  # type: ignore
@@ -17,7 +18,7 @@ class _Response(proxyForInterface(IResponse)):  # type: ignore
     original: IResponse
     _cookiejar: TreqieJar
 
-    def __init__(self, original: IResponse, cookiejar: CookieJar):
+    def __init__(self, original: IResponse, cookiejar: TreqieJar):
         self.original = original
         self._cookiejar = cookiejar
 
@@ -29,7 +30,7 @@ class _Response(proxyForInterface(IResponse)):  # type: ignore
         if self.original.length == UNKNOWN_LENGTH:
             size = "unknown size"
         else:
-            size = "{:,d} bytes".format(self.original.length)
+            size = f"{self.original.length:,d} bytes"
         # Display non-ascii bits of the content-type header as backslash
         # escapes.
         content_type_bytes = b", ".join(
@@ -102,11 +103,11 @@ class _Response(proxyForInterface(IResponse)):  # type: ignore
         history.reverse()
         return history
 
-    def cookies(self) -> CookieJar:
+    def cookies(self) -> TreqieJar:
         """
         Get a copy of this response's cookies.
         """
-        jar = CookieJar()
+        jar = TreqieJar()
 
         for cookie in self._cookiejar:
             jar.set_cookie(cookie)

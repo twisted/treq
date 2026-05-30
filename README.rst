@@ -24,8 +24,8 @@ treq: High-level Twisted HTTP Client API
 
 ``treq`` is an HTTP library inspired by
 `requests <https://requests.readthedocs.io/>`_ but written on top of
-`Twisted <https://www.twistedmatrix.com>`_'s
-`Agents <https://twistedmatrix.com/documents/current/api/twisted.web.client.Agent.html>`_.
+`Twisted <https://twisted.org/>`_'s
+`Agents <https://docs.twisted.org/en/stable/api/twisted.web.client.Agent.html>`_.
 
 It provides a simple, higher level API for making HTTP requests when
 using Twisted.

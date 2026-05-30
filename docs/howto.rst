@@ -12,12 +12,14 @@ data available from the response.  Much like :meth:`IProtocol.dataReceived`,
 :py:func:`treq.collect` knows nothing about the framing of your data and will
 simply call your collector function with any data that is currently available.
 
+By default, treq buffers the full response in memory.
+Pass ``unbufferred=True`` to disable this behavior.
+
 Here is an example which simply a file object's write method to
 :py:func:`treq.collect` to save the response body to a file.
 
 .. literalinclude:: examples/download_file.py
-    :linenos:
-    :lines: 6-11
+   :pyobject: download_file
 
 Full example: :download:`download_file.py <examples/download_file.py>`
 
@@ -34,8 +36,7 @@ The high-level :class:`~hyperlink.DecodedURL` form is useful when programaticall
 Here is an example that builds a URL that contains a ``&`` character, which is automatically escaped properly.
 
 .. literalinclude:: examples/basic_url.py
-    :linenos:
-    :pyobject: main
+    :pyobject: basic_url
 
 Full example: :download:`basic_url.py <examples/basic_url.py>`
 
@@ -54,13 +55,12 @@ Scalar values means ``str``, ``bytes``, or anything else — even ``None`` — w
 Strings are UTF-8 encoded.
 
 .. literalinclude:: examples/query_params.py
-    :linenos:
-    :lines: 7-37
+    :pyobject: query_params
 
 Full example: :download:`query_params.py <examples/query_params.py>`
 
 If you prefer a strictly-typed API, try :class:`hyperlink.DecodedURL`.
-Use its :meth:`~hyperlink.URL.add` and :meth:`~hyperlink.URL.set` methods to add query parameters without risk of accidental type coercion.
+Its :meth:`~hyperlink.URL.add` and :meth:`~hyperlink.URL.set` methods manipulate query parameters without risk of accidental type coercion.
 
 JSON
 ----
@@ -73,8 +73,8 @@ The :meth:`_Response.json()` method decodes a JSON response body.
 It buffers the whole response and decodes it with :func:`json.loads()`.
 
 .. literalinclude:: examples/json_post.py
-    :linenos:
-    :pyobject: main
+    :pyobject: json_post
+    :emphasize-lines: 4,6
 
 Full example: :download:`json_post.py <examples/json_post.py>`
 
@@ -87,8 +87,8 @@ passing an ``auth`` keyword argument to any of the request functions.
 The ``auth`` argument should be a tuple of the form ``('username', 'password')``.
 
 .. literalinclude:: examples/basic_auth.py
-    :linenos:
-    :lines: 7-15
+    :pyobject: basic_auth
+    :emphasize-lines: 4
 
 Full example: :download:`basic_auth.py <examples/basic_auth.py>`
 
@@ -100,17 +100,16 @@ treq handles redirects by default.
 The following will print a 200 OK response.
 
 .. literalinclude:: examples/redirects.py
-    :linenos:
-    :lines: 7-12
+    :pyobject: redirects
 
 Full example: :download:`redirects.py <examples/redirects.py>`
 
-You can easily disable redirects by simply passing `allow_redirects=False` to
+You can easily disable redirects by simply passing ``allow_redirects=False`` to
 any of the request methods.
 
 .. literalinclude:: examples/disable_redirects.py
-    :linenos:
-    :lines: 7-12
+    :pyobject: disable_redirects
+    :emphasize-lines: 4
 
 Full example: :download:`disable_redirects.py <examples/disable_redirects.py>`
 
@@ -118,8 +117,8 @@ You can even access the complete history of treq response objects by calling
 the :meth:`~treq.response._Response.history()` method on the response.
 
 .. literalinclude:: examples/response_history.py
-    :linenos:
-    :lines: 7-15
+    :pyobject: response_history
+    :emphasize-lines: 4
 
 Full example: :download:`response_history.py <examples/response_history.py>`
 
@@ -127,16 +126,14 @@ Full example: :download:`response_history.py <examples/response_history.py>`
 Cookies
 -------
 
-Cookies can be set by passing a ``dict`` or ``cookielib.CookieJar`` instance
-via the ``cookies`` keyword argument.  Later cookies set by the server can be
-retrieved using the :py:meth:`~treq.response._Response.cookies()` method of the response.
+Cookies can be set by passing a ``dict`` or :py:class:`http.cookiejar.CookieJar` instance via the *cookies* keyword argument.
+Any cookies set by the server can be retrieved using the :py:meth:`~treq.response._Response.cookies()` response method, which returns a :py:class:`~http.cookiejar.CookieJar`.
 
-The object returned by :py:meth:`~treq.response._Response.cookies()` supports the same key/value
-access as `requests cookies <https://requests.readthedocs.io/en/latest/user/quickstart/#cookies>`_.
+Use :py:func:`treq.cookies.search()` to extract cookies from the jar:
 
 .. literalinclude:: examples/using_cookies.py
-    :linenos:
-    :lines: 7-20
+    :pyobject: using_cookies
+    :emphasize-lines: 4-5
 
 Full example: :download:`using_cookies.py <examples/using_cookies.py>`
 
@@ -154,7 +151,7 @@ Internally, the :py:class:`~treq.client.HTTPClient` wraps an instance of
 behavior.
 
 .. literalinclude:: examples/custom_agent.py
-    :linenos:
-    :lines: 6-19
+    :pyobject: custom_agent
+    :emphasize-lines: 2-3
 
 Full example: :download:`custom_agent.py <examples/custom_agent.py>`

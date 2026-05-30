@@ -3,7 +3,8 @@
 Convenience helpers for :mod:`http.cookiejar`
 """
 
-from typing import Union, Iterable, Optional
+from collections.abc import Iterable
+from typing import Union, Optional
 from http.cookiejar import Cookie, CookieJar
 
 from hyperlink import EncodedURL

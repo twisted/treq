@@ -7,8 +7,11 @@ from http.cookiejar import CookieJar
 from typing import Any, Union
 
 from hyperlink import DecodedURL, EncodedURL
-from twisted.internet.interfaces import (IReactorPluggableNameResolver,
-                                         IReactorTCP, IReactorTime)
+from twisted.internet.interfaces import (
+    IReactorPluggableNameResolver,
+    IReactorTCP,
+    IReactorTime,
+)
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer
 
@@ -106,7 +109,9 @@ Values accepted for the *files* parameter.
 # Soon... 🤞 https://github.com/python/mypy/issues/731
 _JSONType = Any
 
+
 class _Nothing:
     """Type of the sentinel `_NOTHING`"""
+
 
 _NOTHING = _Nothing()

@@ -11,7 +11,19 @@ from hyperlink import EncodedURL
 
 
 class TreqieJar(CookieJar):
+    """
+    A `TreqieJar` is Treq's version of the standard library `CookieJar`, which,
+    like the one from `requests`, allows for indexing.  This is for convenience
+    and for compatibility with `requests` users expectations.
+
+    .. _requests: https://requests.readthedocs.io/en/latest/
+    """
     def __getitem__(self, name: str) -> str:
+        """
+        Retrieve the value of the given cookie.
+
+        :param name: The name of the cookie to retrieve.
+        """
         for cookie in self:
             if cookie.name == name and cookie.value is not None:
                 return cookie.value

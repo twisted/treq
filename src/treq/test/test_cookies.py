@@ -13,7 +13,7 @@ from twisted.web.http_headers import Headers
 from twisted.web.iweb import IClientRequest, IResponse
 from zope.interface import implementer
 
-from ..cookies import TreqieJar
+from ..cookies import IndexableCookieJar
 
 
 @implementer(IClientRequest)
@@ -136,7 +136,7 @@ class HTTPClientCookieTests(SynchronousTestCase):
 
     def setUp(self) -> None:
         self.agent, self.requests = agent_spy()
-        self.cookiejar = TreqieJar()
+        self.cookiejar = IndexableCookieJar()
         self.client = HTTPClient(self.agent, self.cookiejar)
 
     def test_cookies_in_jars(self) -> None:

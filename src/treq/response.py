@@ -6,7 +6,7 @@ from twisted.python.components import proxyForInterface
 from twisted.web.iweb import UNKNOWN_LENGTH, IResponse
 
 from treq.content import collect, content, json_content, text_content
-from .cookies import TreqieJar
+from .cookies import IndexableCookieJar
 
 
 class _Response(proxyForInterface(IResponse)):  # type: ignore
@@ -16,9 +16,9 @@ class _Response(proxyForInterface(IResponse)):  # type: ignore
     """
 
     original: IResponse
-    _cookiejar: TreqieJar
+    _cookiejar: IndexableCookieJar
 
-    def __init__(self, original: IResponse, cookiejar: TreqieJar):
+    def __init__(self, original: IResponse, cookiejar: IndexableCookieJar):
         self.original = original
         self._cookiejar = cookiejar
 
@@ -103,11 +103,11 @@ class _Response(proxyForInterface(IResponse)):  # type: ignore
         history.reverse()
         return history
 
-    def cookies(self) -> TreqieJar:
+    def cookies(self) -> IndexableCookieJar:
         """
         Get a copy of this response's cookies.
         """
-        jar = TreqieJar()
+        jar = IndexableCookieJar()
 
         for cookie in self._cookiejar:
             jar.set_cookie(cookie)

@@ -61,7 +61,7 @@ from treq.auth import add_auth
 from treq.cookies import scoped_cookie
 from treq.response import _Response
 
-from .cookies import TreqieJar
+from .cookies import IndexableCookieJar
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -74,7 +74,7 @@ def urlencode(query: _ParamsType, doseq: bool) -> bytes:
 
 def _scoped_cookiejar_from_dict(
     url_object: EncodedURL, cookie_dict: Optional[Mapping[str, str]]
-) -> TreqieJar:
+) -> IndexableCookieJar:
     """
     Create a CookieJar from a dictionary whose cookies are all scoped to the
     given URL's origin.
@@ -82,7 +82,7 @@ def _scoped_cookiejar_from_dict(
     @note: This does not scope the cookies to any particular path, only the
         host, port, and scheme of the given URL.
     """
-    cookie_jar = TreqieJar()
+    cookie_jar = IndexableCookieJar()
     if cookie_dict is None:
         return cookie_jar
     for k, v in cookie_dict.items():
@@ -90,7 +90,7 @@ def _scoped_cookiejar_from_dict(
     return cookie_jar
 
 
-def _merge_cookies(left: TreqieJar, right: CookieJar) -> TreqieJar:
+def _merge_cookies(left: IndexableCookieJar, right: CookieJar) -> IndexableCookieJar:
     for cookie in right:
         left.set_cookie(cookie)
     return left
@@ -157,12 +157,12 @@ class HTTPClient:
     def __init__(
         self,
         agent: IAgent,
-        cookiejar: Optional[TreqieJar] = None,
+        cookiejar: Optional[IndexableCookieJar] = None,
         data_to_body_producer: Callable[[Any], IBodyProducer] = IBodyProducer,
     ) -> None:
         self._agent = agent
         if cookiejar is None:
-            cookiejar = TreqieJar()
+            cookiejar = IndexableCookieJar()
         self._cookiejar = cookiejar
         self._data_to_body_producer = data_to_body_producer
 

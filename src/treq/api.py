@@ -46,7 +46,6 @@ def head(
     unbuffered: bool = False,
     reactor: _ITreqReactor | None = None,
     timeout: float | None = None,
-    _stacklevel: int = 2,
 ) -> Deferred[_Response]:
     """
     Make a ``HEAD`` request.
@@ -89,7 +88,6 @@ def get(
     unbuffered: bool = False,
     reactor: _ITreqReactor | None = None,
     timeout: float | None = None,
-    _stacklevel: int = 2,
 ) -> Deferred[_Response]:
     """
     Make a ``GET`` request.
@@ -132,7 +130,6 @@ def post(
     unbuffered: bool = False,
     reactor: _ITreqReactor | None = None,
     timeout: float | None = None,
-    _stacklevel: int = 2,
 ) -> Deferred[_Response]:
     """
     Make a ``POST`` request.
@@ -175,7 +172,6 @@ def put(
     unbuffered: bool = False,
     reactor: _ITreqReactor | None = None,
     timeout: float | None = None,
-    _stacklevel: int = 2,
 ) -> Deferred[_Response]:
     """
     Make a ``PUT`` request.
@@ -218,7 +214,6 @@ def patch(
     unbuffered: bool = False,
     reactor: _ITreqReactor | None = None,
     timeout: float | None = None,
-    _stacklevel: int = 2,
 ) -> Deferred[_Response]:
     """
     Make a ``PATCH`` request.
@@ -261,7 +256,6 @@ def delete(
     unbuffered: bool = False,
     reactor: _ITreqReactor | None = None,
     timeout: float | None = None,
-    _stacklevel: int = 2,
 ) -> Deferred[_Response]:
     """
     Make a ``DELETE`` request.

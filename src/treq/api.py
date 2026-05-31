@@ -1,3 +1,4 @@
+# -*- test-case-name: treq.test.test_api -*-
 from __future__ import annotations
 
 from typing import TypeVar, Union

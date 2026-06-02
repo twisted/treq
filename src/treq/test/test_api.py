@@ -1,12 +1,11 @@
+import treq
+from treq.api import (default_pool, default_reactor, get_global_pool,
+                      set_global_pool)
 from twisted.internet import defer
 from twisted.trial.unittest import TestCase
 from twisted.web.client import HTTPConnectionPool
 from twisted.web.iweb import IAgent
 from zope.interface import implementer
-
-import treq
-from treq.api import (default_pool, default_reactor, get_global_pool,
-                      set_global_pool)
 
 try:
     from twisted.internet.testing import MemoryReactorClock
@@ -14,13 +13,16 @@ except ImportError:
     from twisted.test.proto_helpers import MemoryReactorClock
 
 
-class SyntacticAbominationHTTPConnectionPool:
+class SyntacticAbominationHTTPConnectionPool(HTTPConnectionPool):
     """
     A HTTP connection pool that always fails to return a connection,
     but counts the number of requests made.
     """
 
     requests = 0
+
+    def __init__(self) -> None:
+        super().__init__(MemoryReactorClock())
 
     def getConnection(self, key, endpoint):
         """

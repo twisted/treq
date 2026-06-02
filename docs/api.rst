@@ -94,6 +94,8 @@ Cookies
 
 .. module:: treq.cookies
 
+.. autoclass:: IndexableCookieJar
+
 .. autofunction:: scoped_cookie
 
 .. autofunction:: search

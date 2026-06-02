@@ -8,7 +8,7 @@ Release v\ |release| (:doc:`What's new? <changelog>`).
 Why?
 ----
 
-`requests`_ by Kenneth Reitz is a wonderful library.
+`requests`_ is a wonderful library.
 I want the same ease of use when writing Twisted applications.
 treq is not of course a perfect clone of `requests`_.
 I have tried to stay true to the do-what-I-mean spirit of the `requests`_ API and also kept the API familiar to users of `Twisted`_ and :class:`twisted.web.client.Agent` on which treq is based.

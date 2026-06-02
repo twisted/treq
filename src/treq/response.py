@@ -1,12 +1,12 @@
 from typing import Any, Callable, List
-from requests.cookies import cookiejar_from_dict
-from http.cookiejar import CookieJar
+
 from twisted.internet.defer import Deferred
 from twisted.python import reflect
 from twisted.python.components import proxyForInterface
 from twisted.web.iweb import UNKNOWN_LENGTH, IResponse
 
 from treq.content import collect, content, json_content, text_content
+from .cookies import IndexableCookieJar
 
 
 class _Response(proxyForInterface(IResponse)):  # type: ignore
@@ -16,9 +16,9 @@ class _Response(proxyForInterface(IResponse)):  # type: ignore
     """
 
     original: IResponse
-    _cookiejar: CookieJar
+    _cookiejar: IndexableCookieJar
 
-    def __init__(self, original: IResponse, cookiejar: CookieJar):
+    def __init__(self, original: IResponse, cookiejar: IndexableCookieJar):
         self.original = original
         self._cookiejar = cookiejar
 
@@ -103,15 +103,11 @@ class _Response(proxyForInterface(IResponse)):  # type: ignore
         history.reverse()
         return history
 
-    def cookies(self) -> CookieJar:
+    def cookies(self) -> IndexableCookieJar:
         """
         Get a copy of this response's cookies.
         """
-        # NB: This actually returns a RequestsCookieJar, but we type it as a
-        # regular CookieJar because we want to ditch requests as a dependency.
-        # Full deprecation deprecation will require a subclass or wrapper that
-        # warns about the RequestCookieJar extensions.
-        jar: CookieJar = cookiejar_from_dict({})
+        jar = IndexableCookieJar()
 
         for cookie in self._cookiejar:
             jar.set_cookie(cookie)

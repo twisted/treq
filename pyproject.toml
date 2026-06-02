@@ -37,7 +37,6 @@ classifiers = [
 ]
 dependencies = [
     "incremental >= 24.7.2",
-    "requests >= 2.1.0",
     "hyperlink >= 21.0.0",
     "Twisted[tls] >= 22.10.0",  # For #11635
     "attrs",

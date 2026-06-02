@@ -1,3 +1,4 @@
+# -*- test-case-name: treq.test.test_treq_integration -*-
 """
 Convenience helpers for :mod:`http.cookiejar`
 """
@@ -7,6 +8,35 @@ from typing import Union, Optional
 from http.cookiejar import Cookie, CookieJar
 
 from hyperlink import EncodedURL
+
+
+class IndexableCookieJar(CookieJar):
+    """
+    A :py:class:`IndexableCookieJar` is Treq's subclass of the standard library
+    :py:class:`http.cookiejar.CookieJar`, which, like the one from `requests`_,
+    allows for indexing to retrieve cookie values.  This is for convenience and
+    for compatibility with `requests` users expectations.
+
+    .. _requests: https://requests.readthedocs.io/en/latest/
+
+    .. note::
+
+        In general, you should not need to import or instantiate a
+        :py:class:`IndexableCookieJar` directly; anywhere that treq requires cookies, a
+        :py:class:`http.cookiejar.CookieJar` or ``dict`` of ``str`` to ``str``
+        should be acceptable; but :py:meth:`treq.response._Response.cookies`
+        returns one that is also indexable.
+    """
+    def __getitem__(self, name: str) -> str:
+        """
+        Retrieve the value of the named cookie.
+
+        :param name: The name of the cookie to retrieve.
+        """
+        for cookie in self:
+            if cookie.name == name and cookie.value is not None:
+                return cookie.value
+        raise KeyError(name)
 
 
 def scoped_cookie(origin: Union[str, EncodedURL], name: str, value: str) -> Cookie:

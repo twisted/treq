@@ -7,8 +7,8 @@ from twisted.web.iweb import IAgent
 from zope.interface import implementer
 
 import treq
+from treq._types import _NOTHING
 from treq.api import default_pool, default_reactor, get_global_pool, set_global_pool
-from treq.response import _Response
 
 try:
     from twisted.internet.testing import MemoryReactorClock
@@ -161,7 +161,23 @@ class TreqAPITests(TestCase):
             self.assertIs(d, sentinel.deferred)
             pool_mock.assert_called_with(sentinel.reactor, persistent=False)
             agent_mock.assert_called_with(sentinel.reactor, pool=sentinel.pool)
-            client_mock.request.assert_called_with(reactor=sentinel.reactor)
+            client_mock.return_value.request.assert_called_with(
+                "HEAD",
+                "http://foo.example",
+                _stacklevel=3,
+                params=None,
+                headers=None,
+                data=None,
+                files=None,
+                json=_NOTHING,
+                auth=None,
+                cookies=None,
+                allow_redirects=True,
+                browser_like_redirects=False,
+                unbuffered=False,
+                reactor=sentinel.reactor,
+                timeout=None,
+            )
 
     def test_request_other_params(self) -> None:
         """
@@ -188,11 +204,16 @@ class TreqAPITests(TestCase):
         d = treq.request(
             "POST",
             "http://foo.example",
+            auth=("open", "sesame"),
             params={"foo": "bar"},
-            headers={"Content-Type": "text/plain"},
+            # FIXME: This should type-check
+            headers={"Content-Type": "text/plain"},  # type: ignore[arg-type]
+            data=b"foo\n",
+            cookies={"foo": "bar"},
             allow_redirects=False,
             browser_like_redirects=False,
             unbuffered=True,
+            timeout=30,
         )
         self.assertNoResult(d)
 
@@ -202,11 +223,21 @@ class TreqAPITests(TestCase):
             dict(
                 method="POST",
                 url="http://foo.example",
+                auth=("open", "sesame"),
                 params={"foo": "bar"},
                 headers={"Content-Type": "text/plain"},
+                data=b"foo\n",
+                cookies={"foo": "bar"},
+                files=None,
+                json=_NOTHING,
                 allow_redirects=False,
                 browser_like_redirects=False,
                 unbuffered=True,
+                # FIXME: Shouldn't this be the same reactor as used by the pool
+                # and agent? None means to use twisted.internet.reactor.
+                reactor=None,
+                timeout=30,
+                _stacklevel=3,
             ),
         )
 
@@ -219,7 +250,7 @@ class TreqAPITests(TestCase):
             treq.request(
                 "GET",
                 "https://foo.bar",
-                invalid=True,
+                invalid=True,  # type: ignore[call-arg]
                 pool=SyntacticAbominationHTTPConnectionPool(),
             )
 

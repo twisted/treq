@@ -278,7 +278,26 @@ def delete(
     )
 
 
-def request(method, url, **kwargs):
+def request(
+    method: str,
+    url: _SomeURL,
+    data: _DataType | None = None,
+    *,
+    agent: IAgent | None = None,
+    pool: HTTPConnectionPool | None = None,
+    persistent: bool | None = None,
+    params: _ParamsType | None = None,
+    headers: _HeadersType | None = None,
+    files: _FilesType | None = None,
+    json: _JSONType | _Nothing = _NOTHING,
+    auth: tuple[str | bytes, str | bytes] | None = None,
+    cookies: _CookiesType | None = None,
+    allow_redirects: bool = True,
+    browser_like_redirects: bool = False,
+    unbuffered: bool = False,
+    reactor: _ITreqReactor | None = None,
+    timeout: float | None = None,
+) -> Deferred[_Response]:
     """
     Make an HTTP request.
 
@@ -385,7 +404,23 @@ def request(method, url, **kwargs):
         The *url* param now accepts :class:`hyperlink.DecodedURL` and
         :class:`hyperlink.EncodedURL` objects.
     """
-    return _client(**kwargs).request(method, url, _stacklevel=3, **kwargs)
+    return _client(agent, pool, persistent, reactor).request(
+        method,
+        url,
+        _stacklevel=3,
+        params=params,
+        headers=headers,
+        data=data,
+        files=files,
+        json=json,
+        auth=auth,
+        cookies=cookies,
+        allow_redirects=allow_redirects,
+        browser_like_redirects=browser_like_redirects,
+        unbuffered=unbuffered,
+        reactor=reactor,
+        timeout=timeout,
+    )
 
 
 #

@@ -1,9 +1,8 @@
 # -*- test-case-name: treq.test.test_api -*-
 from __future__ import annotations
 
-from typing import TypeVar, Union
+from typing import TypeVar
 
-from hyperlink import DecodedURL, EncodedURL
 from twisted.internet.defer import Deferred
 from twisted.internet.interfaces import IReactorTCP
 from twisted.web.client import Agent, HTTPConnectionPool
@@ -17,6 +16,7 @@ from treq._types import (
     _JSONType,
     _Nothing,
     _ParamsType,
+    _SomeURL,
 )
 from treq.client import HTTPClient
 from treq.response import _Response
@@ -25,11 +25,9 @@ from ._types import _DataType, _HeadersType
 
 R = TypeVar("R")
 
-SomeURL = Union[DecodedURL, EncodedURL, str, bytes]
-
 
 def head(
-    url: SomeURL,
+    url: _SomeURL,
     *,
     agent: IAgent | None = None,
     pool: HTTPConnectionPool | None = None,
@@ -71,7 +69,7 @@ def head(
 
 
 def get(
-    url: SomeURL,
+    url: _SomeURL,
     headers: _HeadersType | None = None,
     *,
     agent: IAgent | None = None,
@@ -113,7 +111,7 @@ def get(
 
 
 def post(
-    url: SomeURL,
+    url: _SomeURL,
     data: _DataType | None = None,
     *,
     agent: IAgent | None = None,
@@ -155,7 +153,7 @@ def post(
 
 
 def put(
-    url: SomeURL,
+    url: _SomeURL,
     data: _DataType | None = None,
     *,
     agent: IAgent | None = None,
@@ -197,7 +195,7 @@ def put(
 
 
 def patch(
-    url: SomeURL,
+    url: _SomeURL,
     data: _DataType | None = None,
     *,
     agent: IAgent | None = None,
@@ -239,7 +237,7 @@ def patch(
 
 
 def delete(
-    url: SomeURL,
+    url: _SomeURL,
     *,
     agent: IAgent | None = None,
     pool: HTTPConnectionPool | None = None,

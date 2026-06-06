@@ -1,11 +1,11 @@
-import treq
-from treq.api import (default_pool, default_reactor, get_global_pool,
-                      set_global_pool)
 from twisted.internet import defer
 from twisted.trial.unittest import TestCase
 from twisted.web.client import HTTPConnectionPool
 from twisted.web.iweb import IAgent
 from zope.interface import implementer
+
+import treq
+from treq.api import default_pool, default_reactor, get_global_pool, set_global_pool
 
 try:
     from twisted.internet.testing import MemoryReactorClock
@@ -33,6 +33,10 @@ class SyntacticAbominationHTTPConnectionPool(HTTPConnectionPool):
 
 
 class TreqAPITests(TestCase):
+    """
+    Test the module-level API defined in `treq.api` and re-exported by `treq`.
+    """
+
     def test_default_pool(self) -> None:
         """
         The module-level API uses the global connection pool by default.
@@ -58,7 +62,9 @@ class TreqAPITests(TestCase):
         self.failureResultOf(treq.post("http://test.com"), TabError)
         self.failureResultOf(treq.put("http://test.com"), TabError)
         self.failureResultOf(treq.delete("http://test.com"), TabError)
-        self.failureResultOf(treq.request("OPTIONS", "http://test.com"), TabError)
+        self.failureResultOf(
+            treq.request("OPTIONS", "http://test.com", unbuffered=False), TabError
+        )
 
         self.assertEqual(pool.requests, 6)
 

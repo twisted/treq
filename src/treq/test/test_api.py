@@ -1,3 +1,5 @@
+from unittest.mock import patch, sentinel
+
 from twisted.internet import defer
 from twisted.trial.unittest import TestCase
 from twisted.web.client import HTTPConnectionPool
@@ -6,6 +8,7 @@ from zope.interface import implementer
 
 import treq
 from treq.api import default_pool, default_reactor, get_global_pool, set_global_pool
+from treq.response import _Response
 
 try:
     from twisted.internet.testing import MemoryReactorClock
@@ -82,9 +85,7 @@ class TreqAPITests(TestCase):
         self.failureResultOf(treq.post("http://test.com"), TabError)
         self.failureResultOf(treq.put("http://test.com"), TabError)
         self.failureResultOf(treq.delete("http://test.com"), TabError)
-        self.failureResultOf(
-            treq.request("OPTIONS", "http://test.com", unbuffered=False), TabError
-        )
+        self.failureResultOf(treq.request("OPTIONS", "http://test.com"), TabError)
 
         self.assertEqual(pool.requests, 6)
 
@@ -116,22 +117,98 @@ class TreqAPITests(TestCase):
             treq.delete,
         ):
             with self.subTest(func=func):
-                custom_agent = CounterAgent()
-                d = func("https://www.example.org/", agent=custom_agent)
+                counter_agent = CounterAgent()
+                d = func("https://www.example.org/", agent=counter_agent)
 
                 self.assertNoResult(d)
-                self.assertEqual(1, custom_agent.requests)
+                self.assertEqual(1, counter_agent.requests)
 
     def test_custom_agent_request(self) -> None:
         """
         `treq.request()` uses a custom *agent* if passed that parameter.
         """
-        with self.subTest(func=treq.request):
-            custom_agent = CounterAgent()
-            d = treq.request("HEAD", "https://www.example.org/", agent=custom_agent)
+        counter_agent = CounterAgent()
+        d = treq.request("HEAD", "https://www.example.org/", agent=counter_agent)
 
-            self.assertNoResult(d)
-            self.assertEqual(1, custom_agent.requests)
+        self.assertNoResult(d)
+        self.assertEqual(1, counter_agent.requests)
+
+    def test_request_reactor(self) -> None:
+        """
+        `treq.request()` uses the *reactor* parameter both when building
+        the `HTTPClient` (to make TCP connections) and when making the request
+        (to set timeouts).
+        """
+        global_pool = treq.api.get_global_pool()
+        self.addCleanup(treq.api.set_global_pool, global_pool)
+
+        # FIXME: End the mockery
+        with (
+            patch(
+                "treq.api.HTTPConnectionPool", autospec=True, return_value=sentinel.pool
+            ) as pool_mock,
+            patch(
+                "treq.api.Agent", autospec=True, return_value=sentinel.agent
+            ) as agent_mock,
+            patch("treq.api.HTTPClient", autospec=True) as client_mock,
+        ):
+            client_mock.return_value.request.return_value = sentinel.deferred
+
+            d = treq.request(
+                "HEAD", "http://foo.example", reactor=sentinel.reactor, persistent=False
+            )
+
+            self.assertIs(d, sentinel.deferred)
+            pool_mock.assert_called_with(sentinel.reactor, persistent=False)
+            agent_mock.assert_called_with(sentinel.reactor, pool=sentinel.pool)
+            client_mock.request.assert_called_with(reactor=sentinel.reactor)
+
+    def test_request_other_params(self) -> None:
+        """
+        `treq.request()` forwards most parameters to the underlying
+        `HTTPClient.request` method.
+        """
+
+        class HTTPClientFake:
+            """
+            A no-op HTTPClient that only records the parameter passed to it.
+            """
+
+            def __init__(self):
+                self.requests = []
+
+            def request(self, method, url, **kwargs):
+                self.requests.append({"method": method, "url": url, **kwargs})
+                return defer.Deferred()
+
+        client = HTTPClientFake()
+        self.patch(treq.api, "HTTPClient", lambda agent: client)
+
+        # This is not exhaustive, as some parameters are mutually-exclusive.
+        d = treq.request(
+            "POST",
+            "http://foo.example",
+            params={"foo": "bar"},
+            headers={"Content-Type": "text/plain"},
+            allow_redirects=False,
+            browser_like_redirects=False,
+            unbuffered=True,
+        )
+        self.assertNoResult(d)
+
+        [kwargs] = client.requests
+        self.assertEqual(
+            kwargs,
+            dict(
+                method="POST",
+                url="http://foo.example",
+                params={"foo": "bar"},
+                headers={"Content-Type": "text/plain"},
+                allow_redirects=False,
+                browser_like_redirects=False,
+                unbuffered=True,
+            ),
+        )
 
     def test_request_invalid_param(self) -> None:
         """

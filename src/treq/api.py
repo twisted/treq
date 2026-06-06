@@ -430,6 +430,9 @@ def default_pool(reactor, pool, persistent):
     if get_global_pool() is None:
         set_global_pool(HTTPConnectionPool(reactor, persistent=True))
 
+    # NOTE: This doesn't necessarily return a pool that matches
+    # the *reactor* parameter, which can produce confusing behavior
+    # in tests that use a fake reactor.
     return get_global_pool()
 
 

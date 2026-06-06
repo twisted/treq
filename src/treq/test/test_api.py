@@ -32,6 +32,26 @@ class SyntacticAbominationHTTPConnectionPool(HTTPConnectionPool):
         return defer.fail(TabError())
 
 
+@implementer(IAgent)
+class CounterAgent:
+    """
+    An agent that counts requests, but never delivers on its promises.
+
+    :ivar requests: The number of requests received.
+    """
+
+    requests = 0
+
+    def request(self, method, uri, headers=None, bodyProducer=None):
+        """
+        Increment the request counter
+
+        :returns: A deferred that will never fire
+        """
+        self.requests += 1
+        return defer.Deferred()
+
+
 class TreqAPITests(TestCase):
     """
     Test the module-level API defined in `treq.api` and re-exported by `treq`.
@@ -81,24 +101,37 @@ class TreqAPITests(TestCase):
         self.failureResultOf(d, TabError)
         self.assertIsNot(pool, get_global_pool())
 
-    def test_custom_agent(self) -> None:
+    def test_custom_agent_methods(self) -> None:
         """
-        A custom Agent is used if specified.
+        The module API functions named for HTTP methods use a custom
+        IAgent if passed one in the *agent* parameter.
         """
 
-        @implementer(IAgent)
-        class CounterAgent:
-            requests = 0
+        for func in (
+            treq.head,
+            treq.get,
+            treq.post,
+            treq.put,
+            treq.patch,
+            treq.delete,
+        ):
+            with self.subTest(func=func):
+                custom_agent = CounterAgent()
+                d = func("https://www.example.org/", agent=custom_agent)
 
-            def request(self, method, uri, headers=None, bodyProducer=None):
-                self.requests += 1
-                return defer.Deferred()
+                self.assertNoResult(d)
+                self.assertEqual(1, custom_agent.requests)
 
-        custom_agent = CounterAgent()
-        d = treq.get("https://www.example.org/", agent=custom_agent)
+    def test_custom_agent_request(self) -> None:
+        """
+        `treq.request()` uses a custom *agent* if passed that parameter.
+        """
+        with self.subTest(func=treq.request):
+            custom_agent = CounterAgent()
+            d = treq.request("HEAD", "https://www.example.org/", agent=custom_agent)
 
-        self.assertNoResult(d)
-        self.assertEqual(1, custom_agent.requests)
+            self.assertNoResult(d)
+            self.assertEqual(1, custom_agent.requests)
 
     def test_request_invalid_param(self) -> None:
         """

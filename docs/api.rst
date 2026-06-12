@@ -100,6 +100,10 @@ Cookies
 
 .. autoclass:: IndexableCookieJar
 
+   .. automethod:: __getitem__
+
+.. autoexception:: CookieCollision
+
 Test Helpers
 ------------
 

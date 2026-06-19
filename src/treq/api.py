@@ -309,27 +309,25 @@ def request(
         :class:`hyperlink.EncodedURL`
 
     :param headers: Optional HTTP Headers to send with this request.
-    :type headers: :class:`~twisted.web.http_headers.Headers` or None
 
     :param params: Optional parameters to be append to the URL query string.
         Any query string parameters in the *url* will be preserved.
-    :type params: dict w/ str or list/tuple of str values, list of 2-tuples, or
-        None.
 
     :param data:
         Arbitrary request body data.
 
         If *files* is also passed this must be a :class:`dict`,
         a :class:`tuple` or :class:`list` of field tuples as accepted by
-        :class:`MultiPartProducer`. The request is assigned a Content-Type of
-        ``multipart/form-data``.
+        :class:`~treq.multipart.MultiPartProducer`. The request is assigned
+        a Content-Type of ``multipart/form-data``.
 
         If a :class:`dict`, :class:`list`, or :class:`tuple` it is URL-encoded
         and the request assigned a Content-Type of
         ``application/x-www-form-urlencoded``.
 
         Otherwise, any non-``None`` value is passed to the client's
-        *data_to_body_producer* callable (by default, :class:`IBodyProducer`),
+        *data_to_body_producer* callable (by default,
+        :class:`~twisted.web.iweb.IBodyProducer`),
         which accepts :class:`bytes` and binary files like returned by
         ``open(..., "rb")``.
     :type data: `bytes`, `typing.BinaryIO`, `IBodyProducer`, or `None`
@@ -349,8 +347,8 @@ def request(
 
         Each ``binary_file`` is a file-like object open in binary mode (like
         returned by ``open("filename", "rb")``). The filename is taken from
-        the file's ``name`` attribute if not specified. The Content-Type is
-        guessed based on the filename using :func:`mimetypes.guess_type()` if
+        the file's ``name`` attribute, if not specified. The Content-Type is
+        guessed based on the filename using :func:`mimetypes.guess_type()`, if
         not specified, falling back to ``application/octet-stream``.
 
         While uploading Treq will measure the length of seekable files to
@@ -369,19 +367,20 @@ def request(
     :type auth: tuple of ``('username', 'password')``
 
     :param cookies: Cookies to send with this request.  The HTTP kind, not the
-        tasty kind.
-    :type cookies: ``dict`` or ``cookielib.CookieJar``
+        tasty kind. If you pass a :class:`dict`, the cookies therein will be
+        scoped to the origin of *url* (see :func:`~treq.cookies.scoped_cookie()`).
+    :type cookies: :class:`dict` or :class:`http.cookiejar.CookieJar`
 
     :param int timeout: Request timeout seconds. If a response is not
         received within this timeframe, a connection is aborted with
-        ``CancelledError``.
+        :exc:`~twisted.internet.defer.CancelledError`.
 
     :param bool allow_redirects: Follow HTTP redirects.  Default: ``True``
 
     :param bool browser_like_redirects: Follow redirects like a web browser:
         When a 301 or 302 redirect is received in response to a POST request
         convert the method to GET.
-        See :rfc:`7231 <7231#section-6.4.3>` and
+        See :rfc:`RFC 9110 <9110#section-15.4.3>` and
         :class:`~twisted.web.client.BrowserLikeRedirectAgent`). Default: ``False``
 
     :param bool unbuffered: Pass ``True`` to to disable response buffering.  By

@@ -73,8 +73,6 @@ Here is a list of `requests`_ features and their status in treq.
 +----------------------------------+----------+----------+
 | Digest Authentication            | yes      | no       |
 +----------------------------------+----------+----------+
-| Elegant Key/Value Cookies        | yes      | yes      |
-+----------------------------------+----------+----------+
 | Automatic Decompression          | yes      | yes      |
 +----------------------------------+----------+----------+
 | Unicode Response Bodies          | yes      | yes      |
@@ -86,8 +84,6 @@ Here is a list of `requests`_ features and their status in treq.
 | HTTP(S) Proxy Support            | yes      | no       |
 +----------------------------------+----------+----------+
 | .netrc support                   | yes      | no       |
-+----------------------------------+----------+----------+
-| Python 3.x                       | yes      | yes      |
 +----------------------------------+----------+----------+
 
 Table of Contents

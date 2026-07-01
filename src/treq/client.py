@@ -3,9 +3,8 @@ from __future__ import annotations
 
 import io
 import mimetypes
-import uuid
 import sys
-
+import uuid
 from collections import abc
 from http.cookiejar import CookieJar
 from json import dumps as json_dumps
@@ -19,9 +18,9 @@ from typing import (
 )
 
 if sys.version_info < (3, 10):
-    from typing_extensions import ParamSpec, Concatenate
+    from typing_extensions import Concatenate, ParamSpec
 else:
-    from typing import ParamSpec, Concatenate
+    from typing import Concatenate, ParamSpec
 
 from urllib.parse import quote_plus
 from urllib.parse import urlencode as _urlencode
@@ -55,7 +54,7 @@ from treq._types import (
     _JSONType,
     _Nothing,
     _ParamsType,
-    _URLType,
+    _SomeURL,
 )
 from treq.auth import add_auth
 from treq.cookies import scoped_cookie
@@ -146,9 +145,11 @@ class _BufferedResponse(proxyForInterface(IResponse)):  # type: ignore
 P2 = ParamSpec("P2")
 
 
-def _like(c: Callable[Concatenate[HTTPClient, str, _URLType, P], R]) -> Callable[
-    [Callable[Concatenate[HTTPClient, _URLType, P], R]],
-    Callable[Concatenate[HTTPClient, _URLType, P], R],
+def _like(
+    c: Callable[Concatenate[HTTPClient, str, _SomeURL, P], R],
+) -> Callable[
+    [Callable[Concatenate[HTTPClient, _SomeURL, P], R]],
+    Callable[Concatenate[HTTPClient, _SomeURL, P], R],
 ]:
     return lambda x: x
 
@@ -169,7 +170,7 @@ class HTTPClient:
     def request(
         self,
         method: str,
-        url: _URLType,
+        url: _SomeURL,
         *,
         params: Optional[_ParamsType] = None,
         headers: Optional[_HeadersType] = None,
@@ -259,7 +260,7 @@ class HTTPClient:
         return d.addCallback(_Response, self._cookiejar)
 
     @_like(request)
-    def get(self, url: _URLType, **kwargs: Any) -> "Deferred[_Response]":
+    def get(self, url: _SomeURL, **kwargs: Any) -> "Deferred[_Response]":
         """
         See :func:`treq.get()`.
         """
@@ -268,7 +269,7 @@ class HTTPClient:
 
     @_like(request)
     def put(
-        self, url: _URLType, data: Optional[_DataType] = None, **kwargs: Any
+        self, url: _SomeURL, data: Optional[_DataType] = None, **kwargs: Any
     ) -> "Deferred[_Response]":
         """
         See :func:`treq.put()`.
@@ -278,7 +279,7 @@ class HTTPClient:
 
     @_like(request)
     def patch(
-        self, url: _URLType, data: Optional[_DataType] = None, **kwargs: Any
+        self, url: _SomeURL, data: Optional[_DataType] = None, **kwargs: Any
     ) -> "Deferred[_Response]":
         """
         See :func:`treq.patch()`.
@@ -288,7 +289,7 @@ class HTTPClient:
 
     @_like(request)
     def post(
-        self, url: _URLType, data: Optional[_DataType] = None, **kwargs: Any
+        self, url: _SomeURL, data: Optional[_DataType] = None, **kwargs: Any
     ) -> "Deferred[_Response]":
         """
         See :func:`treq.post()`.
@@ -297,7 +298,7 @@ class HTTPClient:
         return self.request("POST", url, data=data, **kwargs)
 
     @_like(request)
-    def head(self, url: _URLType, **kwargs: Any) -> "Deferred[_Response]":
+    def head(self, url: _SomeURL, **kwargs: Any) -> "Deferred[_Response]":
         """
         See :func:`treq.head()`.
         """
@@ -305,7 +306,7 @@ class HTTPClient:
         return self.request("HEAD", url, **kwargs)
 
     @_like(request)
-    def delete(self, url: _URLType, **kwargs: Any) -> "Deferred[_Response]":
+    def delete(self, url: _SomeURL, **kwargs: Any) -> "Deferred[_Response]":
         """
         See :func:`treq.delete()`.
         """

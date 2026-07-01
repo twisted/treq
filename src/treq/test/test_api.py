@@ -1,11 +1,15 @@
-import treq
-from treq.api import (default_pool, default_reactor, get_global_pool,
-                      set_global_pool)
+from unittest.mock import patch, sentinel
+
 from twisted.internet import defer
 from twisted.trial.unittest import TestCase
 from twisted.web.client import HTTPConnectionPool
 from twisted.web.iweb import IAgent
 from zope.interface import implementer
+
+import treq
+from treq._agentspy import agent_spy
+from treq._types import _NOTHING
+from treq.api import default_pool, default_reactor, get_global_pool, set_global_pool
 
 try:
     from twisted.internet.testing import MemoryReactorClock
@@ -32,7 +36,31 @@ class SyntacticAbominationHTTPConnectionPool(HTTPConnectionPool):
         return defer.fail(TabError())
 
 
+@implementer(IAgent)
+class CounterAgent:
+    """
+    An agent that counts requests, but never delivers on its promises.
+
+    :ivar requests: The number of requests received.
+    """
+
+    requests = 0
+
+    def request(self, method, uri, headers=None, bodyProducer=None):
+        """
+        Increment the request counter
+
+        :returns: A deferred that will never fire
+        """
+        self.requests += 1
+        return defer.Deferred()
+
+
 class TreqAPITests(TestCase):
+    """
+    Test the module-level API defined in `treq.api` and re-exported by `treq`.
+    """
+
     def test_default_pool(self) -> None:
         """
         The module-level API uses the global connection pool by default.
@@ -75,24 +103,146 @@ class TreqAPITests(TestCase):
         self.failureResultOf(d, TabError)
         self.assertIsNot(pool, get_global_pool())
 
-    def test_custom_agent(self) -> None:
+    def test_custom_agent_methods(self) -> None:
         """
-        A custom Agent is used if specified.
+        The module API functions named for HTTP methods use a custom
+        IAgent if passed one in the *agent* parameter.
         """
 
-        @implementer(IAgent)
-        class CounterAgent:
-            requests = 0
+        for method, func in (
+            ("HEAD", treq.head),
+            ("GET", treq.get),
+            ("POST", treq.post),
+            ("PUT", treq.put),
+            ("PATCH", treq.patch),
+            ("DELETE", treq.delete),
+        ):
+            with self.subTest(method=method):
+                agent, requests = agent_spy()
+                d = func("https://www.example.org/", agent=agent)
 
-            def request(self, method, uri, headers=None, bodyProducer=None):
-                self.requests += 1
-                return defer.Deferred()
+                self.assertNoResult(d)
+                [req] = requests
+                self.assertEqual(req.method, method.encode())
+                self.assertEqual(req.uri, b"https://www.example.org/")
 
-        custom_agent = CounterAgent()
-        d = treq.get("https://www.example.org/", agent=custom_agent)
+    def test_custom_agent_request(self) -> None:
+        """
+        `treq.request()` uses a custom *agent* if passed that parameter.
+        """
+        counter_agent = CounterAgent()
+        d = treq.request("HEAD", "https://www.example.org/", agent=counter_agent)
 
         self.assertNoResult(d)
-        self.assertEqual(1, custom_agent.requests)
+        self.assertEqual(1, counter_agent.requests)
+
+    def test_request_reactor(self) -> None:
+        """
+        `treq.request()` uses the *reactor* parameter both when building
+        the `HTTPClient` (to make TCP connections) and when making the request
+        (to set timeouts).
+        """
+        global_pool = treq.api.get_global_pool()
+        self.addCleanup(treq.api.set_global_pool, global_pool)
+
+        # FIXME: End the mockery
+        with (
+            patch(
+                "treq.api.HTTPConnectionPool", autospec=True, return_value=sentinel.pool
+            ) as pool_mock,
+            patch(
+                "treq.api.Agent", autospec=True, return_value=sentinel.agent
+            ) as agent_mock,
+            patch("treq.api.HTTPClient", autospec=True) as client_mock,
+        ):
+            client_mock.return_value.request.return_value = sentinel.deferred
+
+            d = treq.request(
+                "HEAD", "http://foo.example", reactor=sentinel.reactor, persistent=False
+            )
+
+            self.assertIs(d, sentinel.deferred)
+            pool_mock.assert_called_with(sentinel.reactor, persistent=False)
+            agent_mock.assert_called_with(sentinel.reactor, pool=sentinel.pool)
+            client_mock.return_value.request.assert_called_with(
+                "HEAD",
+                "http://foo.example",
+                _stacklevel=3,
+                params=None,
+                headers=None,
+                data=None,
+                files=None,
+                json=_NOTHING,
+                auth=None,
+                cookies=None,
+                allow_redirects=True,
+                browser_like_redirects=False,
+                unbuffered=False,
+                reactor=sentinel.reactor,
+                timeout=None,
+            )
+
+    def test_request_other_params(self) -> None:
+        """
+        `treq.request()` forwards most parameters to the underlying
+        `HTTPClient.request` method.
+        """
+
+        class HTTPClientFake:
+            """
+            A no-op HTTPClient that only records the parameter passed to it.
+            """
+
+            def __init__(self):
+                self.requests = []
+
+            def request(self, method, url, **kwargs):
+                self.requests.append({"method": method, "url": url, **kwargs})
+                return defer.Deferred()
+
+        client = HTTPClientFake()
+        self.patch(treq.api, "HTTPClient", lambda agent: client)
+
+        # This is not exhaustive, as some parameters are mutually-exclusive.
+        d = treq.request(
+            "POST",
+            "http://foo.example",
+            auth=("open", "sesame"),
+            params={"foo": "bar"},
+            # FIXME: This should type-check
+            headers={"Content-Type": "text/plain"},  # type: ignore[arg-type]
+            data=b"foo\n",
+            cookies={"foo": "bar"},
+            allow_redirects=False,
+            browser_like_redirects=False,
+            unbuffered=True,
+            timeout=30,
+        )
+        self.assertNoResult(d)
+
+        [kwargs] = client.requests
+        self.assertEqual(
+            kwargs,
+            dict(
+                method="POST",
+                url="http://foo.example",
+                auth=("open", "sesame"),
+                params={"foo": "bar"},
+                headers={"Content-Type": "text/plain"},
+                data=b"foo\n",
+                cookies={"foo": "bar"},
+                files=None,
+                json=_NOTHING,
+                allow_redirects=False,
+                browser_like_redirects=False,
+                unbuffered=True,
+                # FIXME: Shouldn't this be the same reactor as used by the pool
+                # and agent? None means to use twisted.internet.reactor.
+                reactor=None,
+                timeout=30,
+                _stacklevel=3,
+            ),
+        )
 
     def test_request_invalid_param(self) -> None:
         """
@@ -103,7 +253,7 @@ class TreqAPITests(TestCase):
             treq.request(
                 "GET",
                 "https://foo.bar",
-                invalid=True,
+                invalid=True,  # type: ignore[call-arg]
                 pool=SyntacticAbominationHTTPConnectionPool(),
             )
 

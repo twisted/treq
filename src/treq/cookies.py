@@ -4,39 +4,74 @@ Convenience helpers for :mod:`http.cookiejar`
 """
 
 from collections.abc import Iterable
-from typing import Union, Optional
 from http.cookiejar import Cookie, CookieJar
+from typing import Optional, Union
 
 from hyperlink import EncodedURL
 
 
+class CookieCollision(Exception):
+    """
+    Raised by :meth:`IndexableCookieJar.__getitem__` when more than one
+    matching cookie is found.
+    """
+
+
 class IndexableCookieJar(CookieJar):
     """
-    A :py:class:`IndexableCookieJar` is Treq's subclass of the standard library
+    An :py:class:`IndexableCookieJar` is Treq's subclass of the standard library
     :py:class:`http.cookiejar.CookieJar`, which, like the one from `requests`_,
     allows for indexing to retrieve cookie values.  This is for convenience and
-    for compatibility with `requests` users expectations.
+    for compatibility with `requests`_ users' expectations.
 
     .. _requests: https://requests.readthedocs.io/en/latest/
 
     .. note::
 
         In general, you should not need to import or instantiate a
-        :py:class:`IndexableCookieJar` directly; anywhere that treq requires cookies, a
+        :py:class:`IndexableCookieJar` directly; anywhere that Treq requires cookies, a
         :py:class:`http.cookiejar.CookieJar` or ``dict`` of ``str`` to ``str``
         should be acceptable; but :py:meth:`treq.response._Response.cookies`
         returns one that is also indexable.
     """
+
     def __getitem__(self, name: str) -> str:
         """
-        Retrieve the value of the named cookie.
+        Search the jar for a uniquely-named cookie.
+
+        This is O(n) on the number of cookies in the jar.
+
+        .. note::
+
+            This method exists for compatibility with `RequestsCookieJar`_, but is
+            difficult to use securely when following HTTP redirects. Prefer
+            :func:`treq.cookies.search()`, which lets you limit the search to a
+            specific domain name.
+
+        .. note::
+
+            This method ignores cookies with no value (`None`), but may return an
+            empty string, `unlike requests`_.
 
         :param name: The name of the cookie to retrieve.
+
+        :raises KeyError: when no cookie with a value has the given name.
+
+        :raises CookieCollision: when more than one cookie has the given name.
+
+        .. _RequestsCookieJar: https://requests.readthedocs.io/en/latest/api/#requests.cookies.RequestsCookieJar
+        .. _unlike requests: https://github.com/psf/requests/issues/7003
         """
+        value: str | None = None
         for cookie in self:
             if cookie.name == name and cookie.value is not None:
-                return cookie.value
-        raise KeyError(name)
+                if value is None:
+                    value = cookie.value
+                else:
+                    raise CookieCollision(name)
+        if value is None:
+            raise KeyError(name)
+        return value
 
 
 def scoped_cookie(origin: Union[str, EncodedURL], name: str, value: str) -> Cookie:
@@ -44,6 +79,8 @@ def scoped_cookie(origin: Union[str, EncodedURL], name: str, value: str) -> Cook
     Create a cookie scoped to a given URL's origin.
 
     You can insert the result directly into a `CookieJar`, like::
+
+        from http.cookiejar import CookieJar
 
         jar = CookieJar()
         jar.set_cookie(scoped_cookie("https://example.tld", "flavor", "chocolate"))

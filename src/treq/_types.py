@@ -33,7 +33,7 @@ class _ITreqReactor(IReactorTCP, IReactorTime, IReactorPluggableNameResolver):
 
 _S = Union[bytes, str]
 
-_URLType = Union[
+_SomeURL = Union[
     str,
     bytes,
     EncodedURL,

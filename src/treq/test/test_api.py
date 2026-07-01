@@ -7,6 +7,7 @@ from twisted.web.iweb import IAgent
 from zope.interface import implementer
 
 import treq
+from treq._agentspy import agent_spy
 from treq._types import _NOTHING
 from treq.api import default_pool, default_reactor, get_global_pool, set_global_pool
 
@@ -108,20 +109,22 @@ class TreqAPITests(TestCase):
         IAgent if passed one in the *agent* parameter.
         """
 
-        for func in (
-            treq.head,
-            treq.get,
-            treq.post,
-            treq.put,
-            treq.patch,
-            treq.delete,
+        for method, func in (
+            ("HEAD", treq.head),
+            ("GET", treq.get),
+            ("POST", treq.post),
+            ("PUT", treq.put),
+            ("PATCH", treq.patch),
+            ("DELETE", treq.delete),
         ):
-            with self.subTest(func=func):
-                counter_agent = CounterAgent()
-                d = func("https://www.example.org/", agent=counter_agent)
+            with self.subTest(method=method):
+                agent, requests = agent_spy()
+                d = func("https://www.example.org/", agent=agent)
 
                 self.assertNoResult(d)
-                self.assertEqual(1, counter_agent.requests)
+                [req] = requests
+                self.assertEqual(req.method, method.encode())
+                self.assertEqual(req.uri, b"https://www.example.org/")
 
     def test_custom_agent_request(self) -> None:
         """

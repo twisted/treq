@@ -8,6 +8,30 @@ Changelog
 
 .. towncrier release notes start
 
+26.7.0 (2026-07-01)
+===================
+
+Features
+--------
+
+- Document support for Python 3.14. (`#427 <https://github.com/twisted/treq/issues/427>`__)
+- PyPy 3.11 is now supported, and PyPy 3.9 and 3.10, which are no longer well-supported by the ecosystem, have been dropped. (`#429 <https://github.com/twisted/treq/issues/429>`__)
+
+
+Bugfixes
+--------
+
+- treq no longer vendors the ``multipart`` library, now that it no longer has import conflicts with ``python-multipart``. (`#403 <https://github.com/twisted/treq/issues/403>`__)
+- Fix building documentation with Sphinx 9.1.0. (`#423 <https://github.com/twisted/treq/issues/423>`__)
+
+
+Deprecations and Removals
+-------------------------
+
+- treq no longer depends on `requests`. Consequently, the ``cookies()`` method no longer returns a `requests.cookies.RequestsCookieJar <https://requests.readthedocs.io/en/latest/api/#requests.cookies.RequestsCookieJar>`_. Instead, it returns `treq.cookies.IndexableCookieJar`, which implements ``__getitem__`` as a compatibility shim. We have *not* attempted to maintain full dict-interface compatibility with ``RequestsCookieJar``, as many of its interface extensions are difficult to use securely because they obscure the relationship between cookies and domains. treq interfaces still accept a ``request.cookies.RequestsCookieJar`` as the *cookies* parameter, like any `http.cookiejar.CookieJar` subclass. (`#325 <https://github.com/twisted/treq/issues/325>`__)
+- Support for Python 3.8, which has reached end of support, has been dropped. (`#427 <https://github.com/twisted/treq/issues/427>`__)
+
+
 25.5.0 (2025-05-31)
 ===================
 

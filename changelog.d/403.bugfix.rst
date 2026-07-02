@@ -1,1 +1,0 @@
-treq no longer vendors the ``multipart`` library, now that it no longer has import conflicts with ``python-multipart``.

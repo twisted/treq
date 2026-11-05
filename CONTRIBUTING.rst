@@ -33,3 +33,8 @@ which means we get more frequent releases,
 which means your change gets into users’ hands faster.
 
 .. _towncrier: https://pypi.org/project/towncrier/
+
+AI Policy
+=========
+
+This repository follows the `Twisted AI Policy <https://docs.twisted.org/en/latest/development/ai-policy.html>`_.
